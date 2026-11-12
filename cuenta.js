@@ -35,10 +35,37 @@ export async function nuevaClave(pass) { ok(await sb.auth.updateUser({ password:
 export async function salir() { try { await sb.auth.signOut({ scope: "local" }); } catch (_) {} }
 export async function miPlancha() {
   const s = await sesion(); if (!s) return null;
-  return ok(await sb.from("cuentas").select("repo,token,nombre").eq("user_id", s.user.id).maybeSingle());
+  return ok(await sb.from("cuentas").select("repo,token,nombre,modo").eq("user_id", s.user.id).maybeSingle());
 }
 export async function vincular(repo, token, nombre) {
   const s = await sesion(); if (!s) throw new Error("Sin sesión");
   ok(await sb.from("cuentas").upsert({ user_id: s.user.id, repo, token, nombre: nombre || null }));
 }
 export async function mail() { const s = await sesion(); return s ? s.user.email : null; }
+
+/* ---------- Planchas nuevas: se guardan en Supabase (tabla archivos), sin GitHub ---------- */
+export async function token() { const s = await sesion(); return s ? s.access_token : null; }
+export async function crearNube(nombre) {
+  const s = await sesion(); if (!s) throw new Error("Sin sesión");
+  ok(await sb.from("cuentas").upsert({ user_id: s.user.id, modo: "nube", repo: null, token: null, nombre: nombre || null }));
+}
+const errNube = r => { const e = new Error(r.error.message || "nube"); e.status = (r.status === 401 || /jwt|token/i.test(r.error.message || "")) ? 401 : 0; return e; };
+/* trae filas cambiadas desde «desde» (o todas las vivas si es la primera vez), de a 1000 */
+export async function nubeTraer(desde) {
+  const s = await sesion(); if (!s) { const e = new Error("Sin sesión"); e.status = 401; throw e; }
+  const out = [];
+  for (let i = 0; ; i += 1000) {
+    let q = sb.from("archivos").select("path,contenido,borrado,actualizado").eq("user_id", s.user.id).order("actualizado", { ascending: true }).order("path").range(i, i + 999);
+    q = desde ? q.gt("actualizado", desde) : q.eq("borrado", false);
+    const r = await q; if (r.error) throw errNube(r);
+    out.push(...r.data); if (r.data.length < 1000) break;
+  }
+  return out;
+}
+export async function nubeGuardar(filas) {
+  if (!filas.length) return [];
+  const s = await sesion(); if (!s) { const e = new Error("Sin sesión"); e.status = 401; throw e; }
+  const r = await sb.from("archivos").upsert(filas.map(f => ({ ...f, user_id: s.user.id })), { onConflict: "user_id,path" }).select("path,actualizado");
+  if (r.error) throw errNube(r);
+  return r.data;
+}

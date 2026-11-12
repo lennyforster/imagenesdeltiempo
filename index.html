@@ -893,6 +893,9 @@ try{const m=/(?:^#|&)migrar=([^&]+)/.exec(location.hash);if(m){const o=JSON.pars
   const resto=location.hash.slice(1).replace(/(?:^|&)migrar=[^&]+/,"").replace(/^&/,"");history.replaceState(null,"",location.pathname+location.search+(resto?"#"+resto:""))}}catch(_){}
 const LS={get(k){try{return localStorage.getItem(k)}catch(_){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(_){}},del(k){try{localStorage.removeItem(k)}catch(_){}}};
 let TOKEN=LS.get("gh_token");
+/* planchas nuevas (cuentas creadas sin clave de GitHub): ideas en Supabase, imágenes en Cloudflare R2 a través de un Worker */
+let NUBE=LS.get("plancha_modo")==="nube";
+const R2="https://imagenes-del-tiempo.rental-bff.workers.dev";
 const INVITADO=(()=>{const m=/(?:^|[#&?])vivo=([a-z0-9]{20,})/.exec(location.hash+"&"+location.search.slice(1));return m?m[1]:null})();window.__invitado=INVITADO;
 const docs=new Map();           // "ideas/abc" -> datos
 const pend=new Map();           // cambios sin subir: clave -> datos | null (borrar)
@@ -925,7 +928,7 @@ function avisar(claves){
   for(const k of claves)for(const l of docL.get(k)||[])try{l(snapDoc(k))}catch(e){console.error(e)}
 }
 /* --- traer lo que hay en GitHub --- */
-async function traer(){if(INVITADO)return;
+async function traer(){if(INVITADO)return;if(NUBE)return traerNube();
   const ref=await api(`${RB}/git/ref/heads/${GH.branch}`);const sha=ref.object.sha;if(sha===ultimoCommit)return;
   const c=await api(`${RB}/git/commits/${sha}`);const t=await api(`${RB}/git/trees/${c.tree.sha}?recursive=1`);
   const vistos=new Set(),cambiados=new Set(),pedir=[];remotos=new Set();
@@ -939,6 +942,17 @@ async function traer(){if(INVITADO)return;
   if(entradas.length){const out=[];for(const e of entradas){try{const b=await api(`${RB}/git/blobs/${e.sha}`);out.push({path:e.path,texto:dec(b.content)})}catch(_){}}entradasLeidas=out;window.revisarEntradas()}
 }
 let entradasLeidas=[];
+let nubeDesde=null;const nubeVer=new Map();
+async function traerNube(){const c=await modCuenta();const filas=await c.nubeTraer(nubeDesde);const cambiados=new Set();let max=null,hayEntradas=false;
+  for(const f of filas){if(!max||f.actualizado>max)max=f.actualizado;
+    if(nubeVer.get(f.path)===f.actualizado)continue;nubeVer.set(f.path,f.actualizado);
+    if(f.path.startsWith("entrada/")){hayEntradas=true;continue}
+    if(!f.path.endsWith(".json"))continue;const k=f.path.slice(0,-5);if(ocupado(k))continue;
+    if(f.borrado){if(docs.has(k)){docs.delete(k);cambiados.add(k)}}
+    else if(JSON.stringify(docs.get(k))!==JSON.stringify(f.contenido)){docs.set(k,f.contenido);cambiados.add(k)}}
+  if(max){const t=new Date(new Date(max).getTime()-5000).toISOString();if(!nubeDesde||t>nubeDesde)nubeDesde=t}
+  if(cambiados.size)avisar(cambiados);
+  if(hayEntradas){const vivas=filas.filter(f=>f.path.startsWith("entrada/")&&!f.borrado&&!binPend.has(f.path));const out=entradasLeidas.filter(e=>!filas.some(f=>f.path===e.path));for(const f of vivas)out.push({path:f.path,texto:String(f.contenido||"")});entradasLeidas=out;window.revisarEntradas()}}
 window.revisarEntradas=()=>{if(entradasLeidas.length&&window.onEntradas)try{window.onEntradas(entradasLeidas.slice())}catch(err){console.error(err)}};
 window.borrarEntrada=p=>{entradasLeidas=entradasLeidas.filter(e=>e.path!==p);binPend.set(p,null);programar(300)};
 /* --- subir cambios: todo lo pendiente va en un solo commit --- */
@@ -946,6 +960,7 @@ let subiendo=false,tSubir=null,enVueloBin=null;
 function programar(ms){clearTimeout(tSubir);tSubir=setTimeout(subir,ms===undefined?900:ms)}
 async function subir(){
   if(INVITADO){pend.clear();binPend.clear();return}
+  if(NUBE)return subirNube();
   if(subiendo||(!pend.size&&!binPend.size))return;subiendo=true;
   const lote=new Map(pend),loteBin=new Map(binPend);pend.clear();binPend.clear();enVuelo=lote;enVueloBin=loteBin;
   try{
@@ -971,6 +986,16 @@ async function subir(){
     else{if(!avisoOff)aviso("Sin conexión: tus cambios quedan acá y se guardan cuando vuelva.");avisoOff=true;programar(8000)}
   }finally{const subidos=[...enVuelo.keys()];enVuelo=new Map();enVueloBin=null;subiendo=false;avisar(subidos.filter(k=>docs.has(k)||!pend.has(k)));if(pend.size||binPend.size)programar(400)}
 }
+async function subirNube(){
+  if(subiendo||(!pend.size&&!binPend.size))return;subiendo=true;
+  const lote=new Map(pend),loteBin=new Map(binPend);pend.clear();binPend.clear();enVuelo=lote;enVueloBin=loteBin;
+  try{const filas=[];for(const [k,v] of lote)filas.push({path:k+".json",contenido:v,borrado:v===null});for(const [p,x] of loteBin)if(x===null)filas.push({path:p,contenido:null,borrado:true});
+    const r=await (await modCuenta()).nubeGuardar(filas);for(const f of r||[])nubeVer.set(f.path,f.actualizado);
+    if(avisoOff){avisoOff=false;aviso("Conexión recuperada: ya está todo guardado.")}}
+  catch(e){console.error("subir",e);for(const [k,v] of lote)if(!pend.has(k))pend.set(k,v);for(const [p,x] of loteBin)if(!binPend.has(p))binPend.set(p,x);
+    if(e.status===401){pedirClave("Se cerró tu sesión. Entrá de nuevo para seguir guardando.")}
+    else{if(!avisoOff)aviso("Sin conexión: tus cambios quedan acá y se guardan cuando vuelva.");avisoOff=true;programar(8000)}}
+  finally{const subidos=[...enVuelo.keys()];enVuelo=new Map();enVueloBin=null;subiendo=false;avisar(subidos.filter(k=>docs.has(k)||!pend.has(k)));if(pend.size||binPend.size)programar(400)}}
 /* --- historial para deshacer / rehacer (Ctrl+Z) --- */
 const hist={atras:[],adelante:[]};let grupoH=null,tGrupoH=null,grabando=true;
 function registrar(k,v){if(!grabando)return;const a=JSON.stringify(docs.has(k)?docs.get(k):null),d=JSON.stringify(v===undefined?null:v);if(a===d)return;
@@ -1006,12 +1031,17 @@ const assets={
   async upload(blob,o){const tipo=(o&&o.type)||blob.type||"image/png";if(blob.size>20*1024*1024)throw {code:"too_large"};
     if(INVITADO||window.__subirVivo){const m=await import("./vivo.js?v=3");const id=await m.subirImagen(blob.type?blob:new Blob([blob],{type:tipo})).catch(()=>{throw {code:"store_unavailable"}});const url=m.urlImagen(id);urls.set(id,url);return {id,url,sizeBytes:blob.size,contentType:tipo}}
     const ext=({"image/png":"png","image/jpeg":"jpg","image/gif":"gif","image/webp":"webp"})[tipo]||"bin";
+    if(NUBE){const nom=`${rid()}.${ext}`,tk=await (await modCuenta()).token();
+      const r=await fetch(`${R2}/img/${nom}`,{method:"PUT",headers:{Authorization:"Bearer "+tk,"Content-Type":tipo},body:blob}).catch(()=>null);
+      if(!r||!r.ok)throw {code:r&&r.status===401?"upstream_auth":"store_unavailable"};
+      const id="r2:img/"+nom,url=URL.createObjectURL(blob);urls.set(id,url);return {id,url,sizeBytes:blob.size,contentType:tipo}}
     const b=await api(`${RB}/git/blobs`,{method:"POST",body:{content:await leerB64(blob),encoding:"base64"}}).catch(e=>{throw {code:e.status===401?"upstream_auth":"store_unavailable"}});
     const path=`img/${rid()}.${ext}`;binPend.set(path,b.sha);programar(300);const url=URL.createObjectURL(blob);urls.set(path,url);return {id:path,url,sizeBytes:blob.size,contentType:tipo}},
   async delete(id){return {deleted:!!id}},/* las imágenes quedan guardadas para poder deshacer */
   async list(){return {assets:[],usage:{files:0,bytes:0,maxFiles:0,maxBytes:0}}}
 };
 window.cargarImg=async(img,id)=>{if(!id)return;if(id.startsWith("sb:")){img.src="https://nzgljqcgygzjxpqmvrsh.supabase.co/storage/v1/object/public/vivo/"+id.slice(3);return}if(urls.has(id)){img.src=urls.get(id);return}
+  if(id.startsWith("r2:")){try{const tk=await (await modCuenta()).token();const r=await fetch(R2+"/"+id.slice(3),{headers:{Authorization:"Bearer "+tk}});if(!r.ok)throw 0;const u=URL.createObjectURL(await r.blob());urls.set(id,u);img.src=u}catch(_){img.dispatchEvent(new Event("error"))}return}
   try{const b=await api(`${RB}/contents/${id.split("/").map(encodeURIComponent).join("/")}?ref=${GH.branch}`,{accept:"application/vnd.github.raw",blob:true});const u=URL.createObjectURL(b);urls.set(id,u);img.src=u}
   catch(e){img.dispatchEvent(new Event("error"))}};
 const downloads={async save({filename,data}){const b=data instanceof Blob?data:new Blob([data],{type:"text/plain;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=filename;document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000);return {status:"saved"}}};
@@ -1019,7 +1049,7 @@ const downloads={async save({filename,data}){const b=data instanceof Blob?data:n
 let resolverClave=null;
 /* ---------- Entrar: mail y contraseña (cuenta.js, Supabase); la clave de GitHub queda guardada en la cuenta ---------- */
 const RECUPERANDO=/type=recovery/.test(location.hash),ERROR_LINK=/error_code=|error=access_denied/.test(location.hash);
-let cuentaMod=null;const modCuenta=()=>cuentaMod||(cuentaMod=import("./cuenta.js?v=2").catch(e=>{cuentaMod=null;throw new Error("No hay conexión. Probá de nuevo en un rato.")}));
+let cuentaMod=null;const modCuenta=()=>cuentaMod||(cuentaMod=import("./cuenta.js?v=3").catch(e=>{cuentaMod=null;throw new Error("No hay conexión. Probá de nuevo en un rato.")}));
 const haySesionCuenta=()=>{try{return !!localStorage.getItem("idt-cuenta")||/access_token=/.test(location.hash)}catch(_){return false}};
 let modoCx="entrar",cxOpcional=false;
 /* el usuario se guarda como un mail interno que nunca recibe nada: lenny → lenny@imagenesdeltiempo.app */
@@ -1028,7 +1058,7 @@ function aMail(v){v=(v||"").trim().toLowerCase();if(v.includes("@"))return /^[^@
   v=v.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g,"");return /^[a-z0-9._-]{3,30}$/.test(v)?v+DOM_USU:""}
 const deMail=m=>m&&m.endsWith(DOM_USU)?m.slice(0,-DOM_USU.length):m;
 function modoEntrada(m,msg,bien){modoCx=m;const $c=id=>document.getElementById(id);
-  const t={entrar:"Entrá con tu usuario y tu contraseña.",crear:cxOpcional?"Creá tu cuenta: elegí un usuario (o usá tu mail) y una contraseña. Así entrás en cualquier dispositivo sin la clave larga. Tu plancha queda igual.":"Elegí un usuario (o usá tu mail) y una contraseña.",nueva:"Elegí tu contraseña nueva."}[m];
+  const t={entrar:"Entrá con tu usuario y tu contraseña.",crear:cxOpcional?"Creá tu cuenta: elegí un usuario (o usá tu mail) y una contraseña. Así entrás en cualquier dispositivo sin la clave larga. Tu plancha queda igual.":"Elegí un usuario (o usá tu mail) y una contraseña. Arrancás con tu plancha vacía. (Si ya usabas la web con una clave, entrá primero con esa clave, abajo, y después creá la cuenta.)",nueva:"Elegí tu contraseña nueva."}[m];
   $c("cx-txt").textContent=t;$c("cx-mail").hidden=m==="nueva";$c("cx-pass").hidden=false;
   $c("cx-pass").autocomplete=m==="entrar"?"current-password":"new-password";$c("cx-pass").placeholder=m==="nueva"?"Contraseña nueva":m==="crear"?"Contraseña (al menos 6 caracteres)":"Contraseña";
   $c("cx-ok").textContent={entrar:"Entrar",crear:"Crear cuenta",nueva:"Guardar contraseña"}[m];
@@ -1041,10 +1071,10 @@ function pedirClave(msg){
   document.getElementById("cx-clave").value="";modoEntrada(RECUPERANDO?"nueva":"entrar",msg||(ERROR_LINK?"Ese link ya venció o ya se usó. Pedí uno nuevo.":""));
 }
 /* deja lista la plancha de la cuenta en este navegador; devuelve false si la cuenta todavía no tiene plancha */
-async function usarPlancha(c){const pl=await c.miPlancha();if(!pl)return false;TOKEN=pl.token;LS.set("gh_token",pl.token);LS.set("gh_repo",pl.repo);RB=null;LS.set("cuenta_ok","1");return true}
+async function usarPlancha(c){const pl=await c.miPlancha();if(!pl)return false;if(pl.modo==="nube"){NUBE=true;LS.set("plancha_modo","nube");LS.set("cuenta_ok","1");return true}NUBE=false;LS.del("plancha_modo");TOKEN=pl.token;LS.set("gh_token",pl.token);LS.set("gh_repo",pl.repo);RB=null;LS.set("cuenta_ok","1");return true}
 async function probarCuenta(){if(!haySesionCuenta()||RECUPERANDO)return false;try{const c=await modCuenta();if(!(await c.sesion()))return false;return await usarPlancha(c)}catch(_){return false}}
 /* para quien ya entraba con la clave: si tiene cuenta abierta, la une a su plancha; si no, le ofrece crearla una vez */
-async function ofrecerCuenta(){if(INVITADO||!TOKEN||LS.get("cuenta_ok"))return;
+async function ofrecerCuenta(){if(INVITADO||NUBE||!TOKEN||LS.get("cuenta_ok"))return;
   {const ay=document.getElementById("ayuda");if(document.getElementById("novedades")||(ay&&!ay.hidden)){setTimeout(ofrecerCuenta,2000);return}}
   try{if(haySesionCuenta()){const c=await modCuenta();if(await c.sesion()){const pl=await c.miPlancha();if(!pl){const repo=(RB||"").split("/").pop()||LS.get("gh_repo");await c.vincular(repo,TOKEN,(typeof NOMBRES_REPO!=="undefined"&&NOMBRES_REPO[repo])||null)}LS.set("cuenta_ok","1");return}}}catch(_){return}
   if(LS.get("cuenta_aviso")===new Date().toDateString())return;LS.set("cuenta_aviso",new Date().toDateString());abrirCuenta(true)}
@@ -1067,8 +1097,9 @@ async function conectarInvitado(){document.body.classList.add("invitado");const 
 async function conectar(){
   if(INVITADO)return conectarInvitado();
   let entraNuevo=false;
-  if(!TOKEN&&!(await probarCuenta())){entraNuevo=true;pedirClave("");await new Promise(r=>resolverClave=r)}
-  for(;;){try{if(!RB)await elegirRepo();await traer();break}catch(e){
+  if(!TOKEN&&!(NUBE&&haySesionCuenta())&&!(await probarCuenta())){entraNuevo=true;pedirClave("");await new Promise(r=>resolverClave=r)}
+  for(;;){try{if(!NUBE&&!RB)await elegirRepo();await traer();break}catch(e){
+    if(NUBE){if(e.status===401){entraNuevo=true;NUBE=false;LS.del("plancha_modo");pedirClave("Se cerró tu sesión. Entrá de nuevo.");await new Promise(r=>resolverClave=r)}else{aviso("No pude conectar. Reintento en unos segundos…");await new Promise(r=>setTimeout(r,5000))}continue}
     if(e.status===401||e.status===403||e.status===404){entraNuevo=true;TOKEN=null;LS.del("gh_token");RB=null;LS.del("gh_repo");pedirClave(e.status===404?"Esa clave no tiene acceso a ninguna plancha. Revisá que al crearla hayas elegido el repo de datos.":"Esa clave no funciona. Revisala y probá de nuevo.");await new Promise(r=>resolverClave=r)}
     else{aviso("No pude conectar con GitHub. Reintento en unos segundos…");await new Promise(r=>setTimeout(r,5000))}}}
   /* la primera vez que alguien entra con su clave en un dispositivo, se abre la guía */
@@ -1095,7 +1126,7 @@ document.addEventListener("DOMContentLoaded",()=>{
       if(modoCx==="crear"){const repo=TOKEN?((RB||"").split("/").pop()||LS.get("gh_repo")):null,pl=TOKEN&&repo?{repo,token:TOKEN,nombre:(typeof NOMBRES_REPO!=="undefined"&&NOMBRES_REPO[repo])||null}:null;
         const r=await c.crear(mail,pass,pl);
         if(r.yaExistia){modoEntrada("entrar","Ya existe una cuenta con ese usuario. Si es tuya, entrá con tu contraseña; si no, elegí otro.");$c("cx-mail").value=usu}
-        else if(r.sesion){if(pl){await c.vincular(pl.repo,pl.token,pl.nombre);LS.set("cuenta_ok","1");listo()}else if(await usarPlancha(c))listo();else msg("Cuenta creada. Todavía no tiene una plancha: pedile a Lenny que te la active.")}
+        else if(r.sesion){if(pl){await c.vincular(pl.repo,pl.token,pl.nombre);LS.set("cuenta_ok","1");listo()}else{if(!(await c.miPlancha()))await c.crearNube(usu.includes("@")?null:usu);if(await usarPlancha(c))listo();else msg("No se pudo armar tu plancha. Probá de nuevo.")}}
         else msg("No se pudo crear la cuenta. Probá de nuevo en un rato.")}
       else{if(modoCx==="nueva")await c.nuevaClave(pass);else await c.entrar(mail,pass);
         if(TOKEN&&cxOpcional){const pl=await c.miPlancha();if(!pl){const repo=(RB||"").split("/").pop()||LS.get("gh_repo");await c.vincular(repo,TOKEN,(typeof NOMBRES_REPO!=="undefined"&&NOMBRES_REPO[repo])||null)}LS.set("cuenta_ok","1");listo()}
@@ -1105,7 +1136,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     finally{ocupado=false;b.disabled=false;b.textContent=t0}});
   /* si entró con la clave vieja pero tiene la cuenta abierta sin plancha, se unen apenas conecta */
 });
-window.salirGH=async()=>{LS.del("gh_token");LS.del("gh_cache");LS.del("gh_repo");LS.del("cuenta_ok");try{if(haySesionCuenta())await (await modCuenta()).salir()}catch(_){}location.reload()};
+window.salirGH=async()=>{LS.del("plancha_modo");LS.del("gh_token");LS.del("gh_cache");LS.del("gh_repo");LS.del("cuenta_ok");try{if(haySesionCuenta())await (await modCuenta()).salir()}catch(_){}location.reload()};
 window.claude={use:async n=>{if(INVITADO&&n==="db"){if(!listo)listo=conectar();return listo}if(n==="db"){if(!listo)listo=conectar();return listo}if(n==="assets"){if(!listo)listo=conectar();await listo;return assets}if(n==="downloads")return downloads;return null}};
 })();
 </script>
@@ -2577,7 +2608,7 @@ const AYUDA=[
   [["Esc"],"Cerrar lo que esté abierto o soltar la selección."],
   [["Tab"],"Esconde toda la interfaz para ver solo la plancha (lo mismo que el ojito de la barra izquierda). Tab de nuevo y vuelve."]]},
  {t:"Tus datos",it:[
-  [null,"Todo se guarda solo, en un repositorio privado de GitHub. No hay botón de guardar."],
+  [null,"Todo se guarda solo, en la nube. No hay botón de guardar."],
   [null,"Entrás con tu usuario (o tu mail) y tu contraseña, en cualquier dispositivo. Si te la olvidás, avisale a Lenny y te la cambia."],
   [null,"Tu plancha es privada: nadie más la ve desde la web. Queda guardada en el servidor de Lenny, como en cualquier servicio."]]},
  {t:"Contacto",it:[
@@ -2590,7 +2621,7 @@ function claveAyuda(k){const kk=el("span","ay-k");
   else if(typeof k==="string")kk.textContent=k;else kk.append(uno(k));return kk}
 const LINK_ATAJO="https://www.icloud.com/shortcuts/b26a67fb680a4cea80192c682e9ae0fc";
 document.addEventListener("click",async e=>{const b=e.target.closest&&e.target.closest("[data-copiar]");if(!b||!$("ayuda").contains(b))return;
-  let v=null;try{v=localStorage.getItem(b.dataset.copiar==="repo"?"gh_repo":"gh_token")}catch(_){}if(v&&b.dataset.copiar==="repo")v="https://api.github.com/repos/lennyforster/"+v+"/contents/entrada/";if(!v){toast("En este dispositivo no hay sesión: entrá primero a tu banco.");return}
+  let v=null;try{if(localStorage.getItem("plancha_modo")==="nube"){toast("El atajo todavía no anda con las cuentas nuevas. Ya llega.");return}v=localStorage.getItem(b.dataset.copiar==="repo"?"gh_repo":"gh_token")}catch(_){}if(v&&b.dataset.copiar==="repo")v="https://api.github.com/repos/lennyforster/"+v+"/contents/entrada/";if(!v){toast("En este dispositivo no hay sesión: entrá primero a tu banco.");return}
   try{await navigator.clipboard.writeText(v);toast(b.dataset.copiar==="repo"?"Dirección copiada.":"Clave copiada. No se la pases a nadie.")}catch(_){toast("No pude copiar. Probá de nuevo.")}});
 let ayActiva=0;
 function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
@@ -2605,6 +2636,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:11,f:"12 de noviembre",it:[
+  ["Cualquiera puede crear su cuenta","Si alguien nuevo crea un usuario, arranca al toque con su propia plancha vacía, sin pedirle nada a Lenny. Los que ya usaban la web siguen igual, con todo lo suyo.",1]]},
  {n:10,f:"12 de noviembre",it:[
   ["Usuario y contraseña","Para entrar alcanza con un nombre de usuario (o tu mail, si preferís) y una contraseña. No hay que confirmar nada por mail: creás la cuenta y entrás al toque. Si te olvidás la contraseña, avisale a Lenny.",1]]},
  {n:9,f:"12 de noviembre",it:[
