@@ -39,7 +39,7 @@ export async function miPlancha() {
 }
 export async function vincular(repo, token, nombre) {
   const s = await sesion(); if (!s) throw new Error("Sin sesión");
-  ok(await sb.from("cuentas").upsert({ user_id: s.user.id, repo, token, nombre: nombre || null }));
+  ok(await sb.from("cuentas").upsert({ user_id: s.user.id, modo: "github", repo, token, nombre: nombre || null }));
 }
 export async function mail() { const s = await sesion(); return s ? s.user.email : null; }
 
@@ -68,4 +68,9 @@ export async function nubeGuardar(filas) {
   const r = await sb.from("archivos").upsert(filas.map(f => ({ ...f, user_id: s.user.id })), { onConflict: "user_id,path" }).select("path,actualizado");
   if (r.error) throw errNube(r);
   return r.data;
+}
+export async function nubeCantidad() {
+  const s = await sesion(); if (!s) return 0;
+  const r = await sb.from("archivos").select("path", { count: "exact", head: true }).eq("user_id", s.user.id).eq("borrado", false).like("path", "ideas/%");
+  return r.error ? 0 : (r.count || 0);
 }

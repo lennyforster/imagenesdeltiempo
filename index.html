@@ -1049,7 +1049,7 @@ const downloads={async save({filename,data}){const b=data instanceof Blob?data:n
 let resolverClave=null;
 /* ---------- Entrar: mail y contraseña (cuenta.js, Supabase); la clave de GitHub queda guardada en la cuenta ---------- */
 const RECUPERANDO=/type=recovery/.test(location.hash),ERROR_LINK=/error_code=|error=access_denied/.test(location.hash);
-let cuentaMod=null;const modCuenta=()=>cuentaMod||(cuentaMod=import("./cuenta.js?v=3").catch(e=>{cuentaMod=null;throw new Error("No hay conexión. Probá de nuevo en un rato.")}));
+let cuentaMod=null;const modCuenta=()=>cuentaMod||(cuentaMod=import("./cuenta.js?v=4").catch(e=>{cuentaMod=null;throw new Error("No hay conexión. Probá de nuevo en un rato.")}));
 const haySesionCuenta=()=>{try{return !!localStorage.getItem("idt-cuenta")||/access_token=/.test(location.hash)}catch(_){return false}};
 let modoCx="entrar",cxOpcional=false;
 /* el usuario se guarda como un mail interno que nunca recibe nada: lenny → lenny@imagenesdeltiempo.app */
@@ -1076,8 +1076,16 @@ async function probarCuenta(){if(!haySesionCuenta()||RECUPERANDO)return false;tr
 /* para quien ya entraba con la clave: si tiene cuenta abierta, la une a su plancha; si no, le ofrece crearla una vez */
 async function ofrecerCuenta(){if(INVITADO||NUBE||!TOKEN||LS.get("cuenta_ok"))return;
   {const ay=document.getElementById("ayuda");if(document.getElementById("novedades")||(ay&&!ay.hidden)){setTimeout(ofrecerCuenta,2000);return}}
-  try{if(haySesionCuenta()){const c=await modCuenta();if(await c.sesion()){const pl=await c.miPlancha();if(!pl){const repo=(RB||"").split("/").pop()||LS.get("gh_repo");await c.vincular(repo,TOKEN,(typeof NOMBRES_REPO!=="undefined"&&NOMBRES_REPO[repo])||null)}LS.set("cuenta_ok","1");return}}}catch(_){return}
+  try{if(haySesionCuenta()){const c=await modCuenta();if(await c.sesion()){if(await unirAPlanchaVieja(c))LS.set("cuenta_ok","1");return}}}catch(_){return}
   if(LS.get("cuenta_aviso")===new Date().toDateString())return;LS.set("cuenta_aviso",new Date().toDateString());abrirCuenta(true)}
+/* si la cuenta quedó como plancha nueva pero este navegador tiene la plancha de siempre, se ofrece unirlas */
+async function unirAPlanchaVieja(c){const pl=await c.miPlancha();const repo=(RB||"").split("/").pop()||LS.get("gh_repo");if(!repo||!TOKEN)return false;
+  const nombre=(typeof NOMBRES_REPO!=="undefined"&&NOMBRES_REPO[repo])||null;
+  if(!pl){await c.vincular(repo,TOKEN,nombre);return true}
+  if(pl.modo!=="nube")return true;
+  const n=await c.nubeCantidad();
+  if(n>0&&!confirm("Tu cuenta tiene una plancha nueva con "+n+(n===1?" idea":" ideas")+". ¿La unimos a tu plancha de siempre (la que ves acá)? Lo de la plancha nueva no se borra: queda guardado y Lenny te lo puede pasar."))return false;
+  await c.vincular(repo,TOKEN,nombre);return true}
 function abrirCuenta(opcional){const ov=document.getElementById("conectar");if(!ov)return;cxOpcional=!!opcional;ov.hidden=false;modoEntrada("crear","")}
 window.abrirCuenta=abrirCuenta;
 async function elegirRepo(){
@@ -1129,7 +1137,7 @@ document.addEventListener("DOMContentLoaded",()=>{
         else if(r.sesion){if(pl){await c.vincular(pl.repo,pl.token,pl.nombre);LS.set("cuenta_ok","1");listo()}else{if(!(await c.miPlancha()))await c.crearNube(usu.includes("@")?null:usu);if(await usarPlancha(c))listo();else msg("No se pudo armar tu plancha. Probá de nuevo.")}}
         else msg("No se pudo crear la cuenta. Probá de nuevo en un rato.")}
       else{if(modoCx==="nueva")await c.nuevaClave(pass);else await c.entrar(mail,pass);
-        if(TOKEN&&cxOpcional){const pl=await c.miPlancha();if(!pl){const repo=(RB||"").split("/").pop()||LS.get("gh_repo");await c.vincular(repo,TOKEN,(typeof NOMBRES_REPO!=="undefined"&&NOMBRES_REPO[repo])||null)}LS.set("cuenta_ok","1");listo()}
+        if(TOKEN&&cxOpcional){if(await unirAPlanchaVieja(c)){LS.set("cuenta_ok","1");aviso("Listo: tu cuenta quedó unida a esta plancha.")}listo()}
         else if(await usarPlancha(c)){if(modoCx==="nueva")history.replaceState(null,"",location.pathname+location.search);listo()}
         else{const v=$c("cx-vieja");v.open=true;msg("Tu cuenta todavía no tiene una plancha. Si ya usabas la web con una clave, entrá una vez con la clave (abajo) y queda unida. Si sos nuevo, pedile a Lenny que te la active.")}}}
     catch(err){msg(err&&err.message||"No se pudo. Probá de nuevo.")}
@@ -2636,6 +2644,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:12,f:"12 de noviembre",it:[
+  ["Unir tu cuenta a tu plancha","Si creaste tu usuario y te apareció una plancha vacía: abrí la web donde ves tus post-its de siempre, tocá ••• → Tu cuenta → «Ya tengo cuenta: entrar» y entrá con tu usuario. Queda unida a tu plancha de siempre.",1]]},
  {n:11,f:"12 de noviembre",it:[
   ["Cualquiera puede crear su cuenta","Si alguien nuevo crea un usuario, arranca al toque con su propia plancha vacía, sin pedirle nada a Lenny. Los que ya usaban la web siguen igual, con todo lo suyo.",1]]},
  {n:10,f:"12 de noviembre",it:[
