@@ -867,13 +867,13 @@ html.plano .lp-fila:hover .lp-t,html.plano .lp-fila:focus-visible .lp-t{text-dec
   <form class="cx-card" id="cx-form" novalidate>
     <h1>Imágenes del tiempo</h1>
     <p id="cx-txt">Entrá con tu mail y tu contraseña.</p>
-    <input type="email" id="cx-mail" placeholder="Mail" aria-label="Mail" autocomplete="email" autocapitalize="off" spellcheck="false">
+    <input type="text" id="cx-mail" placeholder="Usuario o mail" aria-label="Usuario o mail" autocomplete="username" autocapitalize="off" spellcheck="false">
     <input type="password" id="cx-pass" placeholder="Contraseña" aria-label="Contraseña" autocomplete="current-password">
     <div class="cx-msg" id="cx-msg" role="alert"></div>
     <button class="btn oscuro" type="submit" id="cx-ok">Entrar</button>
     <div class="cx-links">
       <button type="button" class="cx-link" id="cx-modo">¿Todavía no tenés cuenta? Creala</button>
-      <button type="button" class="cx-link" id="cx-olvide">Olvidé mi contraseña</button>
+      <button type="button" class="cx-link" id="cx-olvide">Me olvidé la contraseña</button>
       <button type="button" class="cx-link" id="cx-luego" hidden>Ahora no</button>
     </div>
     <details class="cx-vieja" id="cx-vieja"><summary>Entrar con clave de GitHub (como antes)</summary>
@@ -1019,14 +1019,19 @@ const downloads={async save({filename,data}){const b=data instanceof Blob?data:n
 let resolverClave=null;
 /* ---------- Entrar: mail y contraseña (cuenta.js, Supabase); la clave de GitHub queda guardada en la cuenta ---------- */
 const RECUPERANDO=/type=recovery/.test(location.hash),ERROR_LINK=/error_code=|error=access_denied/.test(location.hash);
-let cuentaMod=null;const modCuenta=()=>cuentaMod||(cuentaMod=import("./cuenta.js?v=1").catch(e=>{cuentaMod=null;throw new Error("No hay conexión. Probá de nuevo en un rato.")}));
+let cuentaMod=null;const modCuenta=()=>cuentaMod||(cuentaMod=import("./cuenta.js?v=2").catch(e=>{cuentaMod=null;throw new Error("No hay conexión. Probá de nuevo en un rato.")}));
 const haySesionCuenta=()=>{try{return !!localStorage.getItem("idt-cuenta")||/access_token=/.test(location.hash)}catch(_){return false}};
 let modoCx="entrar",cxOpcional=false;
+/* el usuario se guarda como un mail interno que nunca recibe nada: lenny → lenny@imagenesdeltiempo.app */
+const DOM_USU="@imagenesdeltiempo.app";
+function aMail(v){v=(v||"").trim().toLowerCase();if(v.includes("@"))return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)?v:"";
+  v=v.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g,"");return /^[a-z0-9._-]{3,30}$/.test(v)?v+DOM_USU:""}
+const deMail=m=>m&&m.endsWith(DOM_USU)?m.slice(0,-DOM_USU.length):m;
 function modoEntrada(m,msg,bien){modoCx=m;const $c=id=>document.getElementById(id);
-  const t={entrar:"Entrá con tu mail y tu contraseña.",crear:cxOpcional?"Creá tu cuenta para entrar con mail y contraseña en cualquier dispositivo, sin la clave larga. Tu plancha queda igual.":"Creá tu cuenta con tu mail y una contraseña.",olvide:"Poné tu mail y te mandamos un link para elegir una contraseña nueva.",nueva:"Elegí tu contraseña nueva."}[m];
-  $c("cx-txt").textContent=t;$c("cx-mail").hidden=m==="nueva";$c("cx-pass").hidden=m==="olvide";
+  const t={entrar:"Entrá con tu usuario y tu contraseña.",crear:cxOpcional?"Creá tu cuenta: elegí un usuario (o usá tu mail) y una contraseña. Así entrás en cualquier dispositivo sin la clave larga. Tu plancha queda igual.":"Elegí un usuario (o usá tu mail) y una contraseña.",nueva:"Elegí tu contraseña nueva."}[m];
+  $c("cx-txt").textContent=t;$c("cx-mail").hidden=m==="nueva";$c("cx-pass").hidden=false;
   $c("cx-pass").autocomplete=m==="entrar"?"current-password":"new-password";$c("cx-pass").placeholder=m==="nueva"?"Contraseña nueva":m==="crear"?"Contraseña (al menos 6 caracteres)":"Contraseña";
-  $c("cx-ok").textContent={entrar:"Entrar",crear:"Crear cuenta",olvide:"Mandame el link",nueva:"Guardar contraseña"}[m];
+  $c("cx-ok").textContent={entrar:"Entrar",crear:"Crear cuenta",nueva:"Guardar contraseña"}[m];
   $c("cx-modo").textContent=m==="entrar"?"¿Todavía no tenés cuenta? Creala":"Ya tengo cuenta: entrar";$c("cx-modo").hidden=m==="nueva";
   $c("cx-olvide").hidden=m!=="entrar";$c("cx-luego").hidden=!cxOpcional;$c("cx-vieja").hidden=cxOpcional||m==="nueva";
   const g=$c("cx-msg");g.textContent=msg||"";g.classList.toggle("bien",!!bien);
@@ -1077,21 +1082,21 @@ document.addEventListener("DOMContentLoaded",()=>{
   const $c=id=>document.getElementById(id),listo=()=>{$c("conectar").hidden=true;cxOpcional=false;if(resolverClave){const r=resolverClave;resolverClave=null;r()}};
   const conClave=()=>{const v=$c("cx-clave").value.trim();if(!v)return;TOKEN=v;LS.set("gh_token",v);listo()};
   $c("cx-clave-ok").onclick=conClave;$c("cx-clave").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();conClave()}});
-  $c("cx-modo").onclick=()=>modoEntrada(modoCx==="entrar"?"crear":"entrar","");$c("cx-olvide").onclick=()=>modoEntrada("olvide","");
+  $c("cx-modo").onclick=()=>modoEntrada(modoCx==="entrar"?"crear":"entrar","");$c("cx-olvide").onclick=()=>{const g=$c("cx-msg");g.textContent="Escribile a Lenny y te la cambia.";g.classList.add("bien")};
   $c("cx-luego").onclick=()=>{$c("conectar").hidden=true;cxOpcional=false};
   let ocupado=false;
   f.addEventListener("submit",async e=>{e.preventDefault();if(ocupado)return;
-    const mail=$c("cx-mail").value.trim(),pass=$c("cx-pass").value,msg=(t,b)=>{const g=$c("cx-msg");g.textContent=t;g.classList.toggle("bien",!!b)};
-    if(modoCx!=="nueva"&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)){msg("Escribí tu mail.");return}
+    const usu=$c("cx-mail").value.trim(),mail=aMail(usu),pass=$c("cx-pass").value,msg=(t,b)=>{const g=$c("cx-msg");g.textContent=t;g.classList.toggle("bien",!!b)};
+    if(modoCx!=="nueva"&&!usu){msg("Escribí tu usuario.");return}
+    if(modoCx!=="nueva"&&!mail){msg(usu.includes("@")?"Ese mail no parece válido.":"El usuario puede tener letras, números, punto o guion (de 3 a 30).");return}
     if(modoCx!=="olvide"&&pass.length<6){msg(modoCx==="entrar"?"Escribí tu contraseña.":"La contraseña tiene que tener al menos 6 caracteres.");return}
     ocupado=true;const b=$c("cx-ok"),t0=b.textContent;b.disabled=true;b.textContent="Un momento…";
     try{const c=await modCuenta();
-      if(modoCx==="olvide"){await c.olvide(mail);msg("Listo: te mandamos un mail a "+mail+". Abrilo y elegí la contraseña nueva (si no llega, fijate en spam).",true)}
-      else if(modoCx==="crear"){const repo=TOKEN?((RB||"").split("/").pop()||LS.get("gh_repo")):null,pl=TOKEN&&repo?{repo,token:TOKEN,nombre:(typeof NOMBRES_REPO!=="undefined"&&NOMBRES_REPO[repo])||null}:null;
+      if(modoCx==="crear"){const repo=TOKEN?((RB||"").split("/").pop()||LS.get("gh_repo")):null,pl=TOKEN&&repo?{repo,token:TOKEN,nombre:(typeof NOMBRES_REPO!=="undefined"&&NOMBRES_REPO[repo])||null}:null;
         const r=await c.crear(mail,pass,pl);
-        if(r.yaExistia){modoEntrada("entrar","Ya hay una cuenta con ese mail. Entrá con tu contraseña.");$c("cx-mail").value=mail}
+        if(r.yaExistia){modoEntrada("entrar","Ya existe una cuenta con ese usuario. Si es tuya, entrá con tu contraseña; si no, elegí otro.");$c("cx-mail").value=usu}
         else if(r.sesion){if(pl){await c.vincular(pl.repo,pl.token,pl.nombre);LS.set("cuenta_ok","1");listo()}else if(await usarPlancha(c))listo();else msg("Cuenta creada. Todavía no tiene una plancha: pedile a Lenny que te la active.")}
-        else msg("Te mandamos un mail a "+mail+" para confirmar la cuenta. Abrilo y tocá el link (si no llega, fijate en spam)."+(pl?" Tu plancha queda unida sola.":""),true)}
+        else msg("No se pudo crear la cuenta. Probá de nuevo en un rato.")}
       else{if(modoCx==="nueva")await c.nuevaClave(pass);else await c.entrar(mail,pass);
         if(TOKEN&&cxOpcional){const pl=await c.miPlancha();if(!pl){const repo=(RB||"").split("/").pop()||LS.get("gh_repo");await c.vincular(repo,TOKEN,(typeof NOMBRES_REPO!=="undefined"&&NOMBRES_REPO[repo])||null)}LS.set("cuenta_ok","1");listo()}
         else if(await usarPlancha(c)){if(modoCx==="nueva")history.replaceState(null,"",location.pathname+location.search);listo()}
@@ -2497,8 +2502,8 @@ const AYUDA=[
   [{chip:"Cómo se usa?"},"Esta guía."],
   [{h:'<span class="ay-chip"><span class="ic-a">A</span></span> <span class="ay-chip"><span class="ic-post"></span></span>'},"La A pasa a la versión texto: todo en letra de máquina, y las ideas y frases como una lista que se ordena tocando la palabra subrayada del título. El post-it te devuelve a la versión normal. También está en el ••• de cada post-it."],
   [{chip:"Novedades"},"Cuando la web tiene cambios nuevos, al entrar te aparece un cartel que cuenta qué cambió. Sale una sola vez por cada tanda de cambios."],
-  [{chip:"Tu cuenta"},"Te muestra con qué mail entraste. Si todavía entrás con la clave larga, desde acá creás tu cuenta con mail y contraseña."],
-  [{chip:"Salir"},"Cierra la sesión en este dispositivo. Para volver, entrás con tu mail y tu contraseña."],
+  [{chip:"Tu cuenta"},"Te muestra con qué usuario entraste. Si todavía entrás con la clave larga, desde acá creás tu cuenta con usuario y contraseña."],
+  [{chip:"Salir"},"Cierra la sesión en este dispositivo. Para volver, entrás con tu usuario y tu contraseña."],
   [null,"Abajo, en «+ Nueva idea», están «Editar categorías» e «Importar de Google Keep»."]]},
  {t:"Adentro de un post-it",it:[
   [{chip:"+"},"El + de la barra de la izquierda: sumás post-its, notas, texto, links, imágenes, calendarios, escaletas y el hilo rojo. En el celu sigue en la barra de abajo."],
@@ -2573,7 +2578,7 @@ const AYUDA=[
   [["Tab"],"Esconde toda la interfaz para ver solo la plancha (lo mismo que el ojito de la barra izquierda). Tab de nuevo y vuelve."]]},
  {t:"Tus datos",it:[
   [null,"Todo se guarda solo, en un repositorio privado de GitHub. No hay botón de guardar."],
-  [null,"Entrás con tu mail y tu contraseña, en cualquier dispositivo. Si te la olvidás, tocá «Olvidé mi contraseña» y te llega un mail para elegir otra."],
+  [null,"Entrás con tu usuario (o tu mail) y tu contraseña, en cualquier dispositivo. Si te la olvidás, avisale a Lenny y te la cambia."],
   [null,"Tu plancha es privada: nadie más la ve desde la web. Queda guardada en el servidor de Lenny, como en cualquier servicio."]]},
  {t:"Contacto",it:[
   [null,"¿Algo que cambiarías, que no anda o que te gustaría que tenga? Escribile a Lenny."],
@@ -2600,6 +2605,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:10,f:"12 de noviembre",it:[
+  ["Usuario y contraseña","Para entrar alcanza con un nombre de usuario (o tu mail, si preferís) y una contraseña. No hay que confirmar nada por mail: creás la cuenta y entrás al toque. Si te olvidás la contraseña, avisale a Lenny.",1]]},
  {n:9,f:"12 de noviembre",it:[
   ["Entrar con mail y contraseña","Ahora cada uno tiene su cuenta. Si ya estabas adentro, te aparece una vez «Creá tu cuenta»: ponés tu mail y una contraseña, confirmás el mail y listo. Tu plancha queda igual. Si te olvidás la contraseña, «Olvidé mi contraseña».",1]]},
  {n:8,f:"12 de noviembre",it:[
@@ -3375,7 +3382,7 @@ $("d-deshacer").onclick=async()=>{
   }catch(_){toast("No se pudo deshacer. Borralo a mano desde la plancha.")}
 };
 
-$("btn-cuenta").onclick=async()=>{try{if(haySesionCuenta()){const c=await modCuenta(),m=await c.mail();if(m){if(!LS.get("cuenta_ok"))ofrecerCuenta();toast("Entraste con "+m+". Para cambiar la contraseña: Salir → «Olvidé mi contraseña».");return}}}catch(_){}abrirCuenta(true)};
+$("btn-cuenta").onclick=async()=>{try{if(haySesionCuenta()){const c=await modCuenta(),m=await c.mail();if(m){if(!LS.get("cuenta_ok"))ofrecerCuenta();toast("Entraste como "+deMail(m)+". Para cambiar la contraseña, avisale a Lenny.");return}}}catch(_){}abrirCuenta(true)};
 let salirSure=false;$("salir").onclick=()=>{if(!salirSure){salirSure=true;$("salir").textContent="¿Salir? Tocá de nuevo";setTimeout(()=>{salirSure=false;$("salir").textContent="Salir"},4000);return}window.salirGH&&window.salirGH()};
 /* ---------- Importar de Google Keep (exportación de Google Takeout) ---------- */
 function cargarJSZip(){return window.JSZip?Promise.resolve(window.JSZip):new Promise((ok,mal)=>{const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js";s.onload=()=>ok(window.JSZip);s.onerror=()=>mal(new Error("jszip"));document.head.append(s)})}

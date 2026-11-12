@@ -11,9 +11,9 @@ const sb = createClient(URL_SB, CLAVE_SB, { auth: { persistSession: true, storag
 const volver = () => location.origin + "/";
 const traducir = e => {
   const m = String((e && (e.code || e.message)) || "");
-  if (/invalid.*credentials|invalid_credentials/i.test(m)) return "Mail o contraseña incorrectos.";
+  if (/invalid.*credentials|invalid_credentials/i.test(m)) return "Usuario o contraseña incorrectos.";
   if (/not.*confirmed|email_not_confirmed/i.test(m)) return "Todavía no confirmaste tu mail. Buscá el mail que te mandamos (fijate en spam).";
-  if (/already.*registered|user_already_exists/i.test(m)) return "Ya hay una cuenta con ese mail. Entrá con tu contraseña.";
+  if (/already.*registered|user_already_exists/i.test(m)) return "Ya existe una cuenta con ese usuario.";
   if (/password.*(6|short|weak)|weak_password/i.test(m)) return "La contraseña tiene que tener al menos 6 caracteres.";
   if (/rate|too many|over_email_send_rate_limit|429/i.test(m)) return "Se mandaron muchos mails seguidos. Esperá un rato y probá de nuevo.";
   if (/valid email|email_address_invalid|invalid.*email/i.test(m)) return "Ese mail no parece válido.";
