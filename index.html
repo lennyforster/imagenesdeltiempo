@@ -1133,7 +1133,10 @@ document.addEventListener("DOMContentLoaded",()=>{
     try{const c=await modCuenta();
       if(modoCx==="crear"){const repo=TOKEN?((RB||"").split("/").pop()||LS.get("gh_repo")):null,pl=TOKEN&&repo?{repo,token:TOKEN,nombre:(typeof NOMBRES_REPO!=="undefined"&&NOMBRES_REPO[repo])||null}:null;
         const r=await c.crear(mail,pass,pl);
-        if(r.yaExistia){modoEntrada("entrar","Ya existe una cuenta con ese usuario. Si es tuya, entrá con tu contraseña; si no, elegí otro.");$c("cx-mail").value=usu}
+        if(r.yaExistia){let entro=false;try{await c.entrar(mail,pass);entro=true}catch(_){}
+          if(!entro){modoEntrada("entrar","Ya existe una cuenta con ese usuario. Si es tuya, poné bien la contraseña; si no, elegí otro usuario.");$c("cx-mail").value=usu}
+          else if(TOKEN&&cxOpcional){if(await unirAPlanchaVieja(c)){LS.set("cuenta_ok","1");aviso("Listo: tu cuenta quedó unida a esta plancha.")}listo()}
+          else if(await usarPlancha(c))listo();else msg("Tu cuenta todavía no tiene una plancha.")}
         else if(r.sesion){if(pl){await c.vincular(pl.repo,pl.token,pl.nombre);LS.set("cuenta_ok","1");listo()}else{if(!(await c.miPlancha()))await c.crearNube(usu.includes("@")?null:usu);if(await usarPlancha(c))listo();else msg("No se pudo armar tu plancha. Probá de nuevo.")}}
         else msg("No se pudo crear la cuenta. Probá de nuevo en un rato.")}
       else{if(modoCx==="nueva")await c.nuevaClave(pass);else await c.entrar(mail,pass);
@@ -2644,6 +2647,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:13,f:"12 de noviembre",it:[
+  ["Crear cuenta con un usuario que ya es tuyo","Si ponés un usuario que ya creaste y la contraseña es la correcta, ahora te deja entrar directo en vez de decirte que ya existe.",3]]},
  {n:12,f:"12 de noviembre",it:[
   ["Unir tu cuenta a tu plancha","Si creaste tu usuario y te apareció una plancha vacía: abrí la web donde ves tus post-its de siempre, tocá ••• → Tu cuenta → «Ya tengo cuenta: entrar» y entrá con tu usuario. Queda unida a tu plancha de siempre.",1]]},
  {n:11,f:"12 de noviembre",it:[
