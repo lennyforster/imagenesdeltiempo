@@ -390,6 +390,10 @@ html.plano .mas-fila{border-top:1px solid #333!important}
 .cx-card input{width:100%;font:500 1rem var(--mono);border:1px solid rgba(43,37,32,.25);border-radius:8px;padding:11px 12px;background:#fff;color:var(--ink)}
 .cx-msg{font:600 .85rem var(--ui);color:var(--danger)}
 .cx-msg.bien{color:var(--ink)}
+.cargando{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:60;display:flex;align-items:center;gap:10px;background:#fff;color:var(--ink);border:1px solid rgba(0,0,0,.12);border-radius:10px;padding:12px 18px;font:600 .9rem var(--ui);box-shadow:0 6px 24px rgba(0,0,0,.12)}
+.cargando[hidden]{display:none}
+.cg-punto{width:10px;height:10px;border-radius:50%;background:var(--ink);animation:cgLatido 1s ease-in-out infinite}
+@keyframes cgLatido{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
 .cx-msg:empty{display:none}
 .cx-links{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 14px}
 .cx-link{border:0;background:none;padding:2px 0;font:600 .85rem var(--ui);color:var(--muted);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
@@ -863,6 +867,7 @@ html.plano .lp-fila:hover .lp-t,html.plano .lp-fila:focus-visible .lp-t{text-dec
 .lp-vivo{color:var(--rojo)!important}
 @media (max-width:700px){.lp-fila{grid-template-columns:var(--lp-cols-m);padding:3px 0}.lp-fila>.lp-f,.lp-fila>.lp-c{display:none}.lp-fila>.lp-t{white-space:normal}}
 </style>
+<div class="cargando" id="cargando" hidden role="status"><span class="cg-punto"></span>Cargando tu plancha…</div>
 <div class="conectar" id="conectar" hidden>
   <form class="cx-card" id="cx-form" novalidate>
     <h1>Imágenes del tiempo</h1>
@@ -936,6 +941,13 @@ async function traer(){if(INVITADO)return;if(NUBE)return traerNube();
   for(const e of t.tree){if(e.type!=="blob")continue;remotos.add(e.path);if(/^entrada\/[^/]+\.txt$/.test(e.path)&&!binPend.has(e.path)&&!(enVueloBin&&enVueloBin.has(e.path)))entradas.push(e);if(!e.path.endsWith(".json"))continue;const k=e.path.slice(0,-5);vistos.add(k);
     if(ocupado(k))continue;if(shas.get(k)===e.sha&&docs.has(k))continue;
     if(cache[e.sha]!==undefined){docs.set(k,cache[e.sha]);shas.set(k,e.sha);cambiados.add(k)}else pedir.push([k,e.sha])}
+  /* si faltan muchos (primera vez en un dispositivo), se piden todos juntos por GraphQL: una consulta por carpeta en vez de cientos */
+  if(pedir.length>15){try{const quiero=new Map(pedir.map(([k,s])=>[k,s]));const carpetas=[...new Set(pedir.map(([k])=>colDe(k)))];
+    await Promise.all(carpetas.map(async dir=>{const r=await fetch(API+"/graphql",{method:"POST",headers:{Authorization:"Bearer "+TOKEN,"Content-Type":"application/json"},body:JSON.stringify({query:"query($o:String!,$n:String!,$e:String!){repository(owner:$o,name:$n){object(expression:$e){... on Tree{entries{name oid object{... on Blob{text isTruncated}}}}}}}",variables:{o:GH.owner,n:RB.split("/").pop(),e:sha+":"+dir}})});
+      if(!r.ok)return;const j=await r.json();const es=j&&j.data&&j.data.repository&&j.data.repository.object&&j.data.repository.object.entries||[];
+      for(const e of es){if(!e.name.endsWith(".json")||!e.object||e.object.text==null||e.object.isTruncated)continue;const k=dir+"/"+e.name.slice(0,-5);if(quiero.get(k)!==e.oid||ocupado(k))continue;
+        try{docs.set(k,JSON.parse(e.object.text));shas.set(k,e.oid);cambiados.add(k);quiero.delete(k)}catch(_){}}}));
+    pedir.splice(0,pedir.length,...[...quiero]);}catch(e){console.error("graphql",e)}}
   let i=0;await Promise.all(Array.from({length:6},async()=>{while(i<pedir.length){const [k,s]=pedir[i++];try{const b=await api(`${RB}/git/blobs/${s}`);if(ocupado(k))continue;docs.set(k,JSON.parse(dec(b.content)));shas.set(k,s);cambiados.add(k)}catch(e){console.error("blob",k,e)}}}));
   for(const k of [...docs.keys()])if(!vistos.has(k)&&!ocupado(k)){docs.delete(k);shas.delete(k);cambiados.add(k)}
   ultimoCommit=sha;if(cambiados.size){avisar(cambiados);guardarCache()}
@@ -1106,10 +1118,13 @@ async function conectar(){
   if(INVITADO)return conectarInvitado();
   let entraNuevo=false;
   if(!TOKEN&&!(NUBE&&haySesionCuenta())&&!(await probarCuenta())){entraNuevo=true;pedirClave("");await new Promise(r=>resolverClave=r)}
+  const carga=document.getElementById("cargando");const sinNada=!docs.size&&!Object.keys(cache).length;if(carga&&(sinNada||entraNuevo))carga.hidden=false;
+  try{
   for(;;){try{if(!NUBE&&!RB)await elegirRepo();await traer();break}catch(e){
     if(NUBE){if(e.status===401){entraNuevo=true;NUBE=false;LS.del("plancha_modo");pedirClave("Se cerró tu sesión. Entrá de nuevo.");await new Promise(r=>resolverClave=r)}else{aviso("No pude conectar. Reintento en unos segundos…");await new Promise(r=>setTimeout(r,5000))}continue}
     if(e.status===401||e.status===403||e.status===404){entraNuevo=true;TOKEN=null;LS.del("gh_token");RB=null;LS.del("gh_repo");pedirClave(e.status===404?"Esa clave no tiene acceso a ninguna plancha. Revisá que al crearla hayas elegido el repo de datos.":"Esa clave no funciona. Revisala y probá de nuevo.");await new Promise(r=>resolverClave=r)}
     else{aviso("No pude conectar con GitHub. Reintento en unos segundos…");await new Promise(r=>setTimeout(r,5000))}}}
+  }finally{if(carga)carga.hidden=true}
   /* la primera vez que alguien entra con su clave en un dispositivo, se abre la guía */
   if(entraNuevo)window.__entraNuevo=true;
   if(entraNuevo&&!LS.get("ayuda_vista"))setTimeout(()=>{try{if(window.abrirAyuda)window.abrirAyuda()}catch(_){}},800);LS.set("ayuda_vista","1");
@@ -2647,6 +2662,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:14,f:"12 de noviembre",it:[
+  ["Entra mucho más rápido","La primera vez que entrás en un dispositivo, tus post-its aparecen en unos segundos en vez de medio minuto, y mientras tanto ves «Cargando tu plancha…».",2]]},
  {n:13,f:"12 de noviembre",it:[
   ["Crear cuenta con un usuario que ya es tuyo","Si ponés un usuario que ya creaste y la contraseña es la correcta, ahora te deja entrar directo en vez de decirte que ya existe.",3]]},
  {n:12,f:"12 de noviembre",it:[
