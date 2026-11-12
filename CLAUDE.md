@@ -1,4 +1,6 @@
-# Banco de ideas — notas para Claude
+# Imágenes del tiempo (antes «Banco de ideas») — notas para Claude
+
+- Vive en https://imagenesdeltiempo.app (repo `lennyforster/imagenesdeltiempo`, GitHub Pages con dominio propio; el DNS está en Hostinger). El repo viejo `lennyforster/banco-de-ideas` es solo una página que redirige acá pasando la sesión guardada en el #migrar=. Los datos siguen en los repos `banco-de-ideas-datos*`.
 
 - Toda la app está en `index.html`.
 - **Guía "Cómo se usa"** (botón en la fila del •••): cada vez que se agrega, cambia o se saca una feature, actualizar el array `AYUDA` en `index.html` en el mismo cambio. Lo pidió Lenny.

@@ -1,6 +1,6 @@
 {
- "name": "Banco de ideas",
- "short_name": "Ideas",
+ "name": "Imágenes del tiempo",
+ "short_name": "Imágenes",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",

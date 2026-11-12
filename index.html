@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Banco de ideas</title>
+<title>Imágenes del tiempo</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Ideas">
+<meta name="apple-mobile-web-app-title" content="Imágenes">
 <meta name="theme-color" content="#1f6b4a">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -857,12 +857,12 @@ html.plano .lp-fila:hover .lp-t,html.plano .lp-fila:focus-visible .lp-t{text-dec
 </style>
 <div class="conectar" id="conectar" hidden>
   <form class="cx-card" id="cx-form">
-    <h1>Banco de ideas</h1>
+    <h1>Imágenes del tiempo</h1>
     <p>Para abrir tus ideas en este dispositivo, pegá tu clave de GitHub. Se hace una sola vez por dispositivo.</p>
     <details><summary style="font:600 .9rem var(--ui);cursor:pointer">Cómo crear la clave</summary>
       <ol>
         <li>Entrá a <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new</a></li>
-        <li>Nombre: <b>Banco de ideas</b>. Vencimiento: el más largo que te deje.</li>
+        <li>Nombre: <b>Imágenes del tiempo</b>. Vencimiento: el más largo que te deje.</li>
         <li>Repository access: <b>Only select repositories</b> → el repo de datos de la persona.</li>
         <li>Permissions → Repository permissions → <b>Contents: Read and write</b>.</li>
         <li><b>Generate token</b>, copiala y pegala acá.</li>
@@ -878,6 +878,10 @@ html.plano .lp-fila:hover .lp-t,html.plano .lp-fila:focus-visible .lp-t{text-dec
 (function(){
 const GH={owner:"lennyforster",branch:"main",repos:["banco-de-ideas-datos","banco-de-ideas-datos-2","banco-de-ideas-datos-3","banco-de-ideas-datos-4","banco-de-ideas-datos-5","banco-de-ideas-datos-6","banco-de-ideas-datos-7","banco-de-ideas-datos-8"]};
 const API="https://api.github.com";let RB=null;
+/* traspaso desde la dirección vieja (lennyforster.github.io/banco-de-ideas): la página vieja manda la clave y las preferencias en el #, que nunca viaja a ningún servidor */
+try{const m=/(?:^#|&)migrar=([^&]+)/.exec(location.hash);if(m){const o=JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(m[1])))));
+  for(const [k,v] of Object.entries(o))if(typeof v==="string"&&localStorage.getItem(k)===null)localStorage.setItem(k,v);
+  const resto=location.hash.slice(1).replace(/(?:^|&)migrar=[^&]+/,"").replace(/^&/,"");history.replaceState(null,"",location.pathname+location.search+(resto?"#"+resto:""))}}catch(_){}
 const LS={get(k){try{return localStorage.getItem(k)}catch(_){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(_){}},del(k){try{localStorage.removeItem(k)}catch(_){}}};
 let TOKEN=LS.get("gh_token");
 const INVITADO=(()=>{const m=/(?:^|[#&?])vivo=([a-z0-9]{20,})/.exec(location.hash+"&"+location.search.slice(1));return m?m[1]:null})();window.__invitado=INVITADO;
@@ -943,7 +947,7 @@ async function subir(){
       for(const [path,s] of loteBin){if(s===null){if(remotos.has(path))tree.push({path,mode:"100644",type:"blob",sha:null})}else tree.push({path,mode:"100644",type:"blob",sha:s})}
       if(!tree.length)break;
       const nt=await api(`${RB}/git/trees`,{method:"POST",body:{base_tree:bc.tree.sha,tree}});
-      const nc=await api(`${RB}/git/commits`,{method:"POST",body:{message:"Banco de ideas: "+[...lote.keys(),...loteBin.keys()].slice(0,4).join(", ")+(lote.size+loteBin.size>4?"…":""),tree:nt.sha,parents:[base]}});
+      const nc=await api(`${RB}/git/commits`,{method:"POST",body:{message:"Imágenes del tiempo: "+[...lote.keys(),...loteBin.keys()].slice(0,4).join(", ")+(lote.size+loteBin.size>4?"…":""),tree:nt.sha,parents:[base]}});
       try{await api(`${RB}/git/refs/heads/${GH.branch}`,{method:"PATCH",body:{sha:nc.sha,force:false}});
         for(const [k,v] of lote){if(v===null){remotos.delete(k+".json");shas.delete(k)}else{remotos.add(k+".json");shas.delete(k)}}
         for(const [p,s] of loteBin){if(s===null)remotos.delete(p);else remotos.add(p)}
@@ -1908,7 +1912,7 @@ function estadosUI(){const d=abierto.doc;$("h-estados").replaceChildren(...ESTAD
 const calMes=new Map(),calSel=new Map();
 function gcalURL(e,extra){const a=e.d.replace(/-/g,"");const [y,m,d]=e.d.split("-").map(Number);const f=new Date(Date.UTC(y,m-1,d+1));
   const b=`${f.getUTCFullYear()}${pad(f.getUTCMonth()+1)}${pad(f.getUTCDate())}`;
-  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.t)}&dates=${a}/${b}&details=${encodeURIComponent(extra||"Desde Banco de ideas")}`}
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.t)}&dates=${a}/${b}&details=${encodeURIComponent(extra||"Desde Imágenes del tiempo")}`}
 function pintarCal(cont,b,opt={}){
   const guardar=opt.guardar||guardarBloques,extra=opt.extra||[];
   if(!Array.isArray(b.ev))b.ev=[];const hoy=new Date();let m=calMes.get(b.id);
@@ -1930,7 +1934,7 @@ function pintarCal(cont,b,opt={}){
   const pref=`${m.y}-${pad(m.m+1)}-`,lista=el("div","lista");
   const delMes=[...b.ev.map(e=>({e,propio:true})),...extra.map(e=>({e,propio:false}))].filter(x=>x.e.d.startsWith(pref)).sort((a,c)=>a.e.d<c.e.d?-1:a.e.d>c.e.d?1:0);
   if(!delMes.length)lista.append(el("span","vacio-cal","Nada este mes. Tocá un día para anotar algo."));
-  for(const {e,propio} of delMes){const r=el("div","ev");const gc=el("a","gcal","GCal ↗");gc.href=gcalURL(e,e.n?`Banco de ideas, idea #${e.n}`:"");gc.target="_blank";gc.rel="noopener noreferrer";gc.title="Agregar a Google Calendar";
+  for(const {e,propio} of delMes){const r=el("div","ev");const gc=el("a","gcal","GCal ↗");gc.href=gcalURL(e,e.n?`Imágenes del tiempo, idea #${e.n}`:"");gc.target="_blank";gc.rel="noopener noreferrer";gc.title="Agregar a Google Calendar";
     let txt;if(propio)txt=el("span",null,e.t);else{txt=el("button","ir",`#${e.n} · ${e.t}`);txt.type="button";txt.title="Abrir esa idea";txt.onclick=()=>{$("panel-cal").hidden=true;abrir(e.k,e.id)}}
     const x=el("button",null,"×");x.type="button";x.setAttribute("aria-label","Quitar");x.hidden=!propio;x.onclick=()=>{b.ev=b.ev.filter(z=>z!==e);guardar();pintarCal(cont,b,opt)};
     r.append(el("b",null,ddmm(e.d)),txt,gc,x);lista.append(r)}
@@ -2534,6 +2538,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:8,f:"12 de noviembre",it:[
+  ["Ahora se llama Imágenes del tiempo","La web se mudó a imagenesdeltiempo.app. El link viejo te trae solo, con tu clave. Si la tenías en la pantalla de inicio del celu, borrala y volvé a agregarla desde la dirección nueva.",1]]},
  {n:7,f:"12 de noviembre",it:[
   ["Novedades por importancia","Este cartel ahora muestra primero lo importante; los cambios chicos van al final, en una línea.",3]]},
  {n:6,f:"12 de noviembre",it:[
