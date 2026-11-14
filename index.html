@@ -275,7 +275,7 @@ textarea::placeholder,input::placeholder{color:rgba(43,37,32,.45)}
 .composer{position:fixed;z-index:11;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 12px)}
 .composer form{width:min(330px,calc(100vw - 24px));aspect-ratio:1/1;grid-template-rows:auto minmax(48px,1fr);grid-auto-rows:auto;background:var(--c,var(--p-otro));padding:16px;display:grid;gap:10px;box-shadow:0 2px 2px rgba(0,0,0,.12),0 20px 30px -12px rgba(0,0,0,.6);background-image:linear-gradient(170deg,rgba(255,255,255,.35),transparent 40%)}
 .composer form.frase{--c:var(--p-frase)}
-.composer textarea{width:100%;height:100%;min-height:0;resize:none;border:0;background:transparent;font:500 1.1rem/1.3 var(--hand);color:var(--ink);padding:0}
+.composer textarea{width:100%;height:auto;align-self:stretch;min-height:0;resize:none;border:0;background:transparent;font:500 1.1rem/1.3 var(--hand);color:var(--ink);padding:0}
 .composer textarea:focus{outline:none}
 .composer input{width:100%;border:0;background:rgba(255,255,255,.55);font:500 .95rem var(--hand);color:var(--ink);padding:7px 10px;border-radius:4px}
 .composer .pie{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
@@ -2662,6 +2662,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:15,f:"14 de noviembre",it:[
+  ["Arreglado «+ Nueva idea»","Si tenías muchas categorías, el lugar para escribir desaparecía y no veías lo que tipeabas. Ya se ve.",3]]},
  {n:14,f:"12 de noviembre",it:[
   ["Entra mucho más rápido","La primera vez que entrás en un dispositivo, tus post-its aparecen en unos segundos en vez de medio minuto, y mientras tanto ves «Cargando tu plancha…».",2]]},
  {n:13,f:"12 de noviembre",it:[
