@@ -2430,7 +2430,7 @@ document.addEventListener("keydown",e=>{if(e.key!=="Tab"||e.shiftKey||e.ctrlKey|
   {const bts=[],mk=()=>{const b=el("button","btn");b.type="button";bts.push(b);b.onclick=()=>poner(!document.documentElement.classList.contains("plano"));return b};
     const poner=si=>{document.documentElement.classList.toggle("plano",si);try{localStorage.setItem("plano",si?"1":"0")}catch(_){}
       for(const b of bts){b.replaceChildren(si?el("span","ic-post"):el("span","ic-a","A"));const t=si?"Versión normal":"Versión texto";b.title=t;b.setAttribute("aria-label",t)}
-      try{pintarLista()}catch(_){}requestAnimationFrame(()=>document.querySelectorAll("textarea").forEach(t=>{try{autosize(t)}catch(_){}}))};
+      try{pintarLista()}catch(_){}requestAnimationFrame(()=>document.querySelectorAll("textarea").forEach(t=>{try{if(!t.id&&t.getClientRects().length)autosize(t)}catch(_){}}))};
     const pl=mk();pl.id="btn-plano";ex.lastElementChild.before(pl);
     const enPost=mk();enPost.id="h-plano";$("h-ayuda").before(enPost);
     window.revisarPlano=()=>{let puesto=false;try{puesto=localStorage.getItem("plano")==="1"}catch(_){}poner(puesto)};window.revisarPlano()}
@@ -2662,6 +2662,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:16,f:"14 de noviembre",it:[
+  ["Arreglado «+ Nueva idea» (ahora sí)","El lugar para escribir quedaba aplastado y no veías lo que tipeabas. Lo mismo pasaba en «Dictar» y en «Exportar».",3]]},
  {n:15,f:"14 de noviembre",it:[
   ["Arreglado «+ Nueva idea»","Si tenías muchas categorías, el lugar para escribir desaparecía y no veías lo que tipeabas. Ya se ve.",3]]},
  {n:14,f:"12 de noviembre",it:[
