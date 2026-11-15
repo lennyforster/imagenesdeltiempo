@@ -977,7 +977,9 @@ html:not(.plano).fondo-cuad #vp-main{background-color:#1a5a3e;--mat-major:transp
 .pv-esref{outline:1.5px dashed rgba(43,37,32,.45);outline-offset:-6px}
 .pv-hueco{border:2px dashed rgba(255,255,255,.45);border-radius:4px;min-height:120px}
 .pv-hueco.con-img{grid-column:span 2;grid-row:span 2}
-.pv-nota.pv-arr{box-shadow:0 18px 40px -10px rgba(0,0,0,.6);scale:1.04;transition:none!important}
+.pv-nota.pv-arr{box-shadow:0 18px 40px -10px rgba(0,0,0,.6);scale:1.04}
+.pv-grilla.ordenando .pv-nota{will-change:translate}
+.pv-grilla.ordenando .pv-img{pointer-events:none}
 .pv-grilla.ordenando{cursor:grabbing}
 .nota.reacomodando{transition:left .2s ease,top .2s ease}
 
@@ -3025,6 +3027,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:24,f:"15 de noviembre",it:[
+  ["Reordenar arrastrando adentro de las pilas ahora va mucho más fluido, también con muchas fotos.",null,3]]},
  {n:23,f:"15 de noviembre",it:[
   ["*Desde adentro de un post-it* ahora podés crear frases y post-its de cualquier categoría: en el «+» están «Post-it nuevo» y «Frase nueva». Quedan guardados en su lugar y además adentro de ese post-it.",null,1]]},
  {n:22,f:"15 de noviembre",it:[
@@ -3497,7 +3501,7 @@ function pintarPilaVista(){if($("pv-grilla").querySelector(".pv-inline"))return;
     if(esRef){const casa=enPilaId(i),pc=casa==="keep"?(pilaTitulo||"Keep"):((pilas.find(z=>z.id===casa)||{}).titulo||"");sac.textContent="Quitar de acá";sac.title="Sacarla de esta pila (sigue en su lugar de siempre)";
       sac.onclick=e=>{e.stopPropagation();const v=(i.pilasExtra||[]).filter(x=>x!==pvPila);i.pilasExtra=v;escribir(cols.ideas,i.id,{pilasExtra:v});pintarPilaVista();pintarPilas()};
       m.lastChild.textContent=casa?`↗ de «${pc||"otra pila"}»`:"↗ de la plancha"}pie.append(el("span",null,resumenExtra(i).replace(/^\+ /,"")),sac);
-    const ib=(i.bloques||[]).find(b=>b.t==="img"&&b.a);c.append(m,el("div","pv-txt",i.texto||"(sin texto)"));if(ib){c.classList.add("con-img");const im=el("img","pv-img");im.alt="";im.draggable=false;im.dataset.ref=ib.a;im.onerror=()=>im.remove();obsImgPila(im);c.append(im)}c.append(pie);c.onclick=()=>{if(c._sinClick)return;abrir("ideas",i.id)};c.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();abrir("ideas",i.id)}};g.append(c)}
+    const ib=(i.bloques||[]).find(b=>b.t==="img"&&b.a);c.append(m,el("div","pv-txt",i.texto||"(sin texto)"));if(ib){c.classList.add("con-img");const im=el("img","pv-img");im.alt="";im.decoding="async";im.draggable=false;im.dataset.ref=ib.a;im.onerror=()=>im.remove();obsImgPila(im);c.append(im)}c.append(pie);c.onclick=()=>{if(c._sinClick)return;abrir("ideas",i.id)};c.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();abrir("ideas",i.id)}};g.append(c)}
   g.scrollTop=st;pintarBotonTapa()}
 function lugarLibre(id,extra){id=id||"keep";const P=pilaXY(id),ocup=[...posiciones(enPlancha("ideas")).values(),...[...nodosPila.values()].map(n=>({x:parseFloat(n.style.left),y:parseFloat(n.style.top)})),...(extra||[])];
   const libre=(x,y)=>!ocup.some(o=>Math.abs(o.x-x)<215&&Math.abs(o.y-y)<215);
@@ -3538,20 +3542,23 @@ $("cerrar-pref").onclick=()=>{$("panel-pref").hidden=true};$("pr-buscar").addEve
 $("pr-buscar").addEventListener("keydown",e=>{if(e.key==="Escape"){e.preventDefault();e.stopPropagation();$("panel-pref").hidden=true}else if(e.key==="Enter"){e.preventDefault();$("pr-lista").querySelector(".r-fila")?.click()}});
 /* reordenar arrastrando en una grilla: los demás se corren, como los íconos del iPhone. Con el dedo: mantené apretado y arrastrá */
 function ordenable(g,{activo,guardar}){let st=null;
-  const flip=fn=>{const cs=[...g.querySelectorAll(".pv-nota[data-id]")],r0=new Map(cs.map(c=>[c,c.getBoundingClientRect()]));fn();
-    for(const c of cs){const a=r0.get(c),b=c.getBoundingClientRect(),dx=a.left-b.left,dy=a.top-b.top;if(!dx&&!dy)continue;c.style.transition="none";c.style.translate=dx+"px "+dy+"px";c.offsetWidth;c.style.transition="translate .2s ease";c.style.translate="0px 0px"}};
+  const flip=(fn,o)=>{const hs=[...g.children],i0=hs.indexOf(st.ph),i1=hs.indexOf(o),cs=hs.slice(Math.min(i0,i1),Math.max(i0,i1)+1).filter(c=>c!==st.ph&&c.dataset.id),r0=new Map(cs.map(c=>[c,c.getBoundingClientRect()]));fn();
+    const ds=cs.map(c=>{const a=r0.get(c),b=c.getBoundingClientRect();return [c,a.left-b.left,a.top-b.top]});
+    for(const [c,dx,dy] of ds){if(!dx&&!dy)continue;c.style.transition="none";c.style.translate=dx+"px "+dy+"px"}
+    requestAnimationFrame(()=>{for(const [c,dx,dy] of ds){if(!dx&&!dy)continue;c.style.transition="translate .18s ease-out";c.style.translate="0px 0px"}})};
   const quitar=()=>{document.removeEventListener("pointermove",mv,true);document.removeEventListener("pointerup",up,true);document.removeEventListener("pointercancel",cc,true)};
   const fin=ok=>{if(!st)return;const s0=st;st=null;quitar();clearTimeout(s0.tm);if(!s0.on)return;
-    s0.c.classList.remove("pv-arr");s0.c.style.cssText=s0.css0;s0.ph.replaceWith(s0.c);g.classList.remove("ordenando");s0.c._sinClick=true;setTimeout(()=>{s0.c._sinClick=false},60);
+    cancelAnimationFrame(raf);raf=0;s0.c.classList.remove("pv-arr");s0.c.style.cssText=s0.css0;s0.ph.replaceWith(s0.c);g.classList.remove("ordenando");s0.c._sinClick=true;setTimeout(()=>{s0.c._sinClick=false},60);
     if(ok)guardar([...g.querySelectorAll(".pv-nota[data-id]")].map(x=>x.dataset.id))};
   const arrancar=()=>{const c=st.c,r=c.getBoundingClientRect();st.on=true;st.dx=st.x0-r.left;st.dy=st.y0-r.top;st.css0=c.style.cssText;
     const ph=el("div","pv-hueco"+(c.classList.contains("con-img")?" con-img":""));ph.style.height=r.height+"px";st.ph=ph;c.before(ph);
-    c.classList.add("pv-arr");Object.assign(c.style,{position:"fixed",left:r.left+"px",top:r.top+"px",width:r.width+"px",height:r.height+"px",zIndex:40,pointerEvents:"none",margin:0});document.body.append(c);g.classList.add("ordenando")};
+    c.classList.add("pv-arr");Object.assign(c.style,{position:"fixed",left:r.left+"px",top:r.top+"px",width:r.width+"px",height:r.height+"px",zIndex:40,pointerEvents:"none",margin:0,transition:"none",willChange:"translate"});document.body.append(c);g.classList.add("ordenando");st.r0={x:r.left,y:r.top}};
+  let raf=0;const cuadro=()=>{raf=0;if(!st||!st.on)return;const x=st.px,y=st.py;st.c.style.translate=(x-st.dx-st.r0.x)+"px "+(y-st.dy-st.r0.y)+"px";
+    const r=g.getBoundingClientRect();if(y<r.top+50){g.scrollTop-=14;raf=requestAnimationFrame(cuadro)}else if(y>r.bottom-50){g.scrollTop+=14;raf=requestAnimationFrame(cuadro)}
+    const t=document.elementFromPoint(x,y),o=t&&t.closest(".pv-nota[data-id]");if(!o||!g.contains(o))return;const ro=o.getBoundingClientRect(),antes=x<ro.left+ro.width/2;
+    if(o===st.ult&&antes===st.ultA)return;st.ult=o;st.ultA=antes;if(antes?o.previousElementSibling===st.ph:o.nextElementSibling===st.ph)return;flip(()=>{if(antes)o.before(st.ph);else o.after(st.ph)},o)};
   const mv=e=>{if(!st)return;if(!st.on){const d=Math.hypot(e.clientX-st.x0,e.clientY-st.y0);if(st.touch){if(d>9)fin(false);return}if(d<6)return;arrancar()}e.preventDefault();
-    st.c.style.left=(e.clientX-st.dx)+"px";st.c.style.top=(e.clientY-st.dy)+"px";
-    const r=g.getBoundingClientRect();if(e.clientY<r.top+40)g.scrollTop-=12;else if(e.clientY>r.bottom-40)g.scrollTop+=12;
-    const t=document.elementFromPoint(e.clientX,e.clientY),o=t&&t.closest(".pv-nota[data-id]");if(!o||!g.contains(o))return;const ro=o.getBoundingClientRect(),antes=e.clientX<ro.left+ro.width/2;
-    if(antes?o.previousElementSibling===st.ph:o.nextElementSibling===st.ph)return;flip(()=>{if(antes)o.before(st.ph);else o.after(st.ph)})};
+    st.px=e.clientX;st.py=e.clientY;if(!raf)raf=requestAnimationFrame(cuadro)};
   const up=()=>fin(true),cc=()=>fin(false);
   g.addEventListener("pointerdown",e=>{if(st||(e.pointerType==="mouse"&&e.button!==0)||!activo())return;const c=e.target.closest(".pv-nota[data-id]");if(!c||e.target.closest("button,textarea,input"))return;
     st={c,x0:e.clientX,y0:e.clientY,on:false,touch:e.pointerType!=="mouse"};if(st.touch)st.tm=setTimeout(()=>{if(st&&!st.on){arrancar();try{navigator.vibrate&&navigator.vibrate(12)}catch(_){}}},380);
