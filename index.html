@@ -721,6 +721,12 @@ body.en-diario .dia-herr{display:flex}
   transform:rotate(var(--r,0deg));box-shadow:0 1px 1px rgba(0,0,0,.12),0 8px 12px -8px rgba(20,10,0,.55)}
 .pv-nota .meta{display:flex;justify-content:space-between;font:500 9.5px var(--mono);color:var(--muted)}
 .pv-txt{font:500 14px/1.3 var(--hand);overflow:hidden;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;word-break:break-word}
+.pv-inline{cursor:auto;grid-template-rows:auto 1fr auto}
+.pv-inline textarea{width:100%;height:100%;min-height:70px;resize:none;border:0;background:transparent;font:500 15px/1.3 var(--hand);color:var(--ink);padding:0}
+.pv-inline textarea:focus{outline:none}
+.pv-nota.con-img{grid-column:span 2;grid-row:span 2;aspect-ratio:auto;grid-template-rows:auto auto minmax(0,1fr) auto}
+.pv-nota.con-img .pv-txt{-webkit-line-clamp:2}
+.pv-img{width:100%;height:100%;min-height:200px;object-fit:cover;display:block;background:rgba(43,37,32,.1)}
 .pv-pie{display:flex;align-items:center;justify-content:space-between;gap:6px}
 .pv-pie span{font:500 9.5px var(--mono);text-transform:uppercase;color:var(--soft)}
 .pv-sacar{border:0;border-radius:999px;background:var(--ink);color:var(--paper);font:600 11px var(--ui);padding:5px 10px;cursor:pointer}
@@ -923,6 +929,8 @@ html.plano .lp-dest .lp-t{font-weight:700!important}
 .nota.inline:has(.ed-cats),.nota.editando{height:auto;min-height:200px}
 .nota.inline:has(.ed-cats) textarea{min-height:110px}
 .nota.editando .extra{white-space:normal;overflow:visible}
+.ic-cuad{display:inline-block;width:14px;height:14px;vertical-align:-2px;border:1.5px solid currentColor;border-radius:2px;background-image:linear-gradient(currentColor 1px,transparent 1px),linear-gradient(90deg,currentColor 1px,transparent 1px);background-size:4.4px 4.4px;background-position:-1px -1px}
+#btn-fondo[aria-pressed="true"] .ic-cuad{background-color:rgba(43,37,32,.18)}
 /* Fondo de la plancha: un poquito más suave, y la opción de cuadritos como adentro de las pilas */
 html:not(.plano) #vp-main{--mat-minor:rgba(190,235,190,.19);--mat-major:rgba(210,245,200,.46);--mat-diag:rgba(210,245,200,.13)}
 html:not(.plano).fondo-cuad #vp-main{background-color:#1a5a3e;--mat-major:transparent;--mat-diag:transparent;--mat-minor:rgba(190,235,190,.22)}
@@ -2566,7 +2574,7 @@ document.addEventListener("keydown",e=>{if(e.key!=="Tab"||e.shiftKey||e.ctrlKey|
       for(const b of bts){b.replaceChildren(si?el("span","ic-post"):el("span","ic-a","A"));const t=si?"Versión normal":"Versión texto";b.title=t;b.setAttribute("aria-label",t)}
       try{pintarLista()}catch(_){}requestAnimationFrame(()=>document.querySelectorAll("textarea").forEach(t=>{try{if(!t.id&&t.getClientRects().length)autosize(t)}catch(_){}}))};
     const pl=mk();pl.id="btn-plano";ex.lastElementChild.before(pl);
-    {const fb=el("button","btn");fb.type="button";fb.id="btn-fondo";const pf=si=>{document.documentElement.classList.toggle("fondo-cuad",si);try{localStorage.setItem("fondo",si?"cuad":"")}catch(_){}fb.textContent=si?"Fondo original":"Fondo cuadriculado";fb.title=si?"Volver al fondo con diagonales":"Fondo solo con cuadritos, como adentro de las pilas"};
+    {const fb=el("button","btn");fb.type="button";fb.id="btn-fondo";fb.append(el("span","ic-cuad"));const pf=si=>{document.documentElement.classList.toggle("fondo-cuad",si);try{localStorage.setItem("fondo",si?"cuad":"")}catch(_){}fb.setAttribute("aria-pressed",String(si));const t=si?"Volver al fondo original":"Fondo cuadriculado";fb.title=t;fb.setAttribute("aria-label",t)};
       fb.onclick=()=>pf(!document.documentElement.classList.contains("fondo-cuad"));let f0=false;try{f0=localStorage.getItem("fondo")==="cuad"}catch(_){}pf(f0);ex.lastElementChild.before(fb)}
     const enPost=mk();enPost.id="h-plano";$("h-ayuda").before(enPost);
     window.revisarPlano=()=>{let puesto=false;try{puesto=localStorage.getItem("plano")==="1"}catch(_){}poner(puesto)};window.revisarPlano()}
@@ -2703,7 +2711,7 @@ const AYUDA=[
   [{chip:"Novedades"},"Cuando la web tiene cambios nuevos, al entrar te aparece un cartel que cuenta qué cambió. Sale una sola vez por cada tanda de cambios."],
   [{chip:"Tu cuenta"},"Te muestra con qué usuario entraste. Si todavía entrás con la clave larga, desde acá creás tu cuenta con usuario y contraseña."],
   [{chip:"Salir"},"Cierra la sesión en este dispositivo. Para volver, entrás con tu usuario y tu contraseña."],
-  [{chip:"Fondo cuadriculado"},"Cambia el fondo de la plancha por uno de cuadritos, como el de adentro de las pilas. Lo volvés a tocar para el original."],
+  [{h:'<span class="ay-chip"><span class="ic-cuad"></span></span>'},"Al lado de la «A»: cambia el fondo de la plancha por uno de cuadritos, como el de adentro de las pilas. Lo volvés a tocar para el original."],
   [null,"Abajo, en «+ Nueva idea», están «Editar categorías» e «Importar de Google Keep»."]]},
  {t:"Adentro de un post-it",it:[
   [{chip:"+"},"El + de la barra de la izquierda: sumás post-its, notas, texto, links, imágenes, calendarios, escaletas y el hilo rojo. En el celu sigue en la barra de abajo."],
@@ -2747,6 +2755,8 @@ const AYUDA=[
   [{h:'<span class="ay-pila keep"><i></i><i></i><span class="ay-post"><small>De Keep</small></span></span>'},"Lo que importaste de Google Keep vive en esa pila hasta que lo vayas sacando."],
   [null,"Las pilas con título no se deshacen solas aunque queden con una nota o vacías: sirven de carpeta (por ejemplo, «Locaciones»)."],
   [{chip:"+ Nuevo acá"},"Adentro de una pila, crea un post-it nuevo ya guardado ahí, con la categoría de la pila."],
+  [null,"Si un post-it tiene una imagen adentro, en la pila se ve grande y con la foto. Sirve, por ejemplo, para las locaciones."],
+  ["Doble clic adentro de una pila","Escribís un post-it nuevo ahí mismo, ya guardado en la pila. Enter lo pega, Esc lo cancela."],
   [null,"Si creás un post-it desde «Referencia» con una categoría que se llama igual que una pila, va directo adentro de esa pila."]]},
  {t:"Barra izquierda",it:[
   [[{ic:"sel"}," Elegir varios"],"Tocá post-its para elegirlos, o arrastrá un marco."],
@@ -2810,6 +2820,11 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:18,f:"14 de noviembre",mio:true,it:[
+  ["*Nueva función*: _Referencias_. Ahora un mismo post-it puede estar en dos lugares a la vez. Ejemplo: tenés una locación guardada en la pila «Locaciones» y la querés ver también adentro del post-it de tu película. Entrás a la película, tocás el «+» de la izquierda, elegís «Referencia» y buscás la locación (o la creás ahí mismo). Aparece adentro como un post-it chiquito. No es una copia: si la cambiás en un lado, cambia en el otro.",null,1],
+  ["En las pilas, los post-its que tienen una imagen adentro ahora se ven grandes y con la foto.",null,1],
+  ["Doble clic adentro de una pila: creás un post-it ahí mismo, como en la plancha.",null,2],
+  ["El botón del fondo cuadriculado ahora es un cuadradito al lado de la «A», en el •••.",null,3]]},
  {n:17,f:"14 de noviembre",intro:["Hola!! Cómo estás? Soy Lenny. En persona, aunque no lo creas. Haceme saber si leíste esto.","Te comparto las nuevas actualizaciones:"],it:[
   ["*Nueva función* llamada _Referencias_. Adentro de un post-it, «Referencia» te deja meter otro post-it que vive en otro lado, como una locación adentro de una película. Es el mismo post-it: si lo cambiás, cambia en todos lados. Se entiende? usalo y me contas.",null,1],
   ["*Nueva función*: Lista de tareas. En la plancha de ideas principal podes agregar una lista de tareas. Cuando tachás una, queda anotada sola en el diario con la hora en la que la completaste.",null,1],
@@ -3221,15 +3236,19 @@ async function apilar(t,nodos){const ids=[...new Set(nodos.map(n=>n._id).filter(
 /* ver lo que hay adentro */
 function abrirPila(id){pvPila=id||"keep";$("pv-buscar").value=q;$("pila-vista").hidden=false;$("pv-deshacer").hidden=pvPila==="keep";$("pv-nueva").hidden=pvPila==="keep";$("pv-titulo").value=pvPila==="keep"?(pilaTitulo||"De Keep"):((pilas.find(z=>z.id===pvPila)||{}).titulo||"");pintarPilaVista()}
 function cerrarPila(){$("pila-vista").hidden=true}
-function pintarPilaVista(){const g=$("pv-grilla"),qq=$("pv-buscar").value.trim().toLowerCase(),todas=itemsPila(pvPila).sort((a,b)=>pvPila==="keep"?(b.creado||0)-(a.creado||0):(b.pilaT||0)-(a.pilaT||0));
+/* en la pila, el post-it que tiene una imagen se ve grande con la foto (se carga cuando aparece en pantalla) */
+let imgObsPila=null;
+function obsImgPila(im){if(!("IntersectionObserver" in window)){cargarImg(im,im.dataset.ref);return}
+  if(!imgObsPila)imgObsPila=new IntersectionObserver(es=>{for(const en of es)if(en.isIntersecting){imgObsPila.unobserve(en.target);cargarImg(en.target,en.target.dataset.ref)}},{root:$("pv-grilla"),rootMargin:"600px 0px"});imgObsPila.observe(im)}
+function pintarPilaVista(){if($("pv-grilla").querySelector(".pv-inline"))return;const g=$("pv-grilla"),qq=$("pv-buscar").value.trim().toLowerCase(),todas=itemsPila(pvPila).sort((a,b)=>pvPila==="keep"?(b.creado||0)-(a.creado||0):(b.pilaT||0)-(a.pilaT||0));
   const lista=qq?todas.filter(i=>[i.texto,textoBloques(i)].join(" ").toLowerCase().includes(qq)):todas;
   $("pv-tit").textContent=todas.length===1?"1 adentro":`${todas.length} adentro`;const st=g.scrollTop;g.replaceChildren();
-  if(!lista.length){g.append(el("p","pv-vacio",todas.length?"Nada coincide con esa búsqueda.":"La pila quedó vacía."));return}
+  if(!lista.length){g.append(el("p","pv-vacio",todas.length?"Nada coincide con esa búsqueda.":(pvPila==="keep"?"La pila quedó vacía.":"Está vacía. Hacé doble clic para anotar algo acá.")));return}
   for(const i of lista){const c=el("div","pv-nota");c.setAttribute("role","button");c.tabIndex=0;c.style.setProperty("--c",colorDe("ideas",i));c.style.setProperty("--r",giro(i.id)*.5+"deg");
     const m=el("div","meta");m.append(el("span",null,"#"+(i.numero||"?")),el("span",null,i.creado?new Date(i.creado).toLocaleDateString("es-AR",{day:"2-digit",month:"2-digit",year:"2-digit"}).replace(/\//g,"."):""));
     const pie=el("div","pv-pie"),sac=el("button","pv-sacar","Sacar ↗");sac.type="button";sac.title="Ponerla en la plancha";
     sac.onclick=e=>{e.stopPropagation();sacarDePila(i.id)};pie.append(el("span",null,resumenExtra(i).replace(/^\+ /,"")),sac);
-    c.append(m,el("div","pv-txt",i.texto||"(sin texto)"),pie);c.onclick=()=>abrir("ideas",i.id);c.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();abrir("ideas",i.id)}};g.append(c)}
+    const ib=(i.bloques||[]).find(b=>b.t==="img"&&b.a);c.append(m,el("div","pv-txt",i.texto||"(sin texto)"));if(ib){c.classList.add("con-img");const im=el("img","pv-img");im.alt="";im.draggable=false;im.dataset.ref=ib.a;im.onerror=()=>im.remove();obsImgPila(im);c.append(im)}c.append(pie);c.onclick=()=>abrir("ideas",i.id);c.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();abrir("ideas",i.id)}};g.append(c)}
   g.scrollTop=st}
 function lugarLibre(id,extra){id=id||"keep";const P=pilaXY(id),ocup=[...posiciones(enPlancha("ideas")).values(),...[...nodosPila.values()].map(n=>({x:parseFloat(n.style.left),y:parseFloat(n.style.top)})),...(extra||[])];
   const libre=(x,y)=>!ocup.some(o=>Math.abs(o.x-x)<215&&Math.abs(o.y-y)<215);
@@ -3241,8 +3260,18 @@ function sacarDePila(id){const i=data.ideas.find(x=>x.id===id);if(!i||!cols.idea
 function disolverPila(pid,auto,ya){if(pid==="keep")return;const P=pilaXY(pid),resto=itemsPila(pid).filter(x=>!(ya||[]).includes(x.id)),usados=[];
   resto.forEach((i,n)=>{const p=n===0?{x:P.x,y:P.y}:lugarLibre(pid,usados);usados.push(p);escribir(cols.ideas,i.id,patchSacar(i,p))});
   if(colPilas)colPilas.doc(pid).delete().catch(()=>{});if(pvPila===pid&&!$("pila-vista").hidden&&!auto)cerrarPila();disolviendo.delete(pid)}
-$("pv-nueva").onclick=async()=>{const pid=pvPila;if(pid==="keep"||!cols.ideas)return;const p=pilas.find(z=>z.id===pid),cnt=new Map();itemsPila(pid).forEach(i=>cnt.set(i.tipo,(cnt.get(i.tipo)||0)+1));
-  let tipo=([...cnt].sort((a,b)=>b[1]-a[1])[0]||[])[0];if(!tipo){const n=((p&&p.titulo)||"").trim().toLowerCase();tipo=(cats.find(c=>(c.nombre||"").trim().toLowerCase()===n)||{}).id||tipoNueva}
+function tipoDePila(pid){const p=pilas.find(z=>z.id===pid),cnt=new Map();itemsPila(pid).forEach(i=>cnt.set(i.tipo,(cnt.get(i.tipo)||0)+1));
+  let tipo=([...cnt].sort((a,b)=>b[1]-a[1])[0]||[])[0];if(!tipo){const n=((p&&p.titulo)||"").trim().toLowerCase();tipo=(cats.find(c=>(c.nombre||"").trim().toLowerCase()===n)||{}).id||tipoNueva}return tipo}
+/* doble clic en el fondo de una pila: escribir un post-it ahí mismo, ya guardado adentro */
+$("pv-grilla").addEventListener("dblclick",e=>{if(pvPila==="keep"||!cols.ideas||e.target.closest(".pv-nota"))return;const g=$("pv-grilla");g.querySelector(".pv-inline")?.remove();
+  const pid=pvPila;let tipo=tipoDePila(pid);const c=el("div","pv-nota pv-inline");c.style.setProperty("--c",cat(tipo).color);
+  const m=el("div","meta");m.append(el("span",null,"Nuevo"),el("span",null,label(tipo)));const t=el("textarea");t.placeholder="¿Qué querés anotar?";t.setAttribute("aria-label","Nuevo post-it en la pila");
+  c.append(m,t,chipsCat(tipo,v=>{tipo=v;c.style.setProperty("--c",cat(v).color);m.lastChild.textContent=label(v);t.focus()}));g.prepend(c);g.scrollTop=0;
+  let hecho=false;const crear=async()=>{if(hecho)return;hecho=true;const v=t.value.trim();c.remove();if(!v){pintarPilaVista();return}const numero=data.ideas.reduce((mx,i)=>Math.max(mx,i.numero||0),0)+1,ahora=Date.now(),P=pilaXY(pid);
+    try{await cols.ideas.add({texto:v,tipo,creado:ahora,numero,pila:pid,pilaT:ahora,x:Math.round(P.x),y:Math.round(P.y)})}catch(_){toast("No se pudo crear. Probá de nuevo.")}};
+  t.addEventListener("keydown",ev=>{if(ev.key==="Enter"&&!ev.shiftKey){ev.preventDefault();crear()}else if(ev.key==="Escape"){ev.preventDefault();ev.stopPropagation();hecho=true;c.remove()}});
+  t.addEventListener("blur",()=>setTimeout(()=>{if(!c.contains(document.activeElement))crear()},150));requestAnimationFrame(()=>t.focus())});
+$("pv-nueva").onclick=async()=>{const pid=pvPila;if(pid==="keep"||!cols.ideas)return;const tipo=tipoDePila(pid);
   const numero=data.ideas.reduce((m,i)=>Math.max(m,i.numero||0),0)+1,ahora=Date.now(),P=pilaXY(pid),body={texto:"",tipo,creado:ahora,numero,pila:pid,pilaT:ahora,x:Math.round(P.x),y:Math.round(P.y)};
   try{const r=await cols.ideas.add(body);cerrarPila();abrir("ideas",r.id,{id:r.id,...body});if(abierto&&abierto.id===r.id)abierto.vacio=true;setTimeout(()=>$("capa-hoja").querySelector(".principal textarea")?.focus(),60)}
   catch(_){toast("No se pudo crear. Probá de nuevo.")}};
