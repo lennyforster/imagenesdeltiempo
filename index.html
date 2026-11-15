@@ -1005,6 +1005,10 @@ html:not(.plano).fondo-cuad #vp-main{background-color:#1a5a3e;--mat-major:transp
 .ay-hist-fecha{margin:18px 0 8px;font:600 11px var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--soft);border-bottom:1px solid rgba(43,37,32,.15);padding-bottom:6px}
 .ay-sec ul.ay-hist{list-style:disc;padding-left:20px;margin:0;display:grid;gap:7px}
 .ay-sec ul.ay-hist li{display:list-item;font:500 14.5px/1.45 var(--ui);color:var(--ink);padding:0;border:0;grid-template-columns:none}
+
+.bref .ref-tag{justify-self:start;font:600 10px var(--mono);text-transform:uppercase;letter-spacing:.04em;color:var(--paper);background:rgba(43,37,32,.78);border-radius:999px;padding:3px 8px;margin-top:-4px}
+.nota .en-otros{border:0;border-radius:999px;padding:1px 7px;background:rgba(43,37,32,.12);color:var(--ink);font:600 10px var(--mono);cursor:pointer;margin-left:auto;white-space:nowrap}
+.nota .en-otros:hover{background:rgba(43,37,32,.22)}
 </style>
 <div class="cargando" id="cargando" hidden role="status"><span class="cg-punto"></span>Cargando tu plancha…</div>
 <div class="conectar" id="conectar" hidden>
@@ -1789,7 +1793,7 @@ function pintarNota(c,k,i,p){
   const esIdea=k==="ideas";
   if(!c.classList.contains("arrastrando")){c.style.left=p.x+"px";c.style.top=p.y+"px"}
   if(c._editando)return;
-  const px0=proximo(i),firma=[+i.esc||1,i.g||"",+i.dest||0,i.numero,i.tipo,esIdea?label(i.tipo):"",colorDe(k,i),i.texto,i.autor,i.creado,i.estado,i.vivo||"",px0?px0.d+px0.t:"",resumenExtra(i),coincide(i),modoHilo&&origenHilo===i.id].join("\u0001");
+  const enOtros=refsA(i.id),px0=proximo(i),firma=[enOtros.map(x=>x.id+":"+(x.numero||"")).join(","),+i.esc||1,i.g||"",+i.dest||0,i.numero,i.tipo,esIdea?label(i.tipo):"",colorDe(k,i),i.texto,i.autor,i.creado,i.estado,i.vivo||"",px0?px0.d+px0.t:"",resumenExtra(i),coincide(i),modoHilo&&origenHilo===i.id].join("\u0001");
   if(c._firma===firma)return;c._firma=firma;
   if(i.g)c.dataset.g=i.g;else delete c.dataset.g;c.style.scale=+i.esc&&+i.esc!==1?String(+i.esc):"";c.style.zIndex=2;c.style.setProperty("--c",colorDe(k,i));c.classList.toggle("en-vivo",!!i.vivo);c.classList.toggle("dest1",esIdea&&+i.dest===1);c.classList.toggle("dest2",esIdea&&+i.dest===2);c.style.setProperty("--r",giro(i.id)+"deg");
   c.setAttribute("aria-label",`Abrir ${esIdea?"idea":"frase"} ${i.numero||""}`);
@@ -1800,6 +1804,8 @@ function pintarNota(c,k,i,p){
   if(est){const s=el("span","sello",est.nombre);s.style.setProperty("--e",est.color);ex.append(s)}
   const px=proximo(i);const res=[px?`${ddmm(px.d)} ${px.t}`:"",resumenExtra(i)].filter(Boolean).join(" · ");
   ex.append(el("span","res",res));
+  if(enOtros.length){const tg=el("button","en-otros","↗ en "+enOtros.slice(0,2).map(x=>"#"+(x.numero||"?")).join(", ")+(enOtros.length>2?"…":""));tg.type="button";
+    tg.title="También aparece adentro de: "+enOtros.map(x=>"#"+(x.numero||"?")+" "+(x.texto||"").replace(/\s+/g," ").slice(0,30)).join(" · ");tg.onclick=e=>{e.stopPropagation();abrir("ideas",enOtros[0].id)};ex.append(tg)}
   c.classList.toggle("apagada",!coincide(i));c.classList.toggle("descartada",i.estado==="descartada");c.classList.toggle("origen",modoHilo&&origenHilo===i.id);
 }
 function nodoDeco(d){
@@ -2253,9 +2259,9 @@ const refNuevos=new Set();let catRef=null,kRef="ideas";
 const kDe=b=>b&&b.k==="frases"?"frases":"ideas";
 const refsA=id=>data.ideas.filter(i=>i.id!==id&&(i.bloques||[]).some(b=>b.t==="ref"&&b.ref===id));
 const quitarComillas=t=>(t||"").replace(/^[«“"]|[»”"]$/g,"");
-function pintarRef(n,b){const k=kDe(b),i=data[k].find(x=>x.id===b.ref);const imV=n.querySelector(":scope>.ref-img");n.querySelectorAll(":scope>.grip,:scope>.meta,:scope>.ref-txt,:scope>.ref-extra,:scope>.ref-abrir,:scope>.ref-img").forEach(x=>x.remove());n.classList.toggle("roto",!i);n.classList.toggle("ref-frase",k==="frases");
+function pintarRef(n,b){const k=kDe(b),i=data[k].find(x=>x.id===b.ref);const imV=n.querySelector(":scope>.ref-img");n.querySelectorAll(":scope>.grip,:scope>.ref-tag,:scope>.meta,:scope>.ref-txt,:scope>.ref-extra,:scope>.ref-abrir,:scope>.ref-img").forEach(x=>x.remove());n.classList.toggle("roto",!i);n.classList.toggle("ref-frase",k==="frases");
   const fr=[el("div","grip")];
-  if(i){n.style.setProperty("--c",colorDe(k,i));const m=el("div","meta");m.append(el("span",null,k==="frases"?"Frase #"+(i.numero||"?"):"#"+(i.numero||"?")+" · "+label(i.tipo)),el("span",null,"↗"));
+  if(i){n.style.setProperty("--c",colorDe(k,i));fr.push(el("span","ref-tag",k==="frases"?"↗ Referencia a una frase":"↗ Referencia a un post-it"));const m=el("div","meta");m.append(el("span",null,k==="frases"?"Frase #"+(i.numero||"?"):"#"+(i.numero||"?")+" · "+label(i.tipo)),el("span"));
     fr.push(m,el("p","ref-txt",k==="frases"?"“"+quitarComillas(i.texto)+"”":(i.texto||"(sin texto)")));
     const ib=k==="ideas"&&(i.bloques||[]).find(x=>x.t==="img"&&x.a);if(ib){let im=imV&&imV.dataset.ref===ib.a?imV:null;if(!im){im=el("img","ref-img");im.alt="";im.draggable=false;im.dataset.ref=ib.a;im.onload=()=>pintarHilos();im.onerror=()=>im.remove();cargarImg(im,ib.a)}fr.push(im)}
     if(k==="frases"){if(i.autor)fr.push(el("span","ref-extra","— "+i.autor))}else{const ex=resumenExtra(i);if(ex)fr.push(el("span","ref-extra",ex.replace(/^\+ /,"")))}
@@ -2268,7 +2274,7 @@ function pintarAparece(){if(!abierto||abierto.k==="diario")return;const p=$("cap
   const mios=new Set(abierto.doc.bloques.filter(b=>b.t==="ref").map(b=>b.ref)),l=refsA(abierto.id).filter(i=>!mios.has(i.id));
   if(!l.length){if(a){a.remove();requestAnimationFrame(pintarHilos)}return}
   if(!a){a=el("div","aparece");p.append(a)}
-  a.replaceChildren(el("span",null,"También aparece en:"),...l.map(i=>{const b=el("button",null,"#"+(i.numero||"?")+" "+((i.texto||"").replace(/\s+/g," ").trim().slice(0,40)||"(sin texto)"));b.type="button";b.style.setProperty("--c",colorDe("ideas",i));b.title="Abrir";b.onclick=()=>irARef(i.id,"ideas");return b}));
+  a.replaceChildren(el("span",null,abierto.k==="frases"?"Esta frase también aparece en:":"También aparece en:"),...l.map(i=>{const b=el("button",null,"#"+(i.numero||"?")+" "+((i.texto||"").replace(/\s+/g," ").trim().slice(0,40)||"(sin texto)"));b.type="button";b.style.setProperty("--c",colorDe("ideas",i));b.title="Abrir";b.onclick=()=>irARef(i.id,"ideas");return b}));
   requestAnimationFrame(pintarHilos)}
 function pintarVolver(){const v=$("volver"),u=navRef[navRef.length-1],prev=u?data[u.k].find(x=>x.id===u.id):null;v.textContent=prev?`← ${u.k==="frases"?"Frase ":""}#${prev.numero||"?"}`:"← Volver";v.title=prev?"Volver a donde estabas":""}
 function irARef(id,k){k=k||"ideas";if(!abierto||id===abierto.id)return;if(!data[k].some(x=>x.id===id)){toast(k==="frases"?"Esa frase ya no existe.":"Ese post-it ya no existe.");return}
@@ -2941,6 +2947,7 @@ const AYUDA=[
   [null,"Si todavía no existe, escribilo en el buscador y crealo ahí mismo: elegís «Post-it» (con su categoría) o «Frase». Si la categoría se llama igual que una pila, va directo a esa pila."],
   [{chip:"Abrir ↗"},"Aparece como un post-it chiquito, con su foto si tiene. Tocalo dos veces (o «Abrir ↗») para entrar. El botón «← #» de arriba te devuelve a donde estabas."],
   [null,"No es una copia: es el mismo post-it. Si lo cambiás en un lado, cambia en el otro. En el original, abajo del texto, dice «También aparece en:» y podés saltar ahí."],
+  [{chip:"↗ en #9"},"En la plancha (de ideas o de frases), lo que está referenciado en otro post-it lo dice abajo. Tocalo para ir ahí. Adentro, la tarjeta dice «Referencia a una frase» o «Referencia a un post-it»."],
   [{chip:"+ Referencia"},"Adentro de una pila también: pone en esa pila un post-it que vive en otra (por ejemplo, una nota de Keep en «Locaciones»). Sigue estando en su pila de siempre; «Quitar de acá» lo saca solo de esta."],
   [null,"Las listas de tareas funcionan igual: la misma lista puede estar en la plancha y adentro de un post-it."]]},
  {t:"Pilas adentro de un post-it",it:[
@@ -3047,6 +3054,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:26,f:"15 de noviembre",it:[
+  ["Las frases y post-its que están referenciados adentro de otro post-it ahora lo dicen en la plancha («↗ en #9»), y adentro la tarjeta dice que es una referencia.",null,2]]},
  {n:25,f:"15 de noviembre",it:[
   ["Ahora podés hacer los post-its más chicos o más grandes: arrastrá la esquinita de abajo a la derecha. Anda en la plancha y adentro de los post-its.",null,2],
   ["El historial de cambios en «Cómo se usa» ahora es una lista por día, más fácil de leer.",null,3]]},
