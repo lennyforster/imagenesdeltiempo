@@ -1049,6 +1049,8 @@ body.barra-abierta .barra-extra.h-extra:not(.abierta){display:none}
 .bpila>.pila.propia{position:relative;width:200px;height:200px;z-index:auto;cursor:grab}
 .bpila.destino>.pila .pila-frente{outline:3px dashed var(--paper);outline-offset:8px}
 .bpila.sel>.pila .pila-frente{outline:2px solid var(--paper);outline-offset:4px}
+
+#h-hilo{display:none!important}
 </style>
 <div class="cargando" id="cargando" hidden role="status"><span class="cg-punto"></span>Cargando tu plancha…</div>
 <div class="conectar" id="conectar" hidden>
@@ -1784,13 +1786,24 @@ let gridPrev=null;const PASO_G=222;
 const enGrilla=k=>ordenActual[k]==="grid";
 const colsGrilla=k=>Math.max(4,Math.round(Math.sqrt(enPlancha(k).length*1.6)));
 const ordenEnGrilla=(k,sin)=>{const pos=posiciones(enPlancha(k));return enPlancha(k).filter(i=>i.id!==sin).map(i=>({i,p:pos.get(i.id)||{x:0,y:0}})).sort((a,b)=>(Math.round(a.p.y/PASO_G)-Math.round(b.p.y/PASO_G))||(a.p.x-b.p.x)).map(o=>o.i)};
+/* grilla con post-its de distintos tamaños: el agrandado ocupa más casilleros y los demás se acomodan alrededor */
+const spanDe=i=>Math.max(1,Math.ceil(((+i.esc||1)*200+20)/PASO_G));
+function layoutGrilla(lista,cols){const ocup=new Set(),pos=new Map(),k=(c,r)=>r*1000+c;
+  const libre=(c,r,s)=>{for(let a=0;a<s;a++)for(let b=0;b<s;b++)if(ocup.has(k(c+a,r+b)))return false;return true};
+  for(const i of lista){const s=Math.min(spanDe(i),cols);let hecho=false;
+    for(let r=0;!hecho;r++)for(let c=0;c<=cols-s;c++)if(libre(c,r,s)){for(let a=0;a<s;a++)for(let b=0;b<s;b++)ocup.add(k(c+a,r+b));pos.set(i.id,{x:c*PASO_G,y:r*PASO_G});hecho=true;break}}
+  return pos}
+function reacomodarGrilla(k){const lista=ordenEnGrilla(k),pos=layoutGrilla(lista,colsGrilla(k));
+  for(const i of lista){const p=pos.get(i.id);if(i.x===p.x&&i.y===p.y)continue;i.x=p.x;i.y=p.y;escribir(cols[k],i.id,{x:p.x,y:p.y},{silencioso:true});const nd=nodosNota.get(k+":"+i.id);if(nd){nd.classList.add("reacomodando");nd.style.left=p.x+"px";nd.style.top=p.y+"px"}}
+  setTimeout(()=>document.querySelectorAll(".nota.reacomodando").forEach(n=>n.classList.remove("reacomodando")),260);pedirFlechas();limCache=null}
 function gridPrevia(c,k,x,y){const cols=colsGrilla(k),resto=gridPrev&&gridPrev.id===c._id?gridPrev.resto:ordenEnGrilla(k,c._id),col=Math.max(0,Math.min(cols-1,Math.round(x/PASO_G))),fila=Math.max(0,Math.round(y/PASO_G)),idx=Math.min(resto.length,fila*cols+col);
   if(gridPrev&&gridPrev.id===c._id&&gridPrev.idx===idx)return;gridPrev={id:c._id,idx,resto,cols};
-  resto.forEach((i,n)=>{const j=n>=idx?n+1:n,nd=nodosNota.get(k+":"+i.id);if(!nd)return;nd.classList.add("reacomodando");nd.style.left=(j%cols)*PASO_G+"px";nd.style.top=Math.floor(j/cols)*PASO_G+"px"})}
+  const yo=data[k].find(z=>z.id===c._id),orden=resto.slice();if(yo)orden.splice(idx,0,yo);const pos=layoutGrilla(orden,cols);
+  resto.forEach(i=>{const nd=nodosNota.get(k+":"+i.id),p=pos.get(i.id);if(!nd||!p)return;nd.classList.add("reacomodando");nd.style.left=p.x+"px";nd.style.top=p.y+"px"})}
 function gridCancelar(){if(!gridPrev)return;gridPrev=null;document.querySelectorAll(".nota.reacomodando").forEach(n=>n.classList.remove("reacomodando"));pintarMain()}
 function gridSoltar(c,k){const {idx,resto,cols:nc}=gridPrev;gridPrev=null;const yo=data[k].find(z=>z.id===c._id),orden=resto.slice();if(yo)orden.splice(idx,0,yo);
-  orden.forEach((i,n)=>{const x=(n%nc)*PASO_G,y=Math.floor(n/nc)*PASO_G;if(i.x!==x||i.y!==y){i.x=x;i.y=y;escribir(cols[k],i.id,{x,y},{silencioso:true})}});
-  c.classList.add("reacomodando");c.style.left=(idx%nc)*PASO_G+"px";c.style.top=Math.floor(idx/nc)*PASO_G+"px";
+  const pos=layoutGrilla(orden,nc);orden.forEach(i=>{const {x,y}=pos.get(i.id);if(i.x!==x||i.y!==y){i.x=x;i.y=y;escribir(cols[k],i.id,{x,y},{silencioso:true})}});
+  const pp=pos.get(c._id)||{x:0,y:0};c.classList.add("reacomodando");c.style.left=pp.x+"px";c.style.top=pp.y+"px";
   setTimeout(()=>document.querySelectorAll(".nota.reacomodando").forEach(n=>n.classList.remove("reacomodando")),260);pedirFlechas()}
 function nodoNota(k,i){
   const c=el("article","nota"+(k==="frases"?" frase":""));c.tabIndex=0;c.setAttribute("role","button");
@@ -1801,7 +1814,7 @@ function nodoNota(k,i){
   const eb=el("button","x-del x-edit","✎");eb.type="button";eb.setAttribute("aria-label","Editar acá");eb.title="Editar acá, sin abrirlo";eb.onclick=e=>{e.stopPropagation();editarEnPlancha(c)};
   const ea=el("div","asa esc-asa");ea.title="Arrastrá para achicarlo o agrandarlo";
   redimensionable(ea,lzMain,{inicio:()=>200*(parseFloat(c.style.scale)||1),mover:w=>{c.style.scale=String(Math.max(.45,Math.min(2.5,w/200)));pedirFlechas()},
-    soltar:()=>{const e=Math.round((parseFloat(c.style.scale)||1)*100)/100,it=data[k].find(z=>z.id===c._id);if(it)it.esc=e;c._firma=null;escribir(cols[k],c._id,{esc:e});limCache=null}});
+    soltar:()=>{const e=Math.round((parseFloat(c.style.scale)||1)*100)/100,it=data[k].find(z=>z.id===c._id);if(it)it.esc=e;c._firma=null;escribir(cols[k],c._id,{esc:e});limCache=null;if(enGrilla(k))reacomodarGrilla(k)}});
   c.append(xb,eb,ea);c.addEventListener("dblclick",e=>{if(!c._editando)e.stopPropagation()});
   arrastrable(c,lzMain,{
     inicio:()=>({x:parseFloat(c.style.left),y:parseFloat(c.style.top)}),
@@ -1988,7 +2001,7 @@ function ordenar(k,modo){
     grupos.filter(g=>g.length).forEach((g,fila)=>g.forEach((i,n)=>mover(i,n*230,fila*270)))}
   else if(modo==="grid"){const pos=c=>{const n=cats.findIndex(z=>z.id===c);return n<0?999:n};
     const orden=k==="ideas"?lista.slice().sort((a,b)=>pos(a.tipo)-pos(b.tipo)||(a.numero||0)-(b.numero||0)):lista;
-    const cols=Math.max(4,Math.round(Math.sqrt(orden.length*1.6)));orden.forEach((i,n)=>mover(i,(n%cols)*222,Math.floor(n/cols)*222))}
+    const lay=layoutGrilla(orden,colsGrilla(k));orden.forEach(i=>{const p=lay.get(i.id);mover(i,p.x,p.y)})}
   else lista.forEach((i,n)=>mover(i,(n%5)*240,Math.floor(n/5)*250));
   pintarMain();lzMain.encuadrar(lzMain.limites());
 }
@@ -2525,6 +2538,7 @@ function pintarHilos(){
   if(!abierto||!gHoja)return;const g=gHoja;g.replaceChildren();const pins=new Map();let mostrar=false;const vivas=new Set();
   const mk=(tag,at)=>{const e=document.createElementNS(NS,tag);for(const k in at)e.setAttribute(k,at[k]);return e};
   for(const h of abierto.doc.hilos||[]){
+    if(h.tipo!=="flecha")continue;/* el hilo rojo se dio de baja: los viejos no se dibujan */
     const ha=visHoja(h.a),hb=visHoja(h.b);if(ha===hb)continue;
     if(h.tipo==="flecha"){const na=nodoHoja(ha),nb=nodoHoja(hb);if(!na||!nb)continue;
       const r=dibujarFlecha(g,cajaDe(na),cajaDe(nb),selHilo===h.id,()=>{selHilo=h.id;selB=null;document.querySelectorAll("#capa-hoja .pieza.sel").forEach(x=>x.classList.remove("sel"));pintarHilos()});
@@ -2670,7 +2684,7 @@ crearLateral(lzMain);crearLateral(lzHoja);pintarPaletas();
 /* adentro de un post-it: el + de la barra izquierda tiene todo lo que se puede agregar */
 {const bar=lzHoja.vp.parentElement.querySelector(".lateral"),mas=el("button","lat mas","+");mas.type="button";mas.title="Agregar";mas.setAttribute("aria-label","Agregar");mas.setAttribute("aria-expanded","false");
   bar.prepend(mas,el("span","lat-sep"));const menu=el("div","agregar-menu");menu.hidden=true;menu.setAttribute("role","menu");$("detalle").append(menu);
-  const OPC=[["add-post","Post-it","am"],["add-txt","Nota"],["add-tx","Texto"],["add-link","Link"],["add-ref","Referencia"],["add-nidea","Post-it nuevo"],["add-nfrase","Frase nueva"],["add-tar","Tareas"],["add-pila","Pila"],["add-img","Imagen"],["add-cal","Calendario"],["add-esc","Escaleta"],["h-hilo","Hilo rojo"]];
+  const OPC=[["add-post","Post-it","am"],["add-txt","Nota"],["add-tx","Texto"],["add-link","Link"],["add-ref","Referencia"],["add-nidea","Post-it nuevo"],["add-nfrase","Frase nueva"],["add-tar","Tareas"],["add-pila","Pila"],["add-img","Imagen"],["add-cal","Calendario"],["add-esc","Escaleta"]];
   const cerrarM=()=>{menu.hidden=true;mas.setAttribute("aria-expanded","false");document.removeEventListener("pointerdown",fuera,true)};
   const fuera=e=>{if(!menu.contains(e.target)&&e.target!==mas)cerrarM()};
   /* el mismo menú sale con el +, o donde hagas doble clic (ahí sin «Hilo rojo», y lo que crees aparece en ese lugar) */
@@ -2977,14 +2991,8 @@ const AYUDA=[
   [{chip:"✎"},"Pasá por arriba de un post-it y tocá el lápiz: lo editás ahí mismo, sin abrirlo. Cambiás el texto, la categoría (los puntitos de colores) y el tamaño de la letra: «Grande» o «Título» para que un proyecto se destaque en la plancha."],
   [null,"Cuando creás un post-it con doble clic, los puntitos de colores le eligen la categoría antes de pegarlo."],
   [{chip:"Ctrl + G"},"Con varias cosas seleccionadas (Shift + arrastrar en el fondo), las agrupa: después se mueven juntas. Ctrl + Shift + G las separa. También está el botón «Agrupar» en la barra de arriba. Funciona en la plancha y adentro de los post-its."],
-  [null,"En el modo «Grilla», si arrastrás un post-it los demás se corren para hacerle lugar, y queda ese orden."],
+  [null,"En el modo «Grilla», si arrastrás un post-it los demás se corren para hacerle lugar, y queda ese orden. Si agrandás uno, ocupa más lugar y los demás se acomodan alrededor."],
   [{chip:"⌟"},"La esquinita de abajo a la derecha de un post-it (aparece al pasar por arriba): arrastrala para hacerlo más chico o más grande. Anda en la plancha y en los post-its de adentro."]]},
- {t:"Tareas",it:[
-  [{chip:"Doble clic"},"En el fondo de la plancha de ideas → «Lista de tareas»: crea una lista nueva ahí. Podés tener todas las que quieras. Le ponés nombre arriba y la movés arrastrándola del título."],
-  [{chip:"☐"},"Cuando hacés una tarea, tocá el cuadradito: se tacha y queda anotada sola en el diario de hoy, con la hora («Terminé: …»). Si la destachás, se borra del diario."],
-  [{chip:"×"},"Arriba a la derecha de la lista: la saca de la plancha. Si está adentro de algún post-it, sigue ahí; si no, se borra (te pregunta antes)."],
-  [{chip:"Tareas"},"Adentro de un post-it, en el «+»: armás una lista nueva ahí o ponés una que ya existe. Es la misma lista en los dos lados: si tachás o borrás algo adentro, cambia afuera también."],
-  [{chip:"Mostrar también en la plancha"},"Abajo de una lista adentro de un post-it: hace que esa misma lista aparezca también en la plancha principal."]]},
  {t:"Menú •••",it:[
   [{chip:"•••"},"Arriba a la derecha: abre una fila con todo lo que sigue."],
   [{h:'<span class="ay-chip ay-busca">⌕ Buscar en todo…</span>'},"Busca en todo, también adentro de los post-its."],
@@ -3000,10 +3008,8 @@ const AYUDA=[
   [{h:'<span class="ay-chip"><span class="ic-cuad"></span></span>'},"Al lado de la «A»: cambia el fondo de la plancha por uno de cuadritos, como el de adentro de las pilas. Lo volvés a tocar para el original."],
   [null,"Abajo, en «+ Nueva idea», están «Editar categorías» e «Importar de Google Keep»."]]},
  {t:"Adentro de un post-it",it:[
-  [{chip:"+"},"El + de la barra de la izquierda: sumás post-its, notas, texto, links, imágenes, calendarios, escaletas y el hilo rojo. En el celu sigue en la barra de abajo."],
+  [{chip:"+"},"El + de la barra de la izquierda (o doble clic en el fondo): sumás post-its, notas, texto, links, referencias, listas de tareas, pilas, imágenes, calendarios y escaletas."],
   [{chip:"Escaleta"},"Lista de escenas, con bifurcaciones para probar caminos distintos."],
-  [{h:'<span class="ay-chip">Hilo rojo</span><span class="ay-hilo"></span>'},"Lo prendés, tocás dos cosas y quedan unidas con un hilo. «Listo, hilos» para terminar."],
-  ["Doble clic en el fondo","Crea ahí mismo lo último que agregaste: post-it, nota, texto, link, imagen… Si todavía no agregaste nada, un post-it. En la plancha principal siempre es un post-it nuevo."],
   [{chip:"Aa"},"Tocá un post-it, una nota o un texto y aparece «Aa»: le cambiás la tipografía, el tamaño, la negrita, la itálica y el color a todo ese bloque."],
   ["Imágenes","Pegalas con "+CMD+"+V o arrastralas desde la compu. Tocá una y se ve en grande, en pantalla completa; tocá afuera o «Cerrar» para volver."],
   [{chip:"Recortar"},"Con la imagen en grande, tocá «Recortar»: arrastrás los bordes o las esquinas, movés el recuadro y confirmás. Anda en la plancha, adentro de los post-its y en el diario. Un GIF animado queda quieto al recortarlo."],
@@ -3016,7 +3022,15 @@ const AYUDA=[
   [{chip:"Frase nueva"},"En el «+»: creás una frase desde acá. Queda en Frases y acá adentro como referencia."],
   [null,"Lo último que tocás o movés queda arriba de todo, así podés acomodar las cosas unas encima de otras como quieras."],
   [{chip:"Doble clic"},"En el fondo abre el menú para crear (post-it, nota, link, referencia, tareas, pila, imagen…) justo en ese lugar. En la plancha de ideas: post-it, lista de tareas o pila."],
-  [{chip:"Link"},"Tocá dos veces el título (o «Título» arriba) para cambiarlo, así no queda «youtube.com». Con la manija del costado lo achicás o agrandás."]]},
+  [{chip:"Link"},"Tocá dos veces el título (o «Título» arriba) para cambiarlo, así no queda «youtube.com». Con la manija del costado lo achicás o agrandás."],
+  [null,"— Pilas adentro de un post-it —"],
+  [null,"La forma más fácil: arrastrá una cosa y soltala encima de otra, igual que en la plancha. Se arma la pila."],
+  [{chip:"Pila"},"También con doble clic en el fondo (o el «+») → «Pila»: crea una pila vacía para ir metiéndole cosas."],
+  [{chip:"Apilar"},"O seleccioná dos o más cosas (Shift + arrastrar en el fondo) y tocá «Apilar» en la barra de arriba."],
+  [null,"Para meter algo más, arrastralo encima de la pila. Para ver lo que hay adentro, tocala."],
+  [{chip:"Sacar ↗"},"Adentro de la pila, vuelve esa cosa a la hoja. «Deshacer pila» saca todo. Si borrás la pila, lo de adentro no se borra: vuelve a la hoja."],
+  [null,"La tapa muestra la primera foto que haya adentro (o el primer texto). Adentro también podés reordenar arrastrando."],
+  [null,"Si algo de adentro tenía una flecha, mientras está en la pila queda enganchada a la pila."]]},
  {t:"Referencias",it:[
   [null,"Una referencia es poner algo que ya existe adentro de otro lado, sin copiarlo. Ejemplo: tenés una locación guardada en la pila «Locaciones» y la querés ver también adentro del post-it de tu película."],
   [{chip:"+ → Referencia"},"Adentro del post-it, tocá el «+» de la izquierda y elegí «Referencia». Buscá por texto, número o categoría y tocá el que querés."],
@@ -3026,14 +3040,6 @@ const AYUDA=[
   [{chip:"↗ en #9"},"En la plancha (de ideas o de frases), lo que está referenciado en otro post-it lo dice abajo. Tocalo para ir ahí. Adentro, la tarjeta tiene una flechita ↗ arriba a la derecha que indica que es una referencia."],
   [{chip:"+ Referencia"},"Adentro de una pila también: pone en esa pila un post-it que vive en otra (por ejemplo, una nota de Keep en «Locaciones»). Sigue estando en su pila de siempre; «Quitar de acá» lo saca solo de esta."],
   [null,"Las listas de tareas funcionan igual: la misma lista puede estar en la plancha y adentro de un post-it."]]},
- {t:"Pilas adentro de un post-it",it:[
-  [null,"La forma más fácil: arrastrá una cosa y soltala encima de otra, igual que en la plancha. Se arma la pila."],
-  [{chip:"Pila"},"También con doble clic en el fondo (o el «+») → «Pila»: crea una pila vacía para ir metiéndole cosas."],
-  [{chip:"Apilar"},"O seleccioná dos o más cosas (Shift + arrastrar en el fondo) y tocá «Apilar» en la barra de arriba."],
-  [null,"Para meter algo más, arrastralo encima de la pila. Para ver lo que hay adentro, tocala."],
-  [{chip:"Sacar ↗"},"Adentro de la pila, vuelve esa cosa a la hoja. «Deshacer pila» saca todo. Si borrás la pila, lo de adentro no se borra: vuelve a la hoja."],
-  [null,"La tapa muestra la primera foto que haya adentro (o el primer texto). Adentro también podés reordenar arrastrando."],
-  [null,"Si algo de adentro tenía una flecha o un hilo, mientras está en la pila queda enganchado a la pila."]]},
  {t:"Diario",it:[
   ["Scroll infinito","Arriba lo que escribiste antes, abajo el día de hoy. Entrás y ya podés escribir."],
   ["Día nuevo","Empieza a las 3 de la mañana, no a medianoche."],
@@ -3050,7 +3056,7 @@ const AYUDA=[
   [null,"Trabajás un post-it con otra gente al mismo tiempo, como en Miro o Google Docs. Cada uno desde su compu o su celu."],
   [{h:'<span class="ay-chip" style="background:#1f9d6b;color:#fff">● En vivo</span>'},"Adentro de una idea, en •••. Se crea un link para ese post-it."],
   [{chip:"Copiar link"},"Mandáselo a quien quieras. No necesita cuenta: entra, pone su nombre y listo."],
-  ["Todo el tablero","Todo lo de adentro se comparte: texto, post-its, notas, links, imágenes, hilos rojos y dibujos. Lo que cambia uno lo ve el otro al toque."],
+  ["Todo el tablero","Todo lo de adentro se comparte: texto, post-its, notas, links, imágenes, flechas y dibujos. Lo que cambia uno lo ve el otro al toque."],
   [{h:'<span class="ay-mouse"><svg width="16" height="18" viewBox="0 0 18 20" aria-hidden="true"><path d="M2 1.5l13.5 9.2-6.3.9-3.3 5.6z" fill="#e0457b" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg><span>Fercho</span></span>'},"Ves el mouse de cada uno con su nombre. En el texto grande, también dónde está escribiendo."],
   [{h:'<span class="ay-chip" style="background:#1f9d6b;color:#fff">En vivo · Fercho</span>'},"Arriba dice quién está conectado ahora."],
   ["Solo ese post-it","El que entra no ve nada más de tu banco: ni otras ideas, ni frases, ni el diario."],
@@ -3075,6 +3081,12 @@ const AYUDA=[
   [[{ic:"lapiz"}," Lápiz"],"Dibujás arriba de la plancha. Elegís color y grosor, y tiene goma."],
   [[{ic:"undo"},{ic:"redo"}],"Deshacer y rehacer."],
   [[{ic:"ojo"}," Esconder todo"],"Deja solo la plancha, sin botones. Para volver queda un ojito apenas visible a la izquierda (o apretá Tab)."]]},
+ {t:"Tareas",it:[
+  [{chip:"Doble clic"},"En el fondo de la plancha de ideas → «Lista de tareas»: crea una lista nueva ahí. Podés tener todas las que quieras. Le ponés nombre arriba y la movés arrastrándola del título."],
+  [{chip:"☐"},"Cuando hacés una tarea, tocá el cuadradito: se tacha y queda anotada sola en el diario de hoy, con la hora («Terminé: …»). Si la destachás, se borra del diario."],
+  [{chip:"×"},"Arriba a la derecha de la lista: la saca de la plancha. Si está adentro de algún post-it, sigue ahí; si no, se borra (te pregunta antes)."],
+  [{chip:"Tareas"},"Adentro de un post-it, en el «+»: armás una lista nueva ahí o ponés una que ya existe. Es la misma lista en los dos lados: si tachás o borrás algo adentro, cambia afuera también."],
+  [{chip:"Mostrar también en la plancha"},"Abajo de una lista adentro de un post-it: hace que esa misma lista aparezca también en la plancha principal."]]},
  {t:"Atajo del iPhone",it:[
   [null,"Con un atajo en el iPhone apretás un botón, hablás, y la idea aparece sola en la web. Ni siquiera hace falta abrirla."],
   [null,"Para instalarlo, hacé todo desde el iPhone (una sola vez):"],
@@ -3133,6 +3145,10 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:31,f:"15 de noviembre",it:[
+  ["Sacamos el hilo rojo. Las flechas siguen estando.",null,2],
+  ["«Cómo se usa» más ordenado: las pilas de adentro de un post-it están en «Adentro de un post-it» y Tareas quedó más abajo.",null,3],
+  ["En el modo Grilla, si agrandás un post-it, los demás se acomodan alrededor en vez de quedar tapados.",null,2]]},
  {n:30,f:"15 de noviembre",it:[
   ["Arreglado: la tapa de las pilas se veía cortada por la mitad.",null,3],
   ["Las pilas de adentro de los post-its ahora son iguales a las de la plancha, y se abren con un toque.",null,2],
