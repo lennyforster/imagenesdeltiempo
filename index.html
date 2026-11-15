@@ -1009,6 +1009,27 @@ html:not(.plano).fondo-cuad #vp-main{background-color:#1a5a3e;--mat-major:transp
 .bref .ref-tag{justify-self:start;font:600 10px var(--mono);text-transform:uppercase;letter-spacing:.04em;color:var(--paper);background:rgba(43,37,32,.78);border-radius:999px;padding:3px 8px;margin-top:-4px}
 .nota .en-otros{border:0;border-radius:999px;padding:1px 7px;background:rgba(43,37,32,.12);color:var(--ink);font:600 10px var(--mono);cursor:pointer;margin-left:auto;white-space:nowrap}
 .nota .en-otros:hover{background:rgba(43,37,32,.22)}
+
+.barra-extra.h-extra.abierta{display:flex;animation:abrirBarra .22s ease-out}
+body.barra-abierta .barra-extra.h-extra:not(.abierta){display:none}
+.h-pill{display:inline-flex;align-items:center;gap:7px}
+.h-dot{display:inline-block;width:10px;height:10px;border-radius:3px;box-shadow:0 0 0 1px rgba(43,37,32,.3)}
+.h-dot.vacio{box-shadow:inset 0 0 0 1.5px rgba(43,37,32,.35)}
+#panel-mas.pop{transform:none;width:auto;max-width:min(430px,calc(100vw - 16px));padding:10px 12px;gap:0}
+#panel-mas.pop>:not(.pop-sec){display:none!important}
+#panel-mas.pop .pop-sec>.nota-panel{display:none}
+
+.agregar-menu#menu-main{z-index:30}
+
+#capa-hoja .pieza.por-apilar{outline:3px dashed var(--paper);outline-offset:6px}
+#capa-hoja .pieza.por-apilar::after{content:"Soltá para apilar";position:absolute;left:50%;bottom:-36px;transform:translateX(-50%);background:var(--ink);color:var(--paper);font:600 12px var(--ui);padding:4px 10px;border-radius:999px;white-space:nowrap;z-index:9}
+
+.esc-asa{width:26px;height:26px;right:-10px;bottom:-10px;border-radius:50%;background:var(--paper);box-shadow:0 1px 2px rgba(0,0,0,.25),0 3px 8px rgba(0,0,0,.25);display:grid;place-items:center}
+.esc-asa::before{content:"";width:12px;height:12px;background:var(--ink);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M1 5V1h4M11 7v4H7M1 1l10 10' stroke='black' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M1 5V1h4M11 7v4H7M1 1l10 10' stroke='black' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat}
+.esc-asa:hover{background:#fff;transform:scale(1.1)}
+@media (hover:none){.esc-asa{opacity:0}.nota:focus-within .esc-asa,.pieza.bpost.sel .esc-asa{opacity:1}}
 </style>
 <div class="cargando" id="cargando" hidden role="status"><span class="cg-punto"></span>Cargando tu plancha…</div>
 <div class="conectar" id="conectar" hidden>
@@ -1449,6 +1470,7 @@ window.claude={use:async n=>{if(INVITADO&&n==="db"){if(!listo)listo=conectar();r
     <button class="tool" id="add-tx" type="button">Texto</button>
     <button class="tool" id="add-link" type="button">Link</button>
     <button class="tool" id="add-tar" type="button">Tareas</button>
+    <button class="tool" id="add-pila" type="button">Pila</button>
     <button class="tool" id="add-nidea" type="button">Post-it nuevo</button>
     <button class="tool" id="add-nfrase" type="button">Frase nueva</button>
     <button class="tool" id="add-ref" type="button" title="Conectá este post-it con otro: aparece acá adentro y sigue viviendo en su lugar">Referencia</button>
@@ -1721,6 +1743,8 @@ function escribir(col,id,patch,{silencioso}={}){
 
 /* ---------- Plancha principal ---------- */
 const lzMain=new Lienzo($("vp-main"),$("capa-main"),$("zoom-main"));lzMain.vp.addEventListener("pointerdown",e=>selGrupo(lzMain,e),true);
+/* en la plancha, el último post-it que tocaste queda arriba (mientras dure la sesión) */
+let zArriba=10;const zNota=new Map();lzMain.vp.addEventListener("pointerdown",e=>{const n=e.target.closest("#capa-main .nota");if(!n||!n._id)return;zArriba++;zNota.set(n._id,zArriba);n.style.zIndex=zArriba},true);
 const nodosNota=new Map(),nodosDeco=new Map();let selDeco=null,borrarDeco=null;
 const enPila=i=>!!enPilaId(i);
 const enPlancha=k=>k==="ideas"?data.ideas.filter(i=>!enPila(i)):data[k];
@@ -1795,7 +1819,7 @@ function pintarNota(c,k,i,p){
   if(c._editando)return;
   const enOtros=refsA(i.id),px0=proximo(i),firma=[enOtros.map(x=>x.id+":"+(x.numero||"")).join(","),+i.esc||1,i.g||"",+i.dest||0,i.numero,i.tipo,esIdea?label(i.tipo):"",colorDe(k,i),i.texto,i.autor,i.creado,i.estado,i.vivo||"",px0?px0.d+px0.t:"",resumenExtra(i),coincide(i),modoHilo&&origenHilo===i.id].join("\u0001");
   if(c._firma===firma)return;c._firma=firma;
-  if(i.g)c.dataset.g=i.g;else delete c.dataset.g;c.style.scale=+i.esc&&+i.esc!==1?String(+i.esc):"";c.style.zIndex=2;c.style.setProperty("--c",colorDe(k,i));c.classList.toggle("en-vivo",!!i.vivo);c.classList.toggle("dest1",esIdea&&+i.dest===1);c.classList.toggle("dest2",esIdea&&+i.dest===2);c.style.setProperty("--r",giro(i.id)+"deg");
+  if(i.g)c.dataset.g=i.g;else delete c.dataset.g;c.style.scale=+i.esc&&+i.esc!==1?String(+i.esc):"";c.style.zIndex=zNota.get(i.id)||2;c.style.setProperty("--c",colorDe(k,i));c.classList.toggle("en-vivo",!!i.vivo);c.classList.toggle("dest1",esIdea&&+i.dest===1);c.classList.toggle("dest2",esIdea&&+i.dest===2);c.style.setProperty("--r",giro(i.id)+"deg");
   c.setAttribute("aria-label",`Abrir ${esIdea?"idea":"frase"} ${i.numero||""}`);
   c.children[0].replaceChildren(el("span",null,`#${i.numero||"?"}${esIdea?" · "+label(i.tipo):""}`),el("span",null,i.creado?new Date(i.creado).toLocaleDateString("es-AR",{day:"2-digit",month:"2-digit"}).replace(/\//g,"."):""));
   const cuerpo=c.children[1];cuerpo.replaceChildren(el("p","txt",esIdea?(i.texto||""):`“${(i.texto||"").replace(/^[«“"]|[»”"]$/g,"")}”`));
@@ -2089,6 +2113,7 @@ document.addEventListener("paste",e=>{if(enDiario){const fi=[...(e.clipboardData
 
 /* ---------- Plancha de un post-it ---------- */
 const lzHoja=new Lienzo($("vp-hoja"),$("capa-hoja"),$("zoom-hoja"));lzHoja.vp.addEventListener("pointerdown",e=>selGrupo(lzHoja,e),true);
+lzHoja.vp.addEventListener("pointerdown",e=>{if(!abierto)return;const n=e.target.closest("#capa-hoja .pieza[data-bid]");if(!n)return;const b=abierto.doc.bloques.find(x=>x.id===n.dataset.bid);if(!b)return;const bl=abierto.doc.bloques;if(bl[bl.length-1]===b)return;alFrente(b);guardarLuego("bloques",()=>abierto.doc.bloques)},true);
 lzHoja.onSeleccion=(r,sumar)=>selPoner(lzHoja,[...document.querySelectorAll("#capa-hoja .pieza")].filter(n=>seTocan(cajaNodo(n),r)),sumar);
 lzHoja.onBorrarSel=ns=>{if(!abierto)return;const ids=new Set(ns.map(n=>n.dataset.bid).filter(Boolean));const d=abierto.doc;for(const b of d.bloques)if(b.en&&ids.has(b.en)&&!ids.has(b.id))delete b.en;
   const imgs=d.bloques.filter(b=>ids.has(b.id)&&b.t==="img");d.bloques=d.bloques.filter(b=>!ids.has(b.id));d.hilos=(d.hilos||[]).filter(h=>!ids.has(h.a)&&!ids.has(h.b));
@@ -2116,12 +2141,12 @@ function abrir(k,id,virtual){
    if(papel){const d=abierto.doc;if(d.imagen||d.sonido||d.escena){d.texto=textoDia(d);delete d.imagen;delete d.sonido;delete d.escena;abierto.migrar=true}}}$("h-del").style.color="";$("linkform").hidden=true;estado("");
   for(const pnl of ["panel-claude","panel-mezcla","panel-cats","panel-cal","panel-compartir","panel-export","panel-mas","panel-ref","panel-tar"])$(pnl).hidden=true;if(modoHilo)setModoHilo(false);
   $("detalle").hidden=false;pintarCabecera();pintarHoja();
-  $("add-ref").hidden=k!=="ideas";$("add-nidea").hidden=k!=="ideas";$("add-nfrase").hidden=k!=="ideas";$("add-tar").hidden=k!=="ideas";$("add-img").hidden=!assets;$("btn-claude").hidden=!samp;$("h-dictar").hidden=!samp;
+  $("add-ref").hidden=k!=="ideas";$("add-pila").hidden=k==="diario";$("add-nidea").hidden=k!=="ideas";$("add-nfrase").hidden=k!=="ideas";$("add-tar").hidden=k!=="ideas";$("add-img").hidden=!assets;$("btn-claude").hidden=!samp;$("h-dictar").hidden=!samp;
   if(abierto.migrar){abierto.migrar=false;guardarHoja("texto",abierto.doc.texto);escribir(cols.diario,id,{imagen:"",sonido:"",escena:""},{silencioso:true})}
   lzHoja.apply();if(k==="diario"){lzHoja.clave=null;posicionarDia()}else if(!lzHoja.usar("hoja:"+id))requestAnimationFrame(()=>lzHoja.encuadrar(lzHoja.limites()));
   requestAnimationFrame(()=>{document.querySelectorAll("#capa-hoja textarea").forEach(autosize);pintarHilos();$("volver").focus()});
 }
-function cerrar(){if(window.__invitado)return;cerrarPilaHoja();navRef=[];$("volver").textContent="← Volver";$("panel-ref").hidden=true;$("panel-tar").hidden=true;const vacio=abierto&&abierto.vacio&&abierto.k==="ideas"&&!(abierto.doc.texto||"").trim()&&!(abierto.doc.bloques||[]).length&&!(abierto.doc.trazos||[]).length?abierto.id:null;if(vacio&&cols.ideas)setTimeout(()=>cols.ideas.doc(vacio).delete().catch(()=>{}),0);cerrarVivo();$("panel-vivo").hidden=true;const eraDia=abierto&&abierto.k==="diario"?{id:abierto.id,doc:abierto.doc}:null;
+function cerrar(){if(window.__invitado)return;window.cerrarBarraHoja&&window.cerrarBarraHoja();cerrarPilaHoja();navRef=[];$("volver").textContent="← Volver";$("panel-ref").hidden=true;$("panel-tar").hidden=true;const vacio=abierto&&abierto.vacio&&abierto.k==="ideas"&&!(abierto.doc.texto||"").trim()&&!(abierto.doc.bloques||[]).length&&!(abierto.doc.trazos||[]).length?abierto.id:null;if(vacio&&cols.ideas)setTimeout(()=>cols.ideas.doc(vacio).delete().catch(()=>{}),0);cerrarVivo();$("panel-vivo").hidden=true;const eraDia=abierto&&abierto.k==="diario"?{id:abierto.id,doc:abierto.doc}:null;
   setTimeout(()=>{if(eraDia&&!pesoDia(eraDia.doc)&&!(eraDia.doc.trazos||[]).length&&entradaDia(eraDia.id))cols.diario.doc(eraDia.id).delete().catch(()=>{});pintarDiario()},50);
   selLimpiar(lzHoja);$("panel-export").hidden=true;$("panel-mas").hidden=true;vaciarPendientes();if(modoHilo)setModoHilo(false);selHilo=null;abierto=null;$("detalle").hidden=true;$("panel-compartir").hidden=true;$("capa-hoja").replaceChildren();gHoja=null;cortarHoja=null;gTrazosHoja=null;if(lzHoja.modo)lzHoja.setModo(null)}
 function sincronizarAbierto(k){
@@ -2208,8 +2233,8 @@ function nodoBloque(b){
   if(b.t==="post"){const asa=el("div","asa esc-asa");asa.title="Arrastrá para achicarlo o agrandarlo";n.append(asa);
     redimensionable(asa,lzHoja,{inicio:()=>200*(parseFloat(n.style.scale)||1),mover:w=>{n.style.scale=String(Math.max(.45,Math.min(2.5,w/200)));pintarHilos()},soltar:()=>{b.esc=Math.round((parseFloat(n.style.scale)||1)*100)/100;if(b.esc===1)delete b.esc;guardarBloques()}})}
   if(b.t==="img"){const asa=el("div","asa");n.append(asa);redimensionable(asa,lzHoja,{inicio:()=>parseFloat(n.style.width),mover:w=>{n.style.width=w+"px";pintarHilos()},soltar:()=>{b.w=Math.round(parseFloat(n.style.width));guardarBloques()}})}
-  arrastrable(n,lzHoja,{solo:b.t==="tar"?".tr-cab":b.t==="txt"||b.t==="tx"||b.t==="post"||b.t==="cal"||b.t==="esc"?".grip":null,inicio:()=>({x:parseFloat(n.style.left),y:parseFloat(n.style.top)}),mover:(x,y)=>{n.style.left=x+"px";n.style.top=y+"px";pintarHilos();marcarPilaHoja(destinoPilaHoja(n,b))},
-    soltar:()=>{b.x=Math.round(parseFloat(n.style.left));b.y=Math.round(parseFloat(n.style.top));const dp=destinoPilaHoja(n,b);marcarPilaHoja(null);if(dp){meterEnPilaHoja(dp,[b]);return}alFrente(b);guardarBloques()},
+  arrastrable(n,lzHoja,{solo:b.t==="tar"?".tr-cab":b.t==="txt"||b.t==="tx"||b.t==="post"||b.t==="cal"||b.t==="esc"?".grip":null,inicio:()=>({x:parseFloat(n.style.left),y:parseFloat(n.style.top)}),mover:(x,y)=>{n.style.left=x+"px";n.style.top=y+"px";pintarHilos();const dp=destinoPilaHoja(n,b);marcarPilaHoja(dp);if(!dp&&!n.classList.contains("msel"))seguirApilarHoja(n,b)},
+    soltar:()=>{b.x=Math.round(parseFloat(n.style.left));b.y=Math.round(parseFloat(n.style.top));const dp=destinoPilaHoja(n,b);marcarPilaHoja(null);if(dp){soltarApilarHoja(n,b);meterEnPilaHoja(dp,[b]);return}if(soltarApilarHoja(n,b))return;alFrente(b);guardarBloques()},
     tocar:()=>{if(modoHilo){tocarHilo(b.id);return}const ya=selB===b.id;marcar();borrarB=null;q.textContent="Quitar";if(b.t==="img")verImagen(b.a,{recortar:recortarB});if(b.t==="ref"&&ya)irARef(b.ref,kDe(b));if(b.t==="pila"&&ya)abrirPilaHoja(b.id)}});
   return n;
 }
@@ -2227,6 +2252,15 @@ function pintarPilaHoja(n,b){const ms=miembrosHP(b.id);n.querySelectorAll(":scop
   const im=ms.map(fotoDeB).find(Boolean);if(im){const i=el("img","hp-img");i.alt="";i.draggable=false;i.onerror=()=>i.remove();cargarImg(i,im);f.append(i)}
   else{const tx=ms.map(textoDeB).find(v=>v&&v.trim());if(tx)f.append(el("p","hp-txt",tx))}
   const ab=el("button","hp-abrir","Abrir");ab.type="button";ab.onclick=e=>{e.stopPropagation();abrirPilaHoja(b.id)};f.append(ab);n.prepend(f);n.title="Tocala dos veces para ver lo que hay adentro"}
+/* si soltás algo encima de otra cosa sin quedarte quieto, queda encima (capas). Si te quedás ~1 segundo encima, se marca y al soltar se apilan */
+let apilarHoja={sobre:null,t:0,listo:false,tm:null};
+function bajoHoja(n){const r=n.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+Math.min(r.height/2,60);
+  for(const p of [...document.querySelectorAll("#capa-hoja .pieza[data-bid]")].reverse()){if(p===n||p.classList.contains("msel")&&n.classList.contains("msel"))continue;const q=p.getBoundingClientRect();if(cx>q.left&&cx<q.right&&cy>q.top&&cy<q.bottom)return p}return null}
+function seguirApilarHoja(n,b){if(!b||b.t==="pila"){return}const p=bajoHoja(n),id=p&&!p.classList.contains("bpila")?p.dataset.bid:null;
+  if(id!==apilarHoja.sobre){clearTimeout(apilarHoja.tm);document.querySelectorAll("#capa-hoja .pieza.por-apilar").forEach(x=>x.classList.remove("por-apilar"));apilarHoja={sobre:id,listo:false,tm:id?setTimeout(()=>{apilarHoja.listo=true;const q=nodoHoja(id);if(q)q.classList.add("por-apilar")},900):null}}}
+function soltarApilarHoja(n,b){clearTimeout(apilarHoja.tm);const {sobre,listo}=apilarHoja;apilarHoja={sobre:null,listo:false,tm:null};document.querySelectorAll("#capa-hoja .pieza.por-apilar").forEach(x=>x.classList.remove("por-apilar"));
+  if(!listo||!sobre||!abierto)return false;const otro=abierto.doc.bloques.find(x=>x.id===sobre);if(!otro||otro.t==="pila")return false;
+  const pb={id:bid(),t:"pila",x:otro.x,y:otro.y};abierto.doc.bloques.push(pb);for(const x of [otro,b]){x.en=pb.id;nodoHoja(x.id)?.remove()}$("capa-hoja").append(nodoBloque(pb));if(selB===b.id||selB===otro.id)selB=null;guardarBloques();pintarHilos();toast("Pila armada. Tocala dos veces para ver lo que tiene.");return true}
 function destinoPilaHoja(n,b){if(!b||b.t==="pila")return null;const r=n.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+Math.min(r.height/2,60);
   for(const p of document.querySelectorAll("#capa-hoja .pieza.bpila")){if(p===n||p.classList.contains("msel")&&n.classList.contains("msel"))continue;const q=p.getBoundingClientRect();if(cx>q.left&&cx<q.right&&cy>q.top&&cy<q.bottom)return p.dataset.bid}return null}
 function marcarPilaHoja(pid){document.querySelectorAll("#capa-hoja .pieza.bpila").forEach(p=>p.classList.toggle("destino",p.dataset.bid===pid))}
@@ -2250,6 +2284,7 @@ $("hp-deshacer").onclick=()=>{const pb=abierto&&abierto.doc.bloques.find(x=>x.id
 $("hp-titulo").addEventListener("input",()=>{const pid=hpPila,v=$("hp-titulo").value;clearTimeout(tHpTit);tHpTit=setTimeout(()=>{const pb=abierto&&abierto.doc.bloques.find(x=>x.id===pid);if(!pb)return;if(v.trim())pb.titulo=v.trim();else delete pb.titulo;guardarBloques();refrescarPilaHoja(pid)},400)});
 $("hp-titulo").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("hp-titulo").blur()}});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("hpila").hidden){e.preventDefault();e.stopImmediatePropagation();cerrarPilaHoja()}},true);
+$("add-pila").onclick=()=>{if(!abierto)return;const c=centroNuevo(),pb={id:bid(),t:"pila",titulo:"Pila nueva",x:Math.round(c.x-100),y:Math.round(c.y-90)};abierto.doc.bloques.push(pb);$("capa-hoja").append(nodoBloque(pb));guardarBloques();toast("Pila nueva: arrastrá cosas encima y quedate un segundo para meterlas.")};
 lzHoja.onApilarSel=ns=>{if(!abierto)return;const bs=ns.map(n=>abierto.doc.bloques.find(b=>b.id===n.dataset.bid)).filter(b=>b&&b.t!=="pila");if(bs.length<2)return;
   const pb={id:bid(),t:"pila",x:Math.min(...bs.map(b=>b.x)),y:Math.min(...bs.map(b=>b.y))};selLimpiar(lzHoja);abierto.doc.bloques.push(pb);for(const b of bs){b.en=pb.id;nodoHoja(b.id)?.remove()}
   $("capa-hoja").append(nodoBloque(pb));guardarBloques();pintarHilos();toast("Apilados. Tocá la pila dos veces para ver lo que hay adentro.")};
@@ -2321,11 +2356,19 @@ for(const bt of $("r-tipo").children)bt.onclick=()=>{kRef=bt.dataset.k;pintarPan
 $("add-ref").onclick=()=>abrirPanelRef();$("add-nidea").onclick=()=>abrirPanelRef("ideas");$("add-nfrase").onclick=()=>abrirPanelRef("frases");$("cerrar-ref").onclick=()=>{$("panel-ref").hidden=true};
 $("r-buscar").addEventListener("input",pintarPanelRef);$("r-crear-btn").onclick=crearRef;
 $("r-buscar").addEventListener("keydown",e=>{if(e.key==="Escape"){e.preventDefault();e.stopPropagation();$("panel-ref").hidden=true}else if(e.key==="Enter"){e.preventDefault();if(crearRefModo){crearRef();return}const f=$("r-lista").querySelector(".r-fila");if(f)f.click();else crearRef()}});
-lzMain.onBgDoble=e=>{const p=lzMain.aMundo(e.clientX,e.clientY);crearAhi(Math.round(p.x-100),Math.round(p.y-40))};
+lzMain.onBgDoble=e=>{const p=lzMain.aMundo(e.clientX,e.clientY);if(vista!=="ideas"){crearAhi(Math.round(p.x-100),Math.round(p.y-40));return}menuCrearMain(e.clientX,e.clientY,p)};
+function menuCrearMain(cx,cy,p){let m=$("menu-main");if(!m){m=el("div","agregar-menu");m.id="menu-main";m.setAttribute("role","menu");document.body.append(m)}
+  const cerrarM=()=>{m.hidden=true;document.removeEventListener("pointerdown",fuera,true)},fuera=e=>{if(!m.contains(e.target))cerrarM()};
+  const op=[["Post-it","am",()=>crearAhi(Math.round(p.x-100),Math.round(p.y-40))],["Lista de tareas",null,async()=>{const id=await nuevaLista({enPlancha:true,x:Math.round(p.x-125),y:Math.round(p.y-30)});if(id)setTimeout(()=>enfocarLista(id,".tr-tit"),250)}],
+    ["Pila",null,async()=>{if(!colPilas)return;try{const r=await colPilas.add({tablero:"ideas",x:Math.round(p.x-105),y:Math.round(p.y-105),titulo:"Pila nueva",creado:Date.now()});setTimeout(()=>{abrirPila(r.id);const t=$("pv-titulo");t.focus();t.select()},300)}catch(_){toast("No se pudo crear la pila.")}}]];
+  m.replaceChildren(...op.map(([t,c,fn])=>{const b=el("button",c,t);b.type="button";b.setAttribute("role","menuitem");b.onclick=()=>{cerrarM();fn()};return b}));
+  m.style.left=(cx+6)+"px";m.style.top=cy+"px";m.hidden=false;requestAnimationFrame(()=>{const r=m.getBoundingClientRect();if(r.right>innerWidth-8)m.style.left=(cx-r.width-6)+"px";if(r.bottom>innerHeight-8)m.style.top=(parseFloat(m.style.top)-(r.bottom-innerHeight+8))+"px"});
+  setTimeout(()=>document.addEventListener("pointerdown",fuera,true),0);document.addEventListener("keydown",function k(e){if(e.key==="Escape"){cerrarM();document.removeEventListener("keydown",k)}})}
 /* adentro de un post-it, el doble clic crea lo mismo que agregaste la última vez */
 const TIPOS_CREAR=["post","txt","tx","link","img","cal","esc"];let ultCreado="post",puntoNuevo=null;try{const u=localStorage.getItem("ult_creado");if(TIPOS_CREAR.includes(u))ultCreado=u}catch(_){}
 function centroNuevo(){const p=puntoNuevo||lzHoja.centro();puntoNuevo=null;return p}
 lzHoja.onBgDoble=e=>{if(!abierto)return;const p=lzHoja.aMundo(e.clientX,e.clientY);
+  if(window.menuCrearHoja&&!lzHoja.papel){window.menuCrearHoja(e.clientX,e.clientY,p);return}
   if(ultCreado!=="post"){const bt=$("add-"+ultCreado);if(bt&&!bt.hidden&&bt.onclick){bt.onclick({_p:p});return}}
   const n=agregarBloque({id:bid(),t:"post",v:"",c:PALETA[Math.floor(Math.random()*8)],x:Math.round(p.x-100),y:Math.round(p.y-30)});requestAnimationFrame(()=>n.querySelector("textarea")?.focus())};
 lzHoja.onBgTap=()=>{selB=null;borrarB=null;selHilo=null;document.querySelectorAll("#capa-hoja .pieza").forEach(x=>x.classList.remove("sel"));pintarHilos()};
@@ -2600,11 +2643,17 @@ crearLateral(lzMain);crearLateral(lzHoja);pintarPaletas();
 /* adentro de un post-it: el + de la barra izquierda tiene todo lo que se puede agregar */
 {const bar=lzHoja.vp.parentElement.querySelector(".lateral"),mas=el("button","lat mas","+");mas.type="button";mas.title="Agregar";mas.setAttribute("aria-label","Agregar");mas.setAttribute("aria-expanded","false");
   bar.prepend(mas,el("span","lat-sep"));const menu=el("div","agregar-menu");menu.hidden=true;menu.setAttribute("role","menu");$("detalle").append(menu);
-  const OPC=[["add-post","Post-it","am"],["add-txt","Nota"],["add-tx","Texto"],["add-link","Link"],["add-ref","Referencia"],["add-nidea","Post-it nuevo"],["add-nfrase","Frase nueva"],["add-tar","Tareas"],["add-img","Imagen"],["add-cal","Calendario"],["add-esc","Escaleta"],["h-hilo","Hilo rojo"]];
+  const OPC=[["add-post","Post-it","am"],["add-txt","Nota"],["add-tx","Texto"],["add-link","Link"],["add-ref","Referencia"],["add-nidea","Post-it nuevo"],["add-nfrase","Frase nueva"],["add-tar","Tareas"],["add-pila","Pila"],["add-img","Imagen"],["add-cal","Calendario"],["add-esc","Escaleta"],["h-hilo","Hilo rojo"]];
   const cerrarM=()=>{menu.hidden=true;mas.setAttribute("aria-expanded","false");document.removeEventListener("pointerdown",fuera,true)};
   const fuera=e=>{if(!menu.contains(e.target)&&e.target!==mas)cerrarM()};
-  mas.onclick=()=>{if(!menu.hidden){cerrarM();return}menu.replaceChildren();
-    for(const [id,t,c] of OPC){const o=$(id);if(!o||o.hidden)continue;const b=el("button",c||null,t);b.type="button";b.setAttribute("role","menuitem");if(id==="h-hilo")b.setAttribute("aria-pressed",o.getAttribute("aria-pressed"));b.onclick=()=>{cerrarM();o.click()};menu.append(b)}
+  /* el mismo menú sale con el +, o donde hagas doble clic (ahí sin «Hilo rojo», y lo que crees aparece en ese lugar) */
+  const armar=punto=>{menu.replaceChildren();
+    for(const [id,t,c] of OPC){if(punto&&id==="h-hilo")continue;const o=$(id);if(!o||o.hidden)continue;const b=el("button",c||null,t);b.type="button";b.setAttribute("role","menuitem");if(id==="h-hilo")b.setAttribute("aria-pressed",o.getAttribute("aria-pressed"));
+      b.onclick=()=>{cerrarM();if(punto&&TIPOS_CREAR.includes(id.slice(4))&&o.onclick){o.onclick({_p:punto});return}if(punto)puntoNuevo=punto;o.click()};menu.append(b)}};
+  window.menuCrearHoja=(cx,cy,punto)=>{if(!menu.hidden)cerrarM();armar(punto);menu.style.left=(cx+6)+"px";menu.style.top=cy+"px";menu.hidden=false;
+    requestAnimationFrame(()=>{const m=menu.getBoundingClientRect();if(m.right>innerWidth-8)menu.style.left=(cx-m.width-6)+"px";if(m.top<8)menu.style.top=(parseFloat(menu.style.top)+8-m.top)+"px";if(m.bottom>innerHeight-8)menu.style.top=(parseFloat(menu.style.top)-(m.bottom-innerHeight+8))+"px"});
+    setTimeout(()=>document.addEventListener("pointerdown",fuera,true),0)};
+  mas.onclick=()=>{if(!menu.hidden){cerrarM();return}armar(null);
     const r=mas.getBoundingClientRect();menu.style.left=(r.right+14)+"px";menu.style.top=(r.top+r.height/2)+"px";menu.hidden=false;mas.setAttribute("aria-expanded","true");
     requestAnimationFrame(()=>{const m=menu.getBoundingClientRect();if(m.top<8)menu.style.top=(parseFloat(menu.style.top)+8-m.top)+"px";if(m.bottom>innerHeight-8)menu.style.top=(parseFloat(menu.style.top)-(m.bottom-innerHeight+8))+"px"});
     document.addEventListener("pointerdown",fuera,true)};
@@ -2903,7 +2952,7 @@ const AYUDA=[
   [null,"Cuando creás un post-it con doble clic, los puntitos de colores le eligen la categoría antes de pegarlo."],
   [{chip:"Ctrl + G"},"Con varias cosas seleccionadas (Shift + arrastrar en el fondo), las agrupa: después se mueven juntas. Ctrl + Shift + G las separa. También está el botón «Agrupar» en la barra de arriba. Funciona en la plancha y adentro de los post-its."],
   [null,"En el modo «Grilla», si arrastrás un post-it los demás se corren para hacerle lugar, y queda ese orden."],
-  [{chip:"◢"},"La esquinita de abajo a la derecha de un post-it: arrastrala para hacerlo más chico o más grande. Anda en la plancha y en los post-its de adentro."]]},
+  [{chip:"⤡"},"El circulito en la esquina de abajo a la derecha de un post-it (aparece al pasar por arriba): arrastralo para hacerlo más chico o más grande. Anda en la plancha y en los post-its de adentro."]]},
  {t:"Tareas",it:[
   [{h:'<span class="ay-chip"><span class="ic-lista"></span></span>'},"En el •••, al lado de la «A»: crea una lista de tareas nueva en la plancha. Podés tener todas las que quieras. Le ponés nombre arriba y la movés arrastrándola del título."],
   [{chip:"☐"},"Cuando hacés una tarea, tocá el cuadradito: se tacha y queda anotada sola en el diario de hoy, con la hora («Terminé: …»). Si la destachás, se borra del diario."],
@@ -2939,7 +2988,8 @@ const AYUDA=[
   [{chip:"Referencia"},"Pone adentro un post-it o una frase que vive en otro lado. Está explicado bien en la pestaña «Referencias»."],
   [{chip:"Post-it nuevo"},"En el «+»: creás un post-it de verdad, de la categoría que elijas, desde adentro de este. Queda en la plancha (o en la pila de esa categoría) y acá adentro como referencia."],
   [{chip:"Frase nueva"},"En el «+»: creás una frase desde acá. Queda en Frases y acá adentro como referencia."],
-  [null,"Lo último que movés queda arriba de todo, así podés acomodar las cosas unas encima de otras como quieras."],
+  [null,"Lo último que tocás o movés queda arriba de todo, así podés acomodar las cosas unas encima de otras como quieras."],
+  [{chip:"Doble clic"},"En el fondo abre el menú para crear (post-it, nota, link, referencia, tareas, pila, imagen…) justo en ese lugar. En la plancha de ideas: post-it, lista de tareas o pila."],
   [{chip:"Link"},"Tocá dos veces el título (o «Título» arriba) para cambiarlo, así no queda «youtube.com». Con la manija del costado lo achicás o agrandás."]]},
  {t:"Referencias",it:[
   [null,"Una referencia es poner algo que ya existe adentro de otro lado, sin copiarlo. Ejemplo: tenés una locación guardada en la pila «Locaciones» y la querés ver también adentro del post-it de tu película."],
@@ -2951,7 +3001,9 @@ const AYUDA=[
   [{chip:"+ Referencia"},"Adentro de una pila también: pone en esa pila un post-it que vive en otra (por ejemplo, una nota de Keep en «Locaciones»). Sigue estando en su pila de siempre; «Quitar de acá» lo saca solo de esta."],
   [null,"Las listas de tareas funcionan igual: la misma lista puede estar en la plancha y adentro de un post-it."]]},
  {t:"Pilas adentro de un post-it",it:[
-  [{chip:"Apilar"},"Adentro de un post-it, seleccioná dos o más cosas (Shift + arrastrar en el fondo, o el modo selección) y tocá «Apilar» en la barra de arriba. Se juntan en una pila."],
+  [null,"La forma más fácil: arrastrá una cosa encima de otra y quedate quieto un segundo. Aparece «Soltá para apilar»: soltás y se arma la pila. Si soltás enseguida, solo queda encima (para acomodar capas)."],
+  [{chip:"Pila"},"También con doble clic en el fondo (o el «+») → «Pila»: crea una pila vacía para ir metiéndole cosas."],
+  [{chip:"Apilar"},"O seleccioná dos o más cosas (Shift + arrastrar en el fondo) y tocá «Apilar» en la barra de arriba."],
   [null,"Para meter algo más, arrastralo encima de la pila. Para ver lo que hay adentro, tocá la pila dos veces o «Abrir»."],
   [{chip:"Sacar ↗"},"Adentro de la pila, vuelve esa cosa a la hoja. «Deshacer pila» saca todo. Si borrás la pila, lo de adentro no se borra: vuelve a la hoja."],
   [null,"La tapa muestra la primera foto que haya adentro (o el primer texto). Adentro también podés reordenar arrastrando."],
@@ -3054,6 +3106,13 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:28,f:"15 de noviembre",it:[
+  ["*Doble clic = menú para crear*. Donde hagas doble clic (adentro de un post-it o en la plancha de ideas) aparece el menú con todo lo que podés crear, y lo crea ahí mismo.",null,1],
+  ["*Pilas adentro de los post-its, más fácil*: arrastrá una cosa encima de otra y quedate un segundo quieto. Cuando aparece «Soltá para apilar», soltás y listo. También está «Pila» en el menú.",null,1],
+  ["Lo último que tocás queda arriba de todo, en la plancha y adentro de los post-its.",null,2],
+  ["La manija para agrandar o achicar ahora es un circulito con flechas, más fácil de agarrar.",null,3]]},
+ {n:27,f:"15 de noviembre",it:[
+  ["El ••• de adentro de un post-it ahora se abre como el de la plancha: una fila hacia el costado. Categoría y estado son botones que despliegan sus opciones.",null,3]]},
  {n:26,f:"15 de noviembre",it:[
   ["Las frases y post-its que están referenciados adentro de otro post-it ahora lo dicen en la plancha («↗ en #9»), y adentro la tarjeta dice que es una referencia.",null,2]]},
  {n:25,f:"15 de noviembre",it:[
@@ -3959,7 +4018,23 @@ $("m-pegar").onclick=async()=>{
   $("m-pegar").disabled=false;
 };
 
-$("h-mas").onclick=()=>{const p=$("panel-mas");p.hidden=!p.hidden;for(const x of ["panel-claude","panel-export","panel-compartir","linkform"])$(x).hidden=true};
+/* ••• adentro de un post-it: una fila hacia el costado, igual que en la plancha. Categoría y estado son botones que abren un desplegable chico */
+{const bar=el("div","barra-extra h-extra");bar.id="h-extra";$("h-mas").before(bar);
+  const pc=el("button","btn h-pill");pc.type="button";pc.title="Cambiar la categoría";const pe=el("button","btn h-pill");pe.type="button";pe.title="Cambiar el estado";
+  const cx=el("button","btn ic","×");cx.type="button";cx.setAttribute("aria-label","Cerrar");cx.title="Cerrar";let movido=false;
+  const pill=(b,color,txt)=>{const d=el("i","h-dot");d.style.background=color||"transparent";if(!color)d.classList.add("vacio");b.replaceChildren(d,document.createTextNode(txt+" ▾"))};
+  const pintarPills=()=>{const d=abierto&&abierto.doc;pc.hidden=!d||$("mas-cat").hidden;pe.hidden=!d||$("mas-est").hidden;if(!d)return;
+    if(!pc.hidden)pill(pc,cat(d.tipo).color,label(d.tipo));if(!pe.hidden){const e=estadoDe(d.estado);pill(pe,e&&e.color,e?e.nombre:"Estado")}};
+  const cerrarPop=()=>{const p=$("panel-mas");p.hidden=true;p.classList.remove("pop");p.style.left=p.style.top="";p.querySelectorAll(".pop-sec").forEach(x=>x.classList.remove("pop-sec"))};
+  const pop=(sec,b)=>{const p=$("panel-mas"),ya=!p.hidden&&$(sec).classList.contains("pop-sec");cerrarPop();if(ya)return;$(sec).classList.add("pop-sec");p.classList.add("pop");p.hidden=false;
+    const r=b.getBoundingClientRect();p.style.left=Math.max(8,Math.min(innerWidth-p.offsetWidth-8,r.left))+"px";p.style.top=(r.bottom+8)+"px"};
+  const cerrarBarra=()=>{bar.classList.remove("abierta");cerrarPop()};window.cerrarBarraHoja=cerrarBarra;
+  $("h-mas").onclick=()=>{if(!movido){movido=true;bar.append(pc,pe,...$("panel-mas").querySelectorAll(".mas-fila>*,.mas-pie>*"),cx)}
+    const ab=!bar.classList.contains("abierta");cerrarBarra();if(ab){bar.classList.add("abierta");pintarPills()}for(const x of ["panel-claude","panel-export","panel-compartir","linkform"])$(x).hidden=true};
+  cx.onclick=cerrarBarra;pc.onclick=()=>pop("mas-cat",pc);pe.onclick=()=>pop("mas-est",pe);
+  bar.addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b===pc||b===pe||b===cx||b.id==="h-del")return;setTimeout(cerrarBarra,0)});
+  for(const id of ["h-colores","h-estados"])$(id).addEventListener("click",()=>setTimeout(()=>{pintarPills();cerrarPop()},60));
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&bar.classList.contains("abierta")&&$("panel-mas").hidden){e.preventDefault();e.stopImmediatePropagation();cerrarBarra()}},true)}
 $("cerrar-mas").onclick=()=>{$("panel-mas").hidden=true};
 /* ---------- Dictar idea (micrófono del teclado + Claude interpreta) ---------- */
 let deshacerDictado=null,ctlDictado=null;
