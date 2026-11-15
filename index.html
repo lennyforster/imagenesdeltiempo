@@ -1787,14 +1787,14 @@ const colsGrilla=k=>Math.max(4,Math.round(Math.sqrt(enPlancha(k).length*1.6)));
 const ordenEnGrilla=(k,sin)=>{const pos=posiciones(enPlancha(k));return enPlancha(k).filter(i=>i.id!==sin).map(i=>({i,p:pos.get(i.id)||{x:0,y:0}})).sort((a,b)=>(Math.round(a.p.y/PASO_G)-Math.round(b.p.y/PASO_G))||(a.p.x-b.p.x)).map(o=>o.i)};
 /* grilla con post-its de distintos tamaños: el agrandado ocupa más casilleros y los demás se acomodan alrededor */
 /* medio casillero de resolución: un post-it apenas agrandado no mueve a nadie; si crece de verdad, ocupa medio o un casillero más y los demás se corren lo justo */
-const MEDIO_G=PASO_G/2,spanDe=i=>Math.max(2,Math.ceil(((+i.esc||1)*200+22-16)/MEDIO_G));
+const MEDIO_G=PASO_G/2,spanDe=()=>2;
 function layoutGrilla(lista,cols){const U=cols*2,ocup=new Set(),pos=new Map(),k=(c,r)=>r*10000+c;
   const libre=(c,r,s)=>{for(let a=0;a<s;a++)for(let b=0;b<s;b++)if(ocup.has(k(c+a,r+b)))return false;return true};
   for(const i of lista){const s=Math.min(spanDe(i),U);let hecho=false;
     for(let r=0;!hecho;r++)for(let c=0;c<=U-s;c++)if(libre(c,r,s)){for(let a=0;a<s;a++)for(let b=0;b<s;b++)ocup.add(k(c+a,r+b));pos.set(i.id,{x:c*MEDIO_G,y:r*MEDIO_G});hecho=true;break}}
   return pos}
 /* al agrandar un post-it en la grilla: solo se corren los que quedarían tapados, al lugar libre más cercano. El resto no se mueve */
-function hacerLugar(k,id){const L=enPlancha(k),pos=posiciones(L),caja=i=>{const p=pos.get(i.id)||{x:0,y:0},w=200*(+i.esc||1);return {x:p.x,y:p.y,w,h:w}},
+function hacerLugar(k,id){const L=enPlancha(k),pos=posiciones(L),caja=i=>{const p=pos.get(i.id)||{x:0,y:0},w=200;return {x:p.x,y:p.y,w,h:w}},
   toca=(a,b)=>a.x<b.x+b.w-2&&a.x+a.w-2>b.x&&a.y<b.y+b.h-2&&a.y+a.h-2>b.y,yo=L.find(i=>i.id===id);if(!yo)return;
   const cajas=new Map(L.map(i=>[i.id,caja(i)])),fijos=[cajas.get(id)],mover=[];
   const cola=L.filter(i=>i.id!==id&&toca(cajas.get(i.id),cajas.get(id)));
@@ -1827,7 +1827,7 @@ function nodoNota(k,i){
   const ea=el("div","asa esc-asa");ea.title="Arrastrá para achicarlo o agrandarlo";
   redimensionable(ea,lzMain,{inicio:()=>200*(parseFloat(c.style.scale)||1),mover:w=>{c.style.scale=String(Math.max(.45,Math.min(2.5,w/200)));pedirFlechas()},
     soltar:()=>{const e=Math.round((parseFloat(c.style.scale)||1)*100)/100,it=data[k].find(z=>z.id===c._id);if(it)it.esc=e;c._firma=null;escribir(cols[k],c._id,{esc:e});limCache=null;if(enGrilla(k))hacerLugar(k,c._id)}});
-  c.append(xb,eb,ea);c.addEventListener("dblclick",e=>{if(!c._editando)e.stopPropagation()});
+  c.append(xb,eb);c.addEventListener("dblclick",e=>{if(!c._editando)e.stopPropagation()});
   arrastrable(c,lzMain,{
     inicio:()=>({x:parseFloat(c.style.left),y:parseFloat(c.style.top)}),
     mover:(x,y)=>{c.style.left=x+"px";c.style.top=y+"px";pedirFlechas();if(k==="ideas")marcarDestino(c);if(enGrilla(k)&&!c.classList.contains("msel"))gridPrevia(c,k,x,y)},
@@ -1863,7 +1863,7 @@ function pintarNota(c,k,i,p){
   if(c._editando)return;
   const enOtros=refsA(i.id),px0=proximo(i),firma=[enOtros.map(x=>x.id+":"+(x.numero||"")).join(","),+i.esc||1,i.g||"",+i.dest||0,i.numero,i.tipo,esIdea?label(i.tipo):"",colorDe(k,i),i.texto,i.autor,i.creado,i.estado,i.vivo||"",px0?px0.d+px0.t:"",resumenExtra(i),coincide(i),modoHilo&&origenHilo===i.id].join("\u0001");
   if(c._firma===firma)return;c._firma=firma;
-  if(i.g)c.dataset.g=i.g;else delete c.dataset.g;c.style.scale=+i.esc&&+i.esc!==1?String(+i.esc):"";c.style.zIndex=zNota.get(i.id)||2;c.style.setProperty("--c",colorDe(k,i));c.classList.toggle("en-vivo",!!i.vivo);c.classList.toggle("dest1",esIdea&&+i.dest===1);c.classList.toggle("dest2",esIdea&&+i.dest===2);c.style.setProperty("--r",giro(i.id)+"deg");
+  if(i.g)c.dataset.g=i.g;else delete c.dataset.g;c.style.scale="";c.style.zIndex=zNota.get(i.id)||2;c.style.setProperty("--c",colorDe(k,i));c.classList.toggle("en-vivo",!!i.vivo);c.classList.toggle("dest1",esIdea&&+i.dest===1);c.classList.toggle("dest2",esIdea&&+i.dest===2);c.style.setProperty("--r",giro(i.id)+"deg");
   c.setAttribute("aria-label",`Abrir ${esIdea?"idea":"frase"} ${i.numero||""}`);
   c.children[0].replaceChildren(el("span",null,`#${i.numero||"?"}${esIdea?" · "+label(i.tipo):""}`),el("span",null,i.creado?new Date(i.creado).toLocaleDateString("es-AR",{day:"2-digit",month:"2-digit"}).replace(/\//g,"."):""));
   const cuerpo=c.children[1];cuerpo.replaceChildren(el("p","txt",esIdea?(i.texto||""):`“${(i.texto||"").replace(/^[«“"]|[»”"]$/g,"")}”`));
@@ -3002,8 +3002,8 @@ const AYUDA=[
   [{chip:"✎"},"Pasá por arriba de un post-it y tocá el lápiz: lo editás ahí mismo, sin abrirlo. Cambiás el texto, la categoría (los puntitos de colores) y el tamaño de la letra: «Grande» o «Título» para que un proyecto se destaque en la plancha."],
   [null,"Cuando creás un post-it con doble clic, los puntitos de colores le eligen la categoría antes de pegarlo."],
   [{chip:"Ctrl + G"},"Con varias cosas seleccionadas (Shift + arrastrar en el fondo), las agrupa: después se mueven juntas. Ctrl + Shift + G las separa. También está el botón «Agrupar» en la barra de arriba. Funciona en la plancha y adentro de los post-its."],
-  [null,"En el modo «Grilla», si arrastrás un post-it los demás se corren para hacerle lugar, y queda ese orden. Si agrandás uno, ocupa más lugar y los demás se acomodan alrededor."],
-  [{chip:"⌟"},"La esquinita de abajo a la derecha de un post-it (aparece al pasar por arriba): arrastrala para hacerlo más chico o más grande. Anda en la plancha y en los post-its de adentro."]]},
+  [null,"En el modo «Grilla», si arrastrás un post-it los demás se corren para hacerle lugar, y queda ese orden."],
+  [{chip:"⌟"},"Adentro de un post-it, la esquinita de abajo a la derecha de los post-its chiquitos los hace más grandes o más chicos."]]},
  {t:"Menú •••",it:[
   [{chip:"•••"},"Arriba a la derecha: abre una fila con todo lo que sigue."],
   [{h:'<span class="ay-chip ay-busca">⌕ Buscar en todo…</span>'},"Busca en todo, también adentro de los post-its."],
@@ -3144,6 +3144,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:32,f:"15 de noviembre",it:[
+  ["Agrandar y achicar post-its queda solo adentro de los post-its. En la plancha principal vuelven a tener todos el mismo tamaño.",null,3]]},
  {n:31,f:"15 de noviembre",it:[
   ["En la Grilla, agrandar un poquito un post-it ya no desacomoda todo: los demás se corren solo lo necesario.",null,3],
   ["Sacamos por ahora la explicación del atajo del iPhone de «Cómo se usa», hasta encontrar algo que ande mejor.",null,3],
