@@ -2986,7 +2986,6 @@ const AYUDA=[
   ["Arrastrar el fondo","Te movés por la plancha."],
   [{h:'<span class="ay-zoom"><span>−</span><small>80%</small><span>+</span><span>Ver todo</span></span>'},"Zoom con la rueda del mouse o pellizcando con dos dedos. «Ver todo» encuadra todo lo que hay."],
   ["Imágenes","Arrastralas desde la compu o pegalas con "+CMD+"+V y quedan sueltas en la plancha."],
-  ["Atajo del celu","Funciona para anotar ideas, frases o el diario hablándole al iPhone, sin abrir la web. Es muy práctico: fijate cómo se usa en la pestaña «Atajo del iPhone»."],
   [{chip:"✎"},"Pasá por arriba de un post-it y tocá el lápiz: lo editás ahí mismo, sin abrirlo. Cambiás el texto, la categoría (los puntitos de colores) y el tamaño de la letra: «Grande» o «Título» para que un proyecto se destaque en la plancha."],
   [null,"Cuando creás un post-it con doble clic, los puntitos de colores le eligen la categoría antes de pegarlo."],
   [{chip:"Ctrl + G"},"Con varias cosas seleccionadas (Shift + arrastrar en el fondo), las agrupa: después se mueven juntas. Ctrl + Shift + G las separa. También está el botón «Agrupar» en la barra de arriba. Funciona en la plancha y adentro de los post-its."],
@@ -3086,18 +3085,6 @@ const AYUDA=[
   [{chip:"×"},"Arriba a la derecha de la lista: la saca de la plancha. Si está adentro de algún post-it, sigue ahí; si no, se borra (te pregunta antes)."],
   [{chip:"Tareas"},"Adentro de un post-it, en el «+»: armás una lista nueva ahí o ponés una que ya existe. Es la misma lista en los dos lados: si tachás o borrás algo adentro, cambia afuera también."],
   [{chip:"Mostrar también en la plancha"},"Abajo de una lista adentro de un post-it: hace que esa misma lista aparezca también en la plancha principal."]]},
- {t:"Atajo del iPhone",it:[
-  [null,"Con un atajo en el iPhone apretás un botón, hablás, y la idea aparece sola en la web. Ni siquiera hace falta abrirla."],
-  [null,"Para instalarlo, hacé todo desde el iPhone (una sola vez):"],
-  [{h:'<span class="ay-paso">1</span><span class="ay-atajo-link"></span>'},"Tocá el botón y después «Agregar atajo». Se instala en la app Atajos con el nombre «Banco de ideas»."],
-  [{h:'<span class="ay-paso">2</span><button type="button" class="ay-chip ay-btn" data-copiar="repo">Copiar mi dirección</button>'},"Tocá el botón. Después, en la app Atajos, abrí «Banco de ideas», borrá donde dice TU-REPO y pegá."],
-  [{h:'<span class="ay-paso">3</span><button type="button" class="ay-chip ay-btn" data-copiar="clave">Copiar mi clave</button>'},"Tocá el botón. Volvé al atajo, tocá «Mostrar más», borrá donde dice TU-CLAVE (dejá la palabra Bearer) y pegá. La clave es tuya: no se la pases a nadie."],
-  [{h:'<span class="ay-paso">✓</span>'},"Listo. Decí «Oye Siri, Banco de ideas», ponelo en la pantalla de inicio o en el botón de Acción, y hablá."],
-  ["«Corto: un tipo que…»","Si arrancás con el nombre de una categoría, la idea va ahí. Si no, va a Otro."],
-  ["«Frase de Borges: …»","Se guarda como frase, con su autor. «Frase: …» la guarda sin autor."],
-  ["«Agregale a la 12: …»","Lo suma adentro de la idea número 12, como un post-it."],
-  ["«Diario: …»","Lo escribe en el diario de hoy, con la hora en que lo dijiste."],
-  ["¿Cuándo aparece?","Al rato de abrir la web. Si la tenés abierta, en unos segundos."]]},
  {t:"Atajos",it:[
   [["Shift","arrastrar"],"Sobre el fondo: dibujás un marco y elegís todo lo que queda adentro."],
   [["Shift","clic"],"Sobre un post-it o una pila: lo sumás o lo sacás de la selección."],
@@ -3145,6 +3132,7 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
  {n:31,f:"15 de noviembre",it:[
+  ["Sacamos por ahora la explicación del atajo del iPhone de «Cómo se usa», hasta encontrar algo que ande mejor.",null,3],
   ["Los post-its con letra «Título» ya no tienen el borde negro.",null,3],
   ["Sacamos el hilo rojo. Las flechas siguen estando.",null,2],
   ["«Cómo se usa» más ordenado: las pilas de adentro de un post-it están en «Adentro de un post-it» y Tareas quedó más abajo.",null,3],
