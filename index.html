@@ -892,9 +892,12 @@ html.plano .lp-fila:hover .lp-t,html.plano .lp-fila:focus-visible .lp-t{text-dec
 .r-fila .r-t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #r-crear{display:grid;gap:8px;border-top:1px solid rgba(43,37,32,.15);padding-top:8px}
 #r-crear-btn{justify-self:start}
+#r-tipo{display:flex;gap:4px}#r-tipo button{border:0;border-radius:999px;padding:4px 12px;background:rgba(43,37,32,.1);color:var(--ink);font:600 12.5px var(--ui);cursor:pointer}#r-tipo button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.bref.ref-frase{background-image:repeating-linear-gradient(transparent 0 23px,rgba(70,120,200,.25) 23px 24px)}
 /* Tareas en la plancha */
 .tareas{position:absolute;width:250px;z-index:4;background:var(--paper);border-radius:4px;padding:0 12px 10px;box-shadow:0 1px 1px rgba(0,0,0,.12),0 12px 18px -10px rgba(20,10,0,.55);font:500 15px/1.3 var(--ui);color:var(--ink);cursor:auto}
-.tareas .tr-cab{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:12px 0 8px;cursor:grab;touch-action:none}
+.tareas .tr-cab{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 0 8px;cursor:grab;touch-action:none}
+.tareas.plana .tr-cab,.tr-plana .tr-cab{cursor:auto}
 .tareas .tr-cab b{font:700 22px/1 var(--hand)}
 .tareas .tr-cab span{font:500 10.5px var(--mono);color:var(--soft);text-transform:uppercase;letter-spacing:.06em}
 .tr-item{display:grid;grid-template-columns:20px minmax(0,1fr) 18px;gap:8px;align-items:start;padding:3px 0}
@@ -909,6 +912,23 @@ html.plano .lp-fila:hover .lp-t,html.plano .lp-fila:focus-visible .lp-t{text-dec
 .tareas .tr-nueva:focus{outline:none;border-bottom-color:var(--ink)}
 .tareas .tr-limpiar{display:block;border:0;background:none;font:500 11px var(--mono);color:var(--soft);cursor:pointer;padding:8px 0 0;text-decoration:underline}
 .tareas.plana{position:static;width:auto;max-width:560px;box-shadow:none;border:1px solid #333;border-radius:0;margin:0 0 18px}
+.tareas .tr-cab{align-items:center}
+.tr-tit{flex:1;min-width:0;border:0;background:none;font:700 22px/1.1 var(--hand);color:var(--ink);padding:0;user-select:text;-webkit-user-select:text;touch-action:auto}
+.tr-tit:focus{outline:none}
+.tr-tit::placeholder{color:var(--ink);opacity:1}
+.tr-cnt{white-space:nowrap}
+.tr-cerrar{border:0;border-radius:999px;min-width:22px;height:22px;padding:0 6px;background:rgba(43,37,32,.08);color:var(--soft);font:600 13px/22px var(--ui);cursor:pointer;flex:none}
+.tr-cerrar.sure{background:var(--danger);color:#fff;font-size:11px}
+.tr-pie{display:grid;gap:6px;justify-items:start}
+.tr-en{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font:500 10px var(--mono);color:var(--soft);text-transform:uppercase;padding-top:6px}
+.tr-en button{font:500 12px var(--ui);text-transform:none;border:0;border-radius:999px;padding:2px 8px;background:var(--c);color:var(--ink);cursor:pointer;box-shadow:0 0 0 1px rgba(43,37,32,.25);max-width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btar{background:none;box-shadow:none;padding:0}
+.btar>.tareas{position:static;width:auto}
+.btar .tr-falta{margin:0;background:#e9e4da;padding:14px;border-radius:4px;font:500 13px var(--ui);color:var(--soft)}
+.tr-plana{display:grid;gap:12px;margin:0 0 18px}
+.tr-plana>.tareas.plana{margin:0}
+.ic-lista{display:inline-block;width:14px;height:14px;vertical-align:-2px;border:1.5px solid currentColor;border-radius:2px;position:relative}
+.ic-lista::after{content:"";position:absolute;left:3px;top:1px;width:4px;height:7px;border:solid currentColor;border-width:0 1.8px 1.8px 0;transform:rotate(40deg)}
 /* Post-its destacados y edición en la plancha */
 .nota.dest1 .txt{font:700 24px/1.1 var(--hand)}
 .nota.dest2 .txt{font:700 26px/1.05 var(--hand)}
@@ -1363,6 +1383,7 @@ window.claude={use:async n=>{if(INVITADO&&n==="db"){if(!listo)listo=conectar();r
     <button class="tool" id="add-txt" type="button">Nota</button>
     <button class="tool" id="add-tx" type="button">Texto</button>
     <button class="tool" id="add-link" type="button">Link</button>
+    <button class="tool" id="add-tar" type="button">Tareas</button>
     <button class="tool" id="add-ref" type="button" title="Conectá este post-it con otro: aparece acá adentro y sigue viviendo en su lugar">Referencia</button>
     <button class="tool" id="add-img" type="button">Imagen</button>
     <button class="tool" id="add-cal" type="button">Calendario</button>
@@ -1387,11 +1408,16 @@ window.claude={use:async n=>{if(INVITADO&&n==="db"){if(!listo)listo=conectar();r
     <input type="text" id="l-tit" placeholder="Nombre (opcional)" aria-label="Nombre del link">
     <div class="acc"><button type="button" class="btn" id="l-cancel">Cancelar</button><button class="btn oscuro" type="submit">Agregar link</button></div>
   </form>
+  <div class="panel" id="panel-tar" hidden>
+    <div class="meta"><span>Lista de tareas</span><button type="button" class="cerrar" id="cerrar-tar" aria-label="Cerrar">×</button></div>
+    <button type="button" class="btn oscuro" id="tar-nueva" style="justify-self:start">+ Lista nueva</button>
+    <div id="tar-hay"><span class="nota-panel">O poné una que ya existe. Es la misma lista: lo que tachás o borrás acá, cambia allá también.</span><div class="r-lista" id="tar-lista"></div></div>
+  </div>
   <div class="panel" id="panel-ref" hidden>
     <div class="meta"><span>Referencia a otro post-it</span><button type="button" class="cerrar" id="cerrar-ref" aria-label="Cerrar">×</button></div>
     <input type="search" id="r-buscar" placeholder="Buscalo por texto, número o categoría…" aria-label="Buscar post-it" autocomplete="off">
     <div class="r-lista" id="r-lista"></div>
-    <div id="r-crear" hidden><span class="nota-panel">¿No existe? Crealo ya conectado:</span><div class="colores" id="r-cats" role="group" aria-label="Categoría del post-it nuevo"></div><button type="button" class="btn oscuro" id="r-crear-btn">+ Crear</button><span class="nota-panel" id="r-donde"></span></div>
+    <div id="r-crear" hidden><span class="nota-panel">¿No existe? Crealo ya conectado:</span><div class="ed-barra" id="r-tipo"><button type="button" data-k="ideas">Post-it</button><button type="button" data-k="frases">Frase</button></div><div class="colores" id="r-cats" role="group" aria-label="Categoría del post-it nuevo"></div><button type="button" class="btn oscuro" id="r-crear-btn">+ Crear</button><span class="nota-panel" id="r-donde"></span></div>
   </div>
   <div class="panel ancho" id="panel-compartir" hidden>
     <div class="meta"><span>Compartir esta nota</span><button type="button" class="cerrar" id="cerrar-compartir" aria-label="Cerrar">×</button></div>
@@ -1720,7 +1746,7 @@ function pintarLista(){const L=$("lista-plana");if(!L||!document.documentElement
     b.append(el("span",null,"#"+(i.numero||"?")),el("span","lp-f",fecha(i.creado)),(()=>{const c=el("span","lp-c");if(esIdea){const d=el("span","lp-dot");d.style.setProperty("--c",cat(i.tipo).color);c.append(d)}c.append((esIdea?label(i.tipo):(i.autor||"")).toLowerCase());return c})(),tx);
     b.setAttribute("aria-label",`Abrir ${esIdea?"idea":"frase"} ${i.numero||""}`);if(esIdea&&+i.dest)b.classList.add("lp-dest");b.onclick=()=>abrir(k,i.id);caja.append(b)}
   if(!n)caja.append(el("p",null,busca?"(nada)":"(vacía)"));fr.append(caja);
-  const y=L.scrollTop;let tb=L.querySelector(":scope>.tareas.plana");if(esIdea&&tareasCargadas){if(!tb){tb=el("div","tareas plana");armarTareas(tb)}else if(!tecleaEn(tb)&&tb._f!==firmaTareas())armarTareas(tb)}else tb=null;
+  const y=L.scrollTop;let tb=L.querySelector(":scope>.tr-plana");if(esIdea&&tareasCargadas){if(!tb)tb=el("div","tr-plana");pintarListasPlana(tb)}else tb=null;
   [...L.children].forEach(c=>{if(c!==tb)c.remove()});if(tb&&tb.parentNode!==L)L.prepend(tb);L.append(fr);L.scrollTop=y}
 function pintarMain(){
   $("n-ideas").textContent=data.ideas.length||"";$("n-frases").textContent=data.frases.length||"";
@@ -1759,7 +1785,7 @@ lzMain.onVista=()=>{const r=lzMain.rect();if(!r.width)return;const m=300/lzMain.
 lzMain.limites=()=>{if(limCache&&limCache.v===vista&&limCache.n===data[vista].length+decos.length)return limCache.r;const r=limitesMain();limCache={v:vista,n:data[vista].length+decos.length,r};return r};
 function limitesMain(){const pos=posiciones(enPlancha(vista));const pts=[...pos.values()].map(p=>({x:p.x,y:p.y,w:200,h:200}));if(vista==="ideas")for(const n of nodosPila.values())pts.push({x:parseFloat(n.style.left)||0,y:parseFloat(n.style.top)||0,w:240,h:240});
   decos.filter(d=>d.tablero===vista).forEach(d=>pts.push({x:d.x,y:d.y,w:d.w||260,h:(d.w||260)}));
-  if(vista==="ideas"&&nodoTar&&!nodoTar.hidden)pts.push({x:parseFloat(nodoTar.style.left)||0,y:parseFloat(nodoTar.style.top)||0,w:250,h:nodoTar.offsetHeight||160});
+  if(vista==="ideas")for(const n of nodosTar.values())pts.push({x:parseFloat(n.style.left)||0,y:parseFloat(n.style.top)||0,w:250,h:n.offsetHeight||160});
   if(!pts.length)return {x:-300,y:-200,w:600,h:400};const x=Math.min(...pts.map(p=>p.x)),y=Math.min(...pts.map(p=>p.y));
   return {x,y,w:Math.max(...pts.map(p=>p.x+p.w))-x,h:Math.max(...pts.map(p=>p.y+p.h))-y}}
 let encuadrado={};
@@ -1985,14 +2011,14 @@ function abrir(k,id,virtual){
   selB=null;borrarB=null;borrarSure=false;selHilo=null;origenHilo=null;$("h-del").textContent="Borrar este día";$("h-del").hidden=k!=="diario";
   {const papel=k==="diario";lzHoja.papel=papel;$("vp-hoja").classList.toggle("papel",papel);$("add-esc").hidden=papel;$("add-cal").hidden=papel;$("add-a-idea").hidden=!papel;$("h-compartir").hidden=papel;$("h-a-pila").hidden=!(k==="ideas"&&abierto.doc.origen==="keep"&&abierto.doc.sacada);
    if(papel){const d=abierto.doc;if(d.imagen||d.sonido||d.escena){d.texto=textoDia(d);delete d.imagen;delete d.sonido;delete d.escena;abierto.migrar=true}}}$("h-del").style.color="";$("linkform").hidden=true;estado("");
-  for(const pnl of ["panel-claude","panel-mezcla","panel-cats","panel-cal","panel-compartir","panel-export","panel-mas","panel-ref"])$(pnl).hidden=true;if(modoHilo)setModoHilo(false);
+  for(const pnl of ["panel-claude","panel-mezcla","panel-cats","panel-cal","panel-compartir","panel-export","panel-mas","panel-ref","panel-tar"])$(pnl).hidden=true;if(modoHilo)setModoHilo(false);
   $("detalle").hidden=false;pintarCabecera();pintarHoja();
-  $("add-ref").hidden=k!=="ideas";$("add-img").hidden=!assets;$("btn-claude").hidden=!samp;$("h-dictar").hidden=!samp;
+  $("add-ref").hidden=k!=="ideas";$("add-tar").hidden=k!=="ideas";$("add-img").hidden=!assets;$("btn-claude").hidden=!samp;$("h-dictar").hidden=!samp;
   if(abierto.migrar){abierto.migrar=false;guardarHoja("texto",abierto.doc.texto);escribir(cols.diario,id,{imagen:"",sonido:"",escena:""},{silencioso:true})}
   lzHoja.apply();if(k==="diario"){lzHoja.clave=null;posicionarDia()}else if(!lzHoja.usar("hoja:"+id))requestAnimationFrame(()=>lzHoja.encuadrar(lzHoja.limites()));
   requestAnimationFrame(()=>{document.querySelectorAll("#capa-hoja textarea").forEach(autosize);pintarHilos();$("volver").focus()});
 }
-function cerrar(){if(window.__invitado)return;navRef=[];$("volver").textContent="← Volver";$("panel-ref").hidden=true;const vacio=abierto&&abierto.vacio&&abierto.k==="ideas"&&!(abierto.doc.texto||"").trim()&&!(abierto.doc.bloques||[]).length&&!(abierto.doc.trazos||[]).length?abierto.id:null;if(vacio&&cols.ideas)setTimeout(()=>cols.ideas.doc(vacio).delete().catch(()=>{}),0);cerrarVivo();$("panel-vivo").hidden=true;const eraDia=abierto&&abierto.k==="diario"?{id:abierto.id,doc:abierto.doc}:null;
+function cerrar(){if(window.__invitado)return;navRef=[];$("volver").textContent="← Volver";$("panel-ref").hidden=true;$("panel-tar").hidden=true;const vacio=abierto&&abierto.vacio&&abierto.k==="ideas"&&!(abierto.doc.texto||"").trim()&&!(abierto.doc.bloques||[]).length&&!(abierto.doc.trazos||[]).length?abierto.id:null;if(vacio&&cols.ideas)setTimeout(()=>cols.ideas.doc(vacio).delete().catch(()=>{}),0);cerrarVivo();$("panel-vivo").hidden=true;const eraDia=abierto&&abierto.k==="diario"?{id:abierto.id,doc:abierto.doc}:null;
   setTimeout(()=>{if(eraDia&&!pesoDia(eraDia.doc)&&!(eraDia.doc.trazos||[]).length&&entradaDia(eraDia.id))cols.diario.doc(eraDia.id).delete().catch(()=>{});pintarDiario()},50);
   selLimpiar(lzHoja);$("panel-export").hidden=true;$("panel-mas").hidden=true;vaciarPendientes();if(modoHilo)setModoHilo(false);selHilo=null;abierto=null;$("detalle").hidden=true;$("panel-compartir").hidden=true;$("capa-hoja").replaceChildren();gHoja=null;cortarHoja=null;gTrazosHoja=null;if(lzHoja.modo)lzHoja.setModo(null)}
 function sincronizarAbierto(k){
@@ -2031,8 +2057,8 @@ function estiloTexto(t,b){t.style.fontFamily=b.f&&FUENTES[b.f]?FUENTES[b.f][1]:"
   if(b.s&&b.s!==1){const base=parseFloat(getComputedStyle(t).fontSize);if(base)t.style.fontSize=Math.round(base*b.s*10)/10+"px"}}
 function guardarBloques(){guardarHoja("bloques",abierto.doc.bloques)}
 function nodoBloque(b){
-  const tipo={txt:"btxt",tx:"btexto",link:"blink",img:"bimg",post:"bpost",cal:"bcal",esc:"besc",ref:"bref"}[b.t]||"btxt";
-  const n=el("div","pieza "+tipo+(selB===b.id?" sel":""));n.dataset.bid=b.id;n.style.left=b.x+"px";n.style.top=b.y+"px";n.style.width=(b.t==="post"||b.t==="ref"?200:b.t==="cal"?280:(b.w||(b.t==="img"?300:260)))+"px";n.style.zIndex=b.t==="img"?1:3;
+  const tipo={txt:"btxt",tx:"btexto",link:"blink",img:"bimg",post:"bpost",cal:"bcal",esc:"besc",ref:"bref",tar:"btar"}[b.t]||"btxt";
+  const n=el("div","pieza "+tipo+(selB===b.id?" sel":""));n.dataset.bid=b.id;n.style.left=b.x+"px";n.style.top=b.y+"px";n.style.width=(b.t==="post"||b.t==="ref"?200:b.t==="tar"?(b.w||260):b.t==="cal"?280:(b.w||(b.t==="img"?300:260)))+"px";n.style.zIndex=b.t==="img"?1:3;
   n.style.setProperty("--r",giro(b.id)*(b.t==="post"?1:.6)+"deg");
   const marcar=()=>{if(selB!==b.id){selB=b.id;selHilo=null;document.querySelectorAll("#capa-hoja .pieza.sel").forEach(x=>x.classList.remove("sel"));n.classList.add("sel");pintarHilos()}};
   if(b.t==="esc"){const g=el("div","grip esc-cab","Escaleta");g.title="Arrastrá para mover";n.append(g);const cont=el("div");n.append(cont);pintarEsc(cont,b,n)}
@@ -2041,6 +2067,7 @@ function nodoBloque(b){
     t.placeholder=b.t==="post"?"Escribí…":b.t==="tx"?"Escribí sobre la plancha…":"Seguí escribiendo…";t.setAttribute("aria-label",b.t==="post"?"Post-it":b.t==="tx"?"Texto":"Nota");
     t.oninput=()=>{b.v=t.value;autosize(t);guardarLuego("bloques",()=>abierto.doc.bloques)};t.onfocus=marcar;n.append(g,t);if(b.f||b.b||b.i||b.s||b.k)requestAnimationFrame(()=>{estiloTexto(t,b);autosize(t)})}
   else if(b.t==="ref")pintarRef(n,b);
+  else if(b.t==="tar"){pintarBloqueTar(n,b);n.addEventListener("pointerdown",e=>{if(!e.target.closest(".tr-cab")||e.target.closest("input,button"))e.stopPropagation()})}
   else if(b.t==="link"){let host=b.url;try{host=new URL(b.url).hostname.replace(/^www\./,"")}catch(_){}
     const a=el("a",null,"Abrir ↗");a.href=b.url;a.target="_blank";a.rel="noopener noreferrer";n.append(el("b",null,b.titulo||host),el("span",null,b.url),a)}
   else{const im=el("img");im.alt=b.alt||"Imagen";im.draggable=false;im.onload=()=>pintarHilos();im.onerror=()=>im.replaceWith(el("div","roto","No se pudo cargar esta imagen."));cargarImg(im,b.a);n.append(im)}
@@ -2063,60 +2090,75 @@ function nodoBloque(b){
   q.onclick=async()=>{if(borrarB!==b.id){borrarB=b.id;q.textContent="¿Seguro? Tocá de nuevo";return}
     borrarB=null;selB=null;const d=abierto.doc;d.bloques=d.bloques.filter(y=>y!==b);const antes=d.hilos.length;d.hilos=d.hilos.filter(h=>h.a!==b.id&&h.b!==b.id);
     n.remove();pintarHilos();guardarBloques();if(d.hilos.length!==antes)guardarHoja("hilos",d.hilos);
+    if(b.t==="tar")soltarListaDeHoja(b.ref,abierto&&abierto.id);
     if(b.t==="img"&&assets){try{await quitarAsset(b.a,b.id)}catch(_){}}};
   if(b.t==="txt"||b.t==="tx"){const asa=el("div","asa lado");asa.title="Arrastrá para cambiar el ancho";n.append(asa);const ta=n.querySelector("textarea");
     if(b.t==="txt")n.style.minHeight=n.style.width;
     redimensionable(asa,lzHoja,{inicio:()=>parseFloat(n.style.width),mover:w=>{n.style.width=Math.max(120,w)+"px";if(b.t==="txt")n.style.minHeight=n.style.width;if(ta)autosize(ta);pintarHilos()},soltar:()=>{b.w=Math.round(parseFloat(n.style.width));guardarBloques()}})}
   if(b.t==="img"){const asa=el("div","asa");n.append(asa);redimensionable(asa,lzHoja,{inicio:()=>parseFloat(n.style.width),mover:w=>{n.style.width=w+"px";pintarHilos()},soltar:()=>{b.w=Math.round(parseFloat(n.style.width));guardarBloques()}})}
-  arrastrable(n,lzHoja,{solo:b.t==="txt"||b.t==="tx"||b.t==="post"||b.t==="cal"||b.t==="esc"?".grip":null,inicio:()=>({x:parseFloat(n.style.left),y:parseFloat(n.style.top)}),mover:(x,y)=>{n.style.left=x+"px";n.style.top=y+"px";pintarHilos()},
+  arrastrable(n,lzHoja,{solo:b.t==="tar"?".tr-cab":b.t==="txt"||b.t==="tx"||b.t==="post"||b.t==="cal"||b.t==="esc"?".grip":null,inicio:()=>({x:parseFloat(n.style.left),y:parseFloat(n.style.top)}),mover:(x,y)=>{n.style.left=x+"px";n.style.top=y+"px";pintarHilos()},
     soltar:()=>{b.x=Math.round(parseFloat(n.style.left));b.y=Math.round(parseFloat(n.style.top));guardarBloques()},
-    tocar:()=>{if(modoHilo){tocarHilo(b.id);return}const ya=selB===b.id;marcar();borrarB=null;q.textContent="Quitar";if(b.t==="img")verImagen(b.a,{recortar:recortarB});if(b.t==="ref"&&ya)irARef(b.ref)}});
+    tocar:()=>{if(modoHilo){tocarHilo(b.id);return}const ya=selB===b.id;marcar();borrarB=null;q.textContent="Quitar";if(b.t==="img")verImagen(b.a,{recortar:recortarB});if(b.t==="ref"&&ya)irARef(b.ref,kDe(b))}});
   return n;
 }
 function agregarBloque(b){abierto.doc.bloques.push(b);selB=b.id;document.querySelectorAll("#capa-hoja .pieza").forEach(x=>x.classList.remove("sel"));const n=nodoBloque(b);$("capa-hoja").append(n);guardarBloques();return n}
-/* ---------- Referencias: un post-it vive en su lugar (su categoría, su pila) y aparece adentro de otros ---------- */
-const refNuevos=new Set();let catRef=null;
+/* ---------- Referencias: un post-it (o una frase) vive en su lugar y aparece adentro de otros ---------- */
+const refNuevos=new Set();let catRef=null,kRef="ideas";
+const kDe=b=>b&&b.k==="frases"?"frases":"ideas";
 const refsA=id=>data.ideas.filter(i=>i.id!==id&&(i.bloques||[]).some(b=>b.t==="ref"&&b.ref===id));
-function pintarRef(n,b){const i=data.ideas.find(x=>x.id===b.ref);n.querySelectorAll(":scope>.grip,:scope>.meta,:scope>.ref-txt,:scope>.ref-extra,:scope>.ref-abrir").forEach(x=>x.remove());n.classList.toggle("roto",!i);
+const quitarComillas=t=>(t||"").replace(/^[«“"]|[»”"]$/g,"");
+function pintarRef(n,b){const k=kDe(b),i=data[k].find(x=>x.id===b.ref);n.querySelectorAll(":scope>.grip,:scope>.meta,:scope>.ref-txt,:scope>.ref-extra,:scope>.ref-abrir").forEach(x=>x.remove());n.classList.toggle("roto",!i);n.classList.toggle("ref-frase",k==="frases");
   const fr=[el("div","grip")];
-  if(i){n.style.setProperty("--c",colorDe("ideas",i));const m=el("div","meta");m.append(el("span",null,"#"+(i.numero||"?")+" · "+label(i.tipo)),el("span",null,"↗"));fr.push(m,el("p","ref-txt",i.texto||"(sin texto)"));
-    const ex=resumenExtra(i);if(ex)fr.push(el("span","ref-extra",ex.replace(/^\+ /,"")));const ab=el("button","ref-abrir","Abrir ↗");ab.type="button";ab.onclick=e=>{e.stopPropagation();irARef(b.ref)};fr.push(ab);n.title="Tocalo dos veces para abrirlo"}
-  else{n.style.removeProperty("--c");fr.push(el("p","ref-txt",refNuevos.has(b.ref)?"…":window.__invitado?"Un post-it de otra parte de la plancha.":"Este post-it se borró. Podés quitar la referencia."))}
+  if(i){n.style.setProperty("--c",colorDe(k,i));const m=el("div","meta");m.append(el("span",null,k==="frases"?"Frase #"+(i.numero||"?"):"#"+(i.numero||"?")+" · "+label(i.tipo)),el("span",null,"↗"));
+    fr.push(m,el("p","ref-txt",k==="frases"?"“"+quitarComillas(i.texto)+"”":(i.texto||"(sin texto)")));
+    if(k==="frases"){if(i.autor)fr.push(el("span","ref-extra","— "+i.autor))}else{const ex=resumenExtra(i);if(ex)fr.push(el("span","ref-extra",ex.replace(/^\+ /,"")))}
+    const ab=el("button","ref-abrir","Abrir ↗");ab.type="button";ab.onclick=e=>{e.stopPropagation();irARef(b.ref,k)};fr.push(ab);n.title="Tocalo dos veces para abrirlo"}
+  else{n.style.removeProperty("--c");fr.push(el("p","ref-txt",refNuevos.has(b.ref)?"…":window.__invitado?"Algo de otra parte de la plancha.":(k==="frases"?"Esta frase se borró.":"Este post-it se borró.")+" Podés quitar la referencia."))}
   n.prepend(...fr)}
-function refrescarRefs(){for(const id of [...refNuevos])if(data.ideas.some(x=>x.id===id))refNuevos.delete(id);
-  if(!abierto||abierto.k!=="ideas")return;document.querySelectorAll("#capa-hoja .pieza.bref").forEach(n=>{const b=abierto.doc.bloques.find(x=>x.id===n.dataset.bid);if(b)pintarRef(n,b)});pintarAparece();if(!$("panel-ref").hidden&&document.activeElement!==$("r-buscar"))pintarPanelRef()}
-function pintarAparece(){if(!abierto||abierto.k!=="ideas")return;const p=$("capa-hoja").querySelector(".principal");if(!p)return;let a=p.querySelector(".aparece");
+function refrescarRefs(){for(const id of [...refNuevos])if(data.ideas.some(x=>x.id===id)||data.frases.some(x=>x.id===id))refNuevos.delete(id);
+  if(!abierto||abierto.k==="diario")return;document.querySelectorAll("#capa-hoja .pieza.bref").forEach(n=>{const b=abierto.doc.bloques.find(x=>x.id===n.dataset.bid);if(b)pintarRef(n,b)});pintarAparece();if(!$("panel-ref").hidden&&document.activeElement!==$("r-buscar"))pintarPanelRef()}
+function pintarAparece(){if(!abierto||abierto.k==="diario")return;const p=$("capa-hoja").querySelector(".principal");if(!p)return;let a=p.querySelector(".aparece");
   const mios=new Set(abierto.doc.bloques.filter(b=>b.t==="ref").map(b=>b.ref)),l=refsA(abierto.id).filter(i=>!mios.has(i.id));
   if(!l.length){if(a){a.remove();requestAnimationFrame(pintarHilos)}return}
   if(!a){a=el("div","aparece");p.append(a)}
-  a.replaceChildren(el("span",null,"También aparece en:"),...l.map(i=>{const b=el("button",null,"#"+(i.numero||"?")+" "+((i.texto||"").replace(/\s+/g," ").trim().slice(0,40)||"(sin texto)"));b.type="button";b.style.setProperty("--c",colorDe("ideas",i));b.title="Abrir";b.onclick=()=>irARef(i.id);return b}));
+  a.replaceChildren(el("span",null,"También aparece en:"),...l.map(i=>{const b=el("button",null,"#"+(i.numero||"?")+" "+((i.texto||"").replace(/\s+/g," ").trim().slice(0,40)||"(sin texto)"));b.type="button";b.style.setProperty("--c",colorDe("ideas",i));b.title="Abrir";b.onclick=()=>irARef(i.id,"ideas");return b}));
   requestAnimationFrame(pintarHilos)}
-function pintarVolver(){const v=$("volver"),prev=navRef.length?data.ideas.find(x=>x.id===navRef[navRef.length-1]):null;v.textContent=prev?`← #${prev.numero||"?"}`:"← Volver";v.title=prev?"Volver al post-it de antes":""}
-function irARef(id){if(!abierto||id===abierto.id)return;if(!data.ideas.some(x=>x.id===id)){toast("Ese post-it ya no existe.");return}
-  const st=[...navRef,abierto.id];cerrar();navRef=st;abrir("ideas",id);pintarVolver()}
-function abrirPanelRef(){if(!abierto||abierto.k!=="ideas")return;$("linkform").hidden=true;$("panel-ref").hidden=false;$("r-buscar").value="";if(!catRef||!cats.some(c=>c.id===catRef))catRef=tipoNueva;pintarPanelRef();requestAnimationFrame(()=>$("r-buscar").focus())}
+function pintarVolver(){const v=$("volver"),u=navRef[navRef.length-1],prev=u?data[u.k].find(x=>x.id===u.id):null;v.textContent=prev?`← ${u.k==="frases"?"Frase ":""}#${prev.numero||"?"}`:"← Volver";v.title=prev?"Volver a donde estabas":""}
+function irARef(id,k){k=k||"ideas";if(!abierto||id===abierto.id)return;if(!data[k].some(x=>x.id===id)){toast(k==="frases"?"Esa frase ya no existe.":"Ese post-it ya no existe.");return}
+  const st=[...navRef,{k:abierto.k,id:abierto.id}];cerrar();navRef=st;abrir(k,id);pintarVolver()}
+function abrirPanelRef(){if(!abierto||abierto.k!=="ideas")return;$("linkform").hidden=true;$("panel-tar").hidden=true;$("panel-ref").hidden=false;$("r-buscar").value="";if(!catRef||!cats.some(c=>c.id===catRef))catRef=tipoNueva;pintarPanelRef();requestAnimationFrame(()=>$("r-buscar").focus())}
 function pilaDeCat(tipo){const n=(label(tipo)||"").trim().toLowerCase();return n?pilas.find(p=>(p.titulo||"").trim().toLowerCase()===n)||null:null}
 function pintarPanelRef(){if(!abierto)return;const qq=$("r-buscar").value.trim(),ql=qq.toLowerCase(),ya=new Set(abierto.doc.bloques.filter(b=>b.t==="ref").map(b=>b.ref));
-  const txt=i=>[i.texto,"#"+(i.numero||""),label(i.tipo),textoBloques(i)].join(" ").toLowerCase();
-  const cand=data.ideas.filter(i=>i.id!==abierto.id&&!ya.has(i.id)&&(!ql||txt(i).includes(ql))).sort((a,b)=>ql?((b.texto||"").toLowerCase().includes(ql)-(a.texto||"").toLowerCase().includes(ql))||(b.creado||0)-(a.creado||0):(b.creado||0)-(a.creado||0)).slice(0,40);
+  const txt=(i,k)=>(k==="frases"?[i.texto,i.autor,"frase","#"+(i.numero||"")]:[i.texto,"#"+(i.numero||""),label(i.tipo),textoBloques(i)]).join(" ").toLowerCase();
+  const todos=[...data.ideas.map(i=>({i,k:"ideas"})),...data.frases.map(i=>({i,k:"frases"}))];
+  const cand=todos.filter(({i,k})=>i.id!==abierto.id&&!ya.has(i.id)&&(!ql||txt(i,k).includes(ql))).sort((a,b)=>ql?((b.i.texto||"").toLowerCase().includes(ql)-(a.i.texto||"").toLowerCase().includes(ql))||(b.i.creado||0)-(a.i.creado||0):(b.i.creado||0)-(a.i.creado||0)).slice(0,40);
   const L=$("r-lista");L.replaceChildren();
-  for(const i of cand){const b=el("button","r-fila");b.type="button";const d=el("i");d.style.setProperty("--c",colorDe("ideas",i));b.append(d,el("span","r-n","#"+(i.numero||"?")),el("span","r-t",(i.texto||"(sin texto)").replace(/\s+/g," ")),el("span","r-c",label(i.tipo)));b.onclick=()=>ponerRef(i.id);L.append(b)}
-  if(!cand.length)L.append(el("p","nota-panel",ql?"No hay ninguno con eso.":"No hay otros post-its."));
+  for(const {i,k} of cand){const b=el("button","r-fila");b.type="button";const d=el("i");d.style.setProperty("--c",colorDe(k,i));
+    b.append(d,el("span","r-n",(k==="frases"?"F":"")+"#"+(i.numero||"?")),el("span","r-t",k==="frases"?"“"+quitarComillas(i.texto).replace(/\s+/g," ")+"”":(i.texto||"(sin texto)").replace(/\s+/g," ")),el("span","r-c",k==="frases"?(i.autor||"frase"):label(i.tipo)));b.onclick=()=>ponerRef(i.id,k);L.append(b)}
+  if(!cand.length)L.append(el("p","nota-panel",ql?"No hay nada con eso.":"No hay nada más para poner."));
   $("r-crear").hidden=!qq;if(!qq)return;$("r-crear-btn").textContent=`+ Crear «${qq.length>34?qq.slice(0,34)+"…":qq}»`;
+  for(const bt of $("r-tipo").children)bt.setAttribute("aria-pressed",String(bt.dataset.k===kRef));
+  $("r-cats").hidden=kRef==="frases";if(kRef==="frases"){$("r-donde").textContent="Va a quedar en Frases, y acá adentro.";return}
   coloresUI($("r-cats"),catRef,v=>{catRef=v;pintarPanelRef()});const pl=pilaDeCat(catRef);
   $("r-donde").textContent=pl?`Va a quedar adentro de la pila «${pl.titulo}».`:`Va a quedar en la plancha, al lado de este, como ${label(catRef)}.`}
-function ponerRef(id){if(!abierto)return;const c=centroNuevo();let x=Math.round(c.x-100),y=Math.round(c.y-90);while(abierto.doc.bloques.some(b=>Math.abs(b.x-x)<24&&Math.abs(b.y-y)<24)){x+=36;y+=30}agregarBloque({id:bid(),t:"ref",ref:id,x,y});$("panel-ref").hidden=true;pintarAparece()}
-function lugarCerca(cx,cy){const ocup=[...posiciones(enPlancha("ideas")).values(),...[...nodosPila.values()].map(n=>({x:parseFloat(n.style.left)||0,y:parseFloat(n.style.top)||0}))];
+function ponerRef(id,k){if(!abierto)return;const c=centroNuevo();let x=Math.round(c.x-100),y=Math.round(c.y-90);for(let n=0;n<40&&abierto.doc.bloques.some(b=>Math.abs(b.x-x)<150&&Math.abs(b.y-y)<120);n++){x+=280;if(n%4===3){x-=1120;y+=240}}
+  const b={id:bid(),t:"ref",ref:id,x,y};if(k==="frases")b.k="frases";agregarBloque(b);$("panel-ref").hidden=true;pintarAparece()}
+function lugarCerca(cx,cy,k){k=k||"ideas";const ocup=[...posiciones(enPlancha(k)).values(),...(k==="ideas"?[...nodosPila.values()].map(n=>({x:parseFloat(n.style.left)||0,y:parseFloat(n.style.top)||0})):[])];
   const libre=(x,y)=>!ocup.some(o=>Math.abs(o.x-x)<215&&Math.abs(o.y-y)<215);
   for(let rad=1;rad<14;rad++)for(let i=-rad;i<=rad;i++)for(let j=-rad;j<=rad;j++){if(Math.max(Math.abs(i),Math.abs(j))!==rad)continue;const x=cx+i*230,y=cy+j*230;if(libre(x,y))return {x,y}}
   return {x:cx+230,y:cy}}
-async function crearRef(){if(!abierto||!cols.ideas)return;const v=$("r-buscar").value.trim();if(!v)return;const destino=abierto.id,tipo=catRef||tipoNueva,ahora=Date.now();
-  const numero=data.ideas.reduce((m,i)=>Math.max(m,i.numero||0),0)+1,body={texto:v,tipo,creado:ahora,numero},pl=pilaDeCat(tipo);
+async function crearRef(){if(!abierto||!cols.ideas)return;const v=$("r-buscar").value.trim();if(!v)return;const destino=abierto.id,ahora=Date.now();
+  if(kRef==="frases"){if(!cols.frases)return;const numero=data.frases.reduce((m,i)=>Math.max(m,i.numero||0),0)+1,ps=[...posiciones(enPlancha("frases")).values()],base=ps.length?{x:Math.min(...ps.map(p=>p.x)),y:Math.min(...ps.map(p=>p.y))}:{x:0,y:0},p=ps.length?lugarCerca(base.x,base.y,"frases"):base;
+    fijarSinPosicion("frases");$("r-crear-btn").disabled=true;
+    try{const r=await cols.frases.add({texto:v,autor:"",creado:ahora,numero,x:Math.round(p.x),y:Math.round(p.y)});refNuevos.add(r.id);if(abierto&&abierto.id===destino)ponerRef(r.id,"frases");toast(`Frase #${numero} creada. Está en Frases y acá adentro.`)}
+    catch(_){toast("No se pudo crear. Probá de nuevo.")}finally{$("r-crear-btn").disabled=false}return}
+  const tipo=catRef||tipoNueva,numero=data.ideas.reduce((m,i)=>Math.max(m,i.numero||0),0)+1,body={texto:v,tipo,creado:ahora,numero},pl=pilaDeCat(tipo);
   if(pl){const P=pilaXY(pl.id);Object.assign(body,{pila:pl.id,pilaT:ahora,x:Math.round(P.x),y:Math.round(P.y)})}
   else{const pos=posiciones(enPlancha("ideas")).get(destino),pid=enPilaId(abierto.doc),base=pos||(pid?pilaXY(pid):lzMain.aMundo(innerWidth/2,innerHeight/2)),p=lugarCerca(base.x,base.y);body.x=Math.round(p.x);body.y=Math.round(p.y)}
   fijarSinPosicion("ideas");$("r-crear-btn").disabled=true;
   try{const r=await cols.ideas.add(body);refNuevos.add(r.id);if(abierto&&abierto.id===destino)ponerRef(r.id);toast(pl?`#${numero} creado adentro de la pila «${pl.titulo}».`:`#${numero} creado en ${label(tipo)}, al lado de este en la plancha.`)}
   catch(_){toast("No se pudo crear. Probá de nuevo.")}finally{$("r-crear-btn").disabled=false}}
+for(const bt of $("r-tipo").children)bt.onclick=()=>{kRef=bt.dataset.k;pintarPanelRef();$("r-buscar").focus()};
 $("add-ref").onclick=abrirPanelRef;$("cerrar-ref").onclick=()=>{$("panel-ref").hidden=true};
 $("r-buscar").addEventListener("input",pintarPanelRef);$("r-crear-btn").onclick=crearRef;
 $("r-buscar").addEventListener("keydown",e=>{if(e.key==="Escape"){e.preventDefault();e.stopPropagation();$("panel-ref").hidden=true}else if(e.key==="Enter"){e.preventDefault();const f=$("r-lista").querySelector(".r-fila");if(f)f.click();else crearRef()}});
@@ -2128,7 +2170,7 @@ lzHoja.onBgDoble=e=>{if(!abierto)return;const p=lzHoja.aMundo(e.clientX,e.client
   if(ultCreado!=="post"){const bt=$("add-"+ultCreado);if(bt&&!bt.hidden&&bt.onclick){bt.onclick({_p:p});return}}
   const n=agregarBloque({id:bid(),t:"post",v:"",c:PALETA[Math.floor(Math.random()*8)],x:Math.round(p.x-100),y:Math.round(p.y-30)});requestAnimationFrame(()=>n.querySelector("textarea")?.focus())};
 lzHoja.onBgTap=()=>{selB=null;borrarB=null;selHilo=null;document.querySelectorAll("#capa-hoja .pieza").forEach(x=>x.classList.remove("sel"));pintarHilos()};
-lzHoja.limites=()=>{if(!abierto)return null;const pp=$("capa-hoja").querySelector(".principal");const pts=[{x:0,y:0,w:pp?pp.offsetWidth:400,h:pp?Math.max(300,pp.offsetHeight):300},...abierto.doc.bloques.map(b=>({x:b.x,y:b.y,w:b.t==="esc"?anchoEsc(b):(b.w||300),h:b.t==="img"?(b.w||300):b.t==="post"?200:b.t==="cal"?340:b.t==="esc"?altoEsc(b):160}))];
+lzHoja.limites=()=>{if(!abierto)return null;/* listas: alto aproximado */const pp=$("capa-hoja").querySelector(".principal");const pts=[{x:0,y:0,w:pp?pp.offsetWidth:400,h:pp?Math.max(300,pp.offsetHeight):300},...abierto.doc.bloques.map(b=>({x:b.x,y:b.y,w:b.t==="esc"?anchoEsc(b):(b.w||300),h:b.t==="img"?(b.w||300):b.t==="post"?200:b.t==="cal"?340:b.t==="esc"?altoEsc(b):160}))];
   const x=Math.min(...pts.map(p=>p.x)),y=Math.min(...pts.map(p=>p.y));return {x,y,w:Math.max(...pts.map(p=>p.x+p.w))-x,h:Math.max(...pts.map(p=>p.y+p.h))-y}};
 lzHoja.onArchivo=(f,p)=>bloqueImagen(f,p);
 async function bloqueImagen(file,p){
@@ -2149,7 +2191,7 @@ $("linkform").addEventListener("submit",e=>{
   $("l-url").value="";$("l-tit").value="";$("linkform").hidden=true;
 });
 $("add-img").onclick=()=>{destinoArchivo="hoja";$("file").click()};
-$("volver").onclick=()=>{if(navRef.length){const id=navRef.pop(),st=navRef;cerrar();navRef=st;if(data.ideas.some(x=>x.id===id))abrir("ideas",id);pintarVolver();return}cerrar()};
+$("volver").onclick=()=>{if(navRef.length){const u=navRef.pop(),st=navRef;cerrar();navRef=st;if(data[u.k]&&data[u.k].some(x=>x.id===u.id))abrir(u.k,u.id);pintarVolver();return}cerrar()};
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape"){
     for(const p of ["panel-diacal","panel-menu","panel-keep","panel-dictar","panel-mas","panel-export","panel-compartir","panel-claude","linkform","panel-mezcla","panel-cats","panel-cal"])if(!$(p).hidden){$(p).hidden=true;return}
@@ -2397,7 +2439,7 @@ crearLateral(lzMain);crearLateral(lzHoja);pintarPaletas();
 /* adentro de un post-it: el + de la barra izquierda tiene todo lo que se puede agregar */
 {const bar=lzHoja.vp.parentElement.querySelector(".lateral"),mas=el("button","lat mas","+");mas.type="button";mas.title="Agregar";mas.setAttribute("aria-label","Agregar");mas.setAttribute("aria-expanded","false");
   bar.prepend(mas,el("span","lat-sep"));const menu=el("div","agregar-menu");menu.hidden=true;menu.setAttribute("role","menu");$("detalle").append(menu);
-  const OPC=[["add-post","Post-it","am"],["add-txt","Nota"],["add-tx","Texto"],["add-link","Link"],["add-ref","Referencia"],["add-img","Imagen"],["add-cal","Calendario"],["add-esc","Escaleta"],["h-hilo","Hilo rojo"]];
+  const OPC=[["add-post","Post-it","am"],["add-txt","Nota"],["add-tx","Texto"],["add-link","Link"],["add-ref","Referencia"],["add-tar","Tareas"],["add-img","Imagen"],["add-cal","Calendario"],["add-esc","Escaleta"],["h-hilo","Hilo rojo"]];
   const cerrarM=()=>{menu.hidden=true;mas.setAttribute("aria-expanded","false");document.removeEventListener("pointerdown",fuera,true)};
   const fuera=e=>{if(!menu.contains(e.target)&&e.target!==mas)cerrarM()};
   mas.onclick=()=>{if(!menu.hidden){cerrarM();return}menu.replaceChildren();
@@ -2576,6 +2618,8 @@ document.addEventListener("keydown",e=>{if(e.key!=="Tab"||e.shiftKey||e.ctrlKey|
     const pl=mk();pl.id="btn-plano";ex.lastElementChild.before(pl);
     {const fb=el("button","btn");fb.type="button";fb.id="btn-fondo";fb.append(el("span","ic-cuad"));const pf=si=>{document.documentElement.classList.toggle("fondo-cuad",si);try{localStorage.setItem("fondo",si?"cuad":"")}catch(_){}fb.setAttribute("aria-pressed",String(si));const t=si?"Volver al fondo original":"Fondo cuadriculado";fb.title=t;fb.setAttribute("aria-label",t)};
       fb.onclick=()=>pf(!document.documentElement.classList.contains("fondo-cuad"));let f0=false;try{f0=localStorage.getItem("fondo")==="cuad"}catch(_){}pf(f0);ex.lastElementChild.before(fb)}
+    {const nb=el("button","btn");nb.type="button";nb.id="btn-lista";nb.append(el("span","ic-lista"));nb.title="Nueva lista de tareas en la plancha";nb.setAttribute("aria-label","Nueva lista de tareas en la plancha");
+      nb.onclick=async()=>{if(vista!=="ideas")setVista("ideas");const c=lzMain.aMundo(innerWidth/2,innerHeight/2),id=await nuevaLista({enPlancha:true,x:Math.round(c.x-125),y:Math.round(c.y-100)});if(id)setTimeout(()=>enfocarLista(id,".tr-tit"),250)};ex.lastElementChild.before(nb)}
     const enPost=mk();enPost.id="h-plano";$("h-ayuda").before(enPost);
     window.revisarPlano=()=>{let puesto=false;try{puesto=localStorage.getItem("plano")==="1"}catch(_){}poner(puesto)};window.revisarPlano()}
   $("btn-menu").before(ex);
@@ -2696,9 +2740,11 @@ const AYUDA=[
   [{chip:"✎"},"Pasá por arriba de un post-it y tocá el lápiz: lo editás ahí mismo, sin abrirlo. Cambiás el texto, la categoría (los puntitos de colores) y el tamaño de la letra: «Grande» o «Título» para que un proyecto se destaque en la plancha."],
   [null,"Cuando creás un post-it con doble clic, los puntitos de colores le eligen la categoría antes de pegarlo."]]},
  {t:"Tareas",it:[
-  [{chip:"Tareas"},"Una lista simple en la plancha de ideas, para lo que tenés que hacer sin un orden en particular. Escribí en «+ agregar tarea» y Enter. Se mueve arrastrándola del título."],
-  [{chip:"☐"},"Cuando la hacés, tocá el cuadradito: se tacha y queda anotada sola en el diario de hoy, con la hora («Terminé: …»). Si la destachás, se borra del diario."],
-  [{chip:"Borrar las tachadas"},"Limpia la lista de lo que ya hiciste. Lo anotado en el diario queda."]]},
+  [{h:'<span class="ay-chip"><span class="ic-lista"></span></span>'},"En el •••, al lado de la «A»: crea una lista de tareas nueva en la plancha. Podés tener todas las que quieras. Le ponés nombre arriba y la movés arrastrándola del título."],
+  [{chip:"☐"},"Cuando hacés una tarea, tocá el cuadradito: se tacha y queda anotada sola en el diario de hoy, con la hora («Terminé: …»). Si la destachás, se borra del diario."],
+  [{chip:"×"},"Arriba a la derecha de la lista: la saca de la plancha. Si está adentro de algún post-it, sigue ahí; si no, se borra (te pregunta antes)."],
+  [{chip:"Tareas"},"Adentro de un post-it, en el «+»: armás una lista nueva ahí o ponés una que ya existe. Es la misma lista en los dos lados: si tachás o borrás algo adentro, cambia afuera también."],
+  [{chip:"Mostrar también en la plancha"},"Abajo de una lista adentro de un post-it: hace que esa misma lista aparezca también en la plancha principal."]]},
  {t:"Menú •••",it:[
   [{chip:"•••"},"Arriba a la derecha: abre una fila con todo lo que sigue."],
   [{h:'<span class="ay-chip ay-busca">⌕ Buscar en todo…</span>'},"Busca en todo, también adentro de los post-its."],
@@ -2725,7 +2771,7 @@ const AYUDA=[
   [{chip:"Exportar"},"Copia el texto o lo descarga como .txt para seguir en Docs o Word."],
   [{chip:"Compartir"},"Te da un link directo a esa nota, que abre solo en tus dispositivos."],
   [{h:'<span class="ay-chip" style="background:#1f9d6b;color:#fff">● En vivo</span>'},"Para trabajar un post-it con otra gente al mismo tiempo. Mirá la pestaña «En vivo»."],
-  [{chip:"Referencia"},"Pone adentro un post-it que vive en otro lado (por ejemplo, una locación adentro de una película). Lo buscás por texto o número, o lo creás nuevo ahí mismo eligiendo la categoría. Es el mismo post-it: si lo cambiás, cambia en todos lados. Tocalo dos veces (o «Abrir ↗») para entrar, y «← #» te devuelve."],
+  [{chip:"Referencia"},"Pone adentro un post-it o una frase que vive en otro lado (por ejemplo, una locación adentro de una película). Lo buscás por texto o número, o lo creás nuevo ahí mismo: elegís «Post-it» (con su categoría) o «Frase». Es el mismo post-it: si lo cambiás, cambia en todos lados. Tocalo dos veces (o «Abrir ↗») para entrar, y «← #» te devuelve."],
   [null,"Si un post-it está referenciado en otro, abajo del texto dice «También aparece en:» y podés saltar ahí."]]},
  {t:"Diario",it:[
   ["Scroll infinito","Arriba lo que escribiste antes, abajo el día de hoy. Entrás y ya podés escribir."],
@@ -3294,42 +3340,86 @@ $("pv-deshacer").onclick=()=>{const id=pvPila;cerrarPila();disolverPila(id,false
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("pila-vista").hidden&&$("detalle").hidden){e.preventDefault();e.stopImmediatePropagation();cerrarPila()}},true);
 $("h-a-pila").onclick=()=>{if(!abierto||abierto.k!=="ideas")return;abierto.doc.sacada=false;abierto.doc.pila="";escribir(cols.ideas,abierto.id,{sacada:false,pila:""});$("panel-mas").hidden=true;$("h-a-pila").hidden=true;toast("Volvió a la pila de Keep.")};
 
-/* ---------- Tareas: una lista simple en la plancha de ideas; lo que tachás queda anotado en el diario ---------- */
-let tareas={x:null,y:null,lista:[]},docTareas=null,tareasCargadas=false,nodoTar=null;
-function guardarTareas(){if(!docTareas)return;const o={lista:tareas.lista.map(t=>{const r={id:t.id,v:t.v||"",hecho:t.hecho||null};if(t.dia)r.dia=t.dia;return r})};
-  if(typeof tareas.x==="number"&&typeof tareas.y==="number"){o.x=tareas.x;o.y=tareas.y}docTareas.set(o).catch(()=>toast("No se guardaron las tareas. Revisá la conexión."))}
+/* ---------- Listas de tareas: cada una vive en «tareas/». Se muestran en la plancha, adentro de post-its, o en los dos lados a la vez (es la misma lista) ---------- */
+let listas=[],colTareas=null,docTareasVieja=null,tareasCargadas=false,migrandoTar=false;const nodosTar=new Map(),listasNuevas=new Set();
 const tecleaEn=c=>{const a=document.activeElement;return !!(c&&a&&c.contains(a)&&(a.tagName==="TEXTAREA"||a.tagName==="INPUT"))};
-const firmaTareas=()=>JSON.stringify(tareas.lista.map(t=>[t.id,t.v,!!t.hecho]));
-function armarTareas(cont){cont._f=firmaTareas();const L=tareas.lista,pend=L.filter(t=>!t.hecho),hechas=L.filter(t=>t.hecho);
-  const cab=el("div","tr-cab");cab.title="Arrastrá para mover";cab.append(el("b",null,"Tareas"),el("span",null,pend.length?(pend.length===1?"1 por hacer":`${pend.length} por hacer`):L.length?"todo hecho":""));
-  const filas=[...pend,...hechas].map(t=>{const f=el("div","tr-item"+(t.hecho?" hecha":""));
-    const ok=el("button","tr-ok",t.hecho?"✓":"");ok.type="button";ok.setAttribute("aria-label",t.hecho?"Destachar":"Tachar");ok.title=t.hecho?"Destachar":"Hecha: se tacha y queda anotada en el diario";ok.onclick=()=>tildarTarea(t);
+const limpiarItems=l=>(l||[]).map(t=>{const r={id:t.id,v:t.v||"",hecho:t.hecho||null};if(t.dia)r.dia=t.dia;return r});
+const refsLista=id=>data.ideas.filter(i=>(i.bloques||[]).some(b=>b.t==="tar"&&b.ref===id));
+const firmaLista=(L,modo)=>JSON.stringify([L.titulo||"",limpiarItems(L.lista),!!L.enPlancha,modo==="hoja"?abierto&&abierto.id:"",refsLista(L.id).map(i=>i.id+":"+(i.numero||"")+":"+(i.texto||"").slice(0,30))]);
+const editandoLista=id=>[...document.querySelectorAll('[data-lista="'+id+'"]')].some(tecleaEn);
+function guardarLista(L){if(!colTareas||!L||!L.id)return;const o={titulo:L.titulo||"",tablero:"ideas",enPlancha:!!L.enPlancha,creado:L.creado||Date.now(),lista:limpiarItems(L.lista)};
+  if(typeof L.x==="number"&&typeof L.y==="number"){o.x=L.x;o.y=L.y}colTareas.doc(L.id).set(o).catch(()=>toast("No se guardaron las tareas. Revisá la conexión."))}
+async function nuevaLista(extra){if(!colTareas)return null;const o={titulo:"",tablero:"ideas",enPlancha:false,creado:Date.now(),lista:[],...extra};
+  try{const r=await colTareas.add(o);listasNuevas.add(r.id);return r.id}catch(_){toast("No se pudo crear la lista.");return null}}
+function nombreLista(L){return (L.titulo||"").trim()||"Tareas"}
+function enfocarLista(id,sel){const f=()=>{const raiz=abierto?$("capa-hoja"):document.documentElement.classList.contains("plano")?$("lista-plana"):$("capa-main");const n=raiz&&raiz.querySelector('[data-lista="'+id+'"] '+(sel||".tr-nueva"));if(n){n.focus({preventScroll:true});return true}return false};if(!f())requestAnimationFrame(f)}
+function armarLista(cont,L,modo){cont.dataset.lista=L.id;cont._f=firmaLista(L,modo);if(!Array.isArray(L.lista))L.lista=[];
+  const todas=L.lista,pend=todas.filter(t=>!t.hecho),hechas=todas.filter(t=>t.hecho);
+  const cab=el("div","tr-cab");cab.title=modo==="plana"?"":"Arrastrá de acá para mover";
+  const ti=el("input","tr-tit");ti.type="text";ti.value=L.titulo||"";ti.placeholder="Tareas";ti.setAttribute("aria-label","Nombre de la lista");
+  ti.oninput=()=>{L.titulo=ti.value;clearTimeout(L._tt);L._tt=setTimeout(()=>guardarLista(L),700)};ti.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();ti.blur()}};ti.onblur=()=>{clearTimeout(L._tt);guardarLista(L);setTimeout(()=>pintarTareas(),0)};
+  cab.append(ti,el("span","tr-cnt",pend.length?(pend.length===1?"1 por hacer":`${pend.length} por hacer`):todas.length?"todo hecho":""));
+  if(modo!=="hoja"){const x=el("button","tr-cerrar","×");x.type="button";x.title="Sacar de la plancha";x.setAttribute("aria-label","Sacar la lista de la plancha");x.onclick=()=>sacarListaDePlancha(L,x);cab.append(x)}
+  const filas=[...pend,...hechas].map(t0=>{const id=t0.id,t=new Proxy({},{get:(_,p)=>(L.lista.find(z=>z.id===id)||t0)[p],set:(_,p,v)=>{(L.lista.find(z=>z.id===id)||t0)[p]=v;return true},deleteProperty:(_,p)=>{delete (L.lista.find(z=>z.id===id)||t0)[p];return true}});const f=el("div","tr-item"+(t.hecho?" hecha":""));
+    const ok=el("button","tr-ok",t.hecho?"✓":"");ok.type="button";ok.setAttribute("aria-label",t.hecho?"Destachar":"Tachar");ok.title=t.hecho?"Destachar":"Hecha: se tacha y queda anotada en el diario";ok.onclick=()=>tildarTarea(L,t);
     const v=el("textarea","tr-v");v.rows=1;v.value=t.v||"";v.setAttribute("aria-label","Tarea");
-    v.oninput=()=>{t.v=v.value;autosize(v);clearTimeout(t._tm);t._tm=setTimeout(guardarTareas,700)};
+    v.oninput=()=>{t.v=v.value;autosize(v);clearTimeout(t._tm);t._tm=setTimeout(()=>guardarLista(L),700)};
     v.onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();v.blur()}};
-    v.onblur=()=>{clearTimeout(t._tm);if(!(t.v||"").trim()){tareas.lista=tareas.lista.filter(z=>z!==t);guardarTareas();setTimeout(()=>pintarTareas(),0)}else guardarTareas()};
-    const x=el("button","tr-x","×");x.type="button";x.setAttribute("aria-label","Borrar tarea");x.title="Borrar";x.onclick=()=>{tareas.lista=tareas.lista.filter(z=>z!==t);guardarTareas();pintarTareas()};
+    v.onblur=()=>{clearTimeout(t._tm);if(!(t.v||"").trim())L.lista=L.lista.filter(z=>z.id!==id);guardarLista(L);setTimeout(()=>pintarTareas(),0)};
+    const x=el("button","tr-x","×");x.type="button";x.setAttribute("aria-label","Borrar tarea");x.title="Borrar";x.onclick=()=>{L.lista=L.lista.filter(z=>z.id!==id);guardarLista(L);pintarTareas()};
     f.append(ok,v,x);requestAnimationFrame(()=>autosize(v));return f});
   const nu=el("input","tr-nueva");nu.type="text";nu.placeholder="+ agregar tarea";nu.setAttribute("aria-label","Nueva tarea");
-  nu.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();const v=nu.value.trim();if(!v)return;tareas.lista.push({id:bid(),v,hecho:null});guardarTareas();pintarTareas(true)}};
+  nu.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();const v=nu.value.trim();if(!v)return;L.lista.push({id:bid(),v,hecho:null});guardarLista(L);pintarTareas(L.id);enfocarLista(L.id)}};
   cont.replaceChildren(cab,...filas,nu);
-  if(hechas.length){const lb=el("button","tr-limpiar","Borrar las tachadas");lb.type="button";lb.onclick=()=>{tareas.lista=tareas.lista.filter(t=>!t.hecho);guardarTareas();pintarTareas()};cont.append(lb)}}
-function pintarTareas(foco){
-  if(vista!=="ideas"||!tareasCargadas){if(nodoTar)nodoTar.hidden=true}
-  else{if(!nodoTar){const n=nodoTar=el("div","tareas");$("capa-main").append(n);
-      n.addEventListener("pointerdown",e=>{if(!e.target.closest(".tr-cab"))e.stopPropagation()});n.addEventListener("dblclick",e=>e.stopPropagation());
-      arrastrable(n,lzMain,{solo:".tr-cab",inicio:()=>({x:parseFloat(n.style.left)||0,y:parseFloat(n.style.top)||0}),mover:(x,y)=>{n.style.left=x+"px";n.style.top=y+"px"},
-        soltar:()=>{tareas.x=Math.round(parseFloat(n.style.left));tareas.y=Math.round(parseFloat(n.style.top));limCache=null;guardarTareas()}})}
-    nodoTar.hidden=false;
-    if(!nodoTar.classList.contains("arrastrando")){let x=tareas.x,y=tareas.y;if(typeof x!=="number"||typeof y!=="number"){const pos=[...posiciones(enPlancha("ideas")).values(),...[...nodosPila.values()].map(n=>({x:parseFloat(n.style.left)||0,y:parseFloat(n.style.top)||0}))];x=pos.length?Math.min(...pos.map(p=>p.x))-300:-300;y=pos.length?Math.min(...pos.map(p=>p.y)):0}
-      nodoTar.style.left=x+"px";nodoTar.style.top=y+"px"}
-    if(foco||(!tecleaEn(nodoTar)&&nodoTar._f!==firmaTareas()))armarTareas(nodoTar)}
-  const pb=$("lista-plana")&&$("lista-plana").querySelector(":scope>.tareas.plana");if(pb&&(foco||(!tecleaEn(pb)&&pb._f!==firmaTareas())))armarTareas(pb);
-  if(foco){const plano=document.documentElement.classList.contains("plano"),c=plano?pb:nodoTar,t=c&&c.querySelector(".tr-nueva");if(t)t.focus({preventScroll:true})}}
-function tildarTarea(t){
+  const pie=el("div","tr-pie");
+  if(hechas.length){const lb=el("button","tr-limpiar","Borrar las tachadas");lb.type="button";lb.onclick=()=>{L.lista=L.lista.filter(t=>!t.hecho);guardarLista(L);pintarTareas()};pie.append(lb)}
+  if(modo==="hoja"){const pb=el("button","tr-limpiar",L.enPlancha?"✓ También en la plancha":"Mostrar también en la plancha");pb.type="button";pb.title=L.enPlancha?"Tocá para sacarla de la plancha (acá queda)":"La misma lista aparece en la plancha de ideas";
+    pb.onclick=()=>{L.enPlancha=!L.enPlancha;if(L.enPlancha&&typeof L.x!=="number"&&abierto){const pos=posiciones(enPlancha("ideas")).get(abierto.id),pid=enPilaId(abierto.doc),base=pos||(pid?pilaXY(pid):{x:0,y:0}),p=lugarCerca(base.x,base.y);L.x=Math.round(p.x);L.y=Math.round(p.y)}
+      guardarLista(L);pintarTareas();toast(L.enPlancha?"Ahora también está en la plancha, al lado de este post-it.":"La saqué de la plancha. Acá sigue.")};pie.append(pb)}
+  const otros=refsLista(L.id).filter(i=>!(modo==="hoja"&&abierto&&i.id===abierto.id));
+  if(otros.length){const en=el("div","tr-en");en.append(el("span",null,modo==="hoja"?"También en:":"Adentro de:"));for(const i of otros){const b=el("button",null,"#"+(i.numero||"?")+" "+((i.texto||"").replace(/\s+/g," ").trim().slice(0,26)||"(sin texto)"));b.type="button";b.style.setProperty("--c",colorDe("ideas",i));b.title="Abrir";b.onclick=()=>{if(abierto)irARef(i.id);else abrir("ideas",i.id)};en.append(b)}pie.append(en)}
+  if(pie.children.length)cont.append(pie)}
+function sacarListaDePlancha(L,btn){const rs=refsLista(L.id);
+  if(rs.length){L.enPlancha=false;guardarLista(L);pintarTareas();toast(`La saqué de la plancha. Sigue adentro de #${rs[0].numero||"?"}.`);return}
+  const vacia=!(L.lista||[]).length&&!(L.titulo||"").trim();
+  if(!vacia&&!btn.classList.contains("sure")){btn.classList.add("sure");btn.textContent="¿Borrar la lista?";clearTimeout(btn._t);btn._t=setTimeout(()=>{btn.classList.remove("sure");btn.textContent="×"},3500);return}
+  colTareas.doc(L.id).delete().catch(()=>toast("No se pudo borrar la lista."))}
+function posLista(L,k){if(typeof L.x==="number"&&typeof L.y==="number")return {x:L.x,y:L.y};const pos=[...posiciones(enPlancha("ideas")).values(),...[...nodosPila.values()].map(n=>({x:parseFloat(n.style.left)||0,y:parseFloat(n.style.top)||0}))];
+  return {x:pos.length?Math.min(...pos.map(p=>p.x))-300:-300,y:(pos.length?Math.min(...pos.map(p=>p.y)):0)+(k||0)*240}}
+function nodoListaPlancha(id){const n=el("div","tareas");n.dataset.lista=id;
+  n.addEventListener("pointerdown",e=>{if(!e.target.closest(".tr-cab")||e.target.closest("input,button"))e.stopPropagation()});n.addEventListener("dblclick",e=>e.stopPropagation());
+  arrastrable(n,lzMain,{solo:".tr-cab",inicio:()=>({x:parseFloat(n.style.left)||0,y:parseFloat(n.style.top)||0}),mover:(x,y)=>{n.style.left=x+"px";n.style.top=y+"px"},
+    soltar:()=>{const L=listas.find(z=>z.id===id);if(!L)return;L.x=Math.round(parseFloat(n.style.left));L.y=Math.round(parseFloat(n.style.top));limCache=null;guardarLista(L)}});return n}
+function pintarListasPlana(box,foco){const ls=listas.filter(l=>l.enPlancha),ids=new Set(ls.map(l=>l.id));[...box.children].forEach(c=>{if(!ids.has(c.dataset.lista))c.remove()});
+  for(const L of ls){let c=box.querySelector(':scope>[data-lista="'+L.id+'"]');if(!c){c=el("div","tareas plana");c.dataset.lista=L.id;box.append(c)}if(foco===L.id||(!tecleaEn(c)&&c._f!==firmaLista(L,"plana")))armarLista(c,L,"plana")}}
+function pintarBloqueTar(n,b,foco){const L=listas.find(z=>z.id===b.ref);let c=n.querySelector(":scope>.tareas");
+  if(!L){if(c)c.remove();let m=n.querySelector(":scope>.tr-falta");if(!m){m=el("p","tr-falta");n.prepend(m)}m.textContent=!tareasCargadas||listasNuevas.has(b.ref)?"…":"Esta lista se borró. Podés quitarla.";return}
+  n.querySelector(":scope>.tr-falta")?.remove();if(!c){c=el("div","tareas en-hoja");n.prepend(c)}if(foco===L.id||(!tecleaEn(c)&&c._f!==firmaLista(L,"hoja")))armarLista(c,L,"hoja")}
+function pintarTareas(foco){const ver=vista==="ideas"&&tareasCargadas,vivos=new Set();let k=0;
+  if(ver)for(const L of listas.filter(l=>l.enPlancha)){vivos.add(L.id);let n=nodosTar.get(L.id);if(!n){n=nodoListaPlancha(L.id);nodosTar.set(L.id,n);$("capa-main").append(n)}
+    if(!n.classList.contains("arrastrando")){const p=posLista(L,typeof L.x==="number"?0:k++);n.style.left=p.x+"px";n.style.top=p.y+"px"}
+    if(foco===L.id||(!tecleaEn(n)&&n._f!==firmaLista(L,"plancha")))armarLista(n,L,"plancha")}
+  for(const [id,n] of nodosTar)if(!vivos.has(id)){n.remove();nodosTar.delete(id)}
+  const box=$("lista-plana")&&$("lista-plana").querySelector(":scope>.tr-plana");if(box)pintarListasPlana(box,foco);
+  if(abierto)document.querySelectorAll("#capa-hoja .pieza.btar").forEach(n=>{const b=abierto.doc.bloques.find(x=>x.id===n.dataset.bid);if(b)pintarBloqueTar(n,b,foco)})}
+function tildarTarea(L,t){
   if(t.hecho){t.hecho=null;if(t.dia){quitarDeDiario(t.dia.k,t.dia.id);delete t.dia}}
-  else{t.hecho=Date.now();const d=anotarEnDiario("Terminé: "+(t.v||"").trim());if(d)t.dia=d;else toast("Tachada. El diario todavía no cargó, así que no quedó anotada.")}
-  guardarTareas();pintarTareas()}
+  else{t.hecho=Date.now();const nom=(L.titulo||"").trim(),d=anotarEnDiario("Terminé: "+(t.v||"").trim()+(nom&&!/^tareas$/i.test(nom)?` (${nom})`:""));if(d)t.dia=d;else toast("Tachada. El diario todavía no cargó, así que no quedó anotada.")}
+  guardarLista(L);pintarTareas()}
+/* la lista única de antes (config/tareas) pasa a ser una lista más, en el mismo lugar de la plancha */
+function migrarTareasViejas(d){if(migrandoTar||!d||d.migrado||!Array.isArray(d.lista)||!d.lista.length||!colTareas||!tareasCargadas)return;migrandoTar=true;
+  const o={titulo:"",tablero:"ideas",enPlancha:true,creado:Date.now(),lista:limpiarItems(d.lista)};if(typeof d.x==="number"&&typeof d.y==="number"){o.x=d.x;o.y=d.y}
+  colTareas.add(o).then(()=>docTareasVieja.set({migrado:true})).catch(()=>{migrandoTar=false})}
+/* «+» adentro de un post-it → Tareas: una lista nueva o una que ya existe */
+function abrirPanelTar(){if(!abierto||abierto.k!=="ideas")return;$("linkform").hidden=true;$("panel-ref").hidden=true;$("panel-tar").hidden=false;const ya=new Set(abierto.doc.bloques.filter(b=>b.t==="tar").map(b=>b.ref)),L=$("tar-lista");L.replaceChildren();
+  const ls=listas.filter(l=>!ya.has(l.id)).sort((a,b)=>(b.creado||0)-(a.creado||0));$("tar-hay").hidden=!ls.length;
+  for(const l of ls){const b=el("button","r-fila");b.type="button";const pend=(l.lista||[]).filter(t=>!t.hecho).length,dn=refsLista(l.id).map(i=>"#"+i.numero).concat(l.enPlancha?["plancha"]:[]).join(", ");
+    b.append(el("i"),el("span","r-n","☐ "+pend),el("span","r-t",nombreLista(l)+((l.lista||[]).length?" — "+(l.lista||[]).slice(0,3).map(t=>t.v).join(", "):"")),el("span","r-c",dn));b.querySelector("i").style.setProperty("--c","#fffdf6");b.onclick=()=>{ponerLista(l.id);$("panel-tar").hidden=true};L.append(b)}}
+function ponerLista(id){if(!abierto)return;const c=centroNuevo();let x=Math.round(c.x-130),y=Math.round(c.y-90);for(let n=0;n<40&&abierto.doc.bloques.some(b=>Math.abs(b.x-x)<150&&Math.abs(b.y-y)<120);n++){x+=280;if(n%4===3){x-=1120;y+=240}}agregarBloque({id:bid(),t:"tar",ref:id,x,y,w:260})}
+$("add-tar").onclick=abrirPanelTar;$("cerrar-tar").onclick=()=>{$("panel-tar").hidden=true};
+$("tar-nueva").onclick=async()=>{if(!abierto)return;const dest=abierto.id,id=await nuevaLista({enPlancha:false});if(!id||!abierto||abierto.id!==dest)return;$("panel-tar").hidden=true;ponerLista(id);setTimeout(()=>enfocarLista(id,".tr-tit"),250)};
+/* si sacás una lista de un post-it y no está en ningún otro lado, se borra */
+function soltarListaDeHoja(lid,hoja){setTimeout(()=>{const L=listas.find(z=>z.id===lid);if(!L||L.enPlancha)return;if(refsLista(lid).some(i=>i.id!==hoja))return;colTareas&&colTareas.doc(lid).delete().catch(()=>{})},1200)}
 /* sumar o sacar un renglón con hora en el diario de hoy, sin pisar lo que ya está escrito */
 function paginaDiaSuelta(k){return feed.pags.get(k)||{k,e:entradaLocal(k),sig:null,suelta:true}}
 function anotarEnDiario(texto){if(!colDiario||!diarioCargado)return null;const k=hoyDia(),id=bid(),tr={id,h:horaAhora(),texto,rico:""},p=paginaDiaSuelta(k),ts=p.e.tramos;
@@ -3488,7 +3578,8 @@ function textoExport(k,d){
   sec("NOTAS",bl.filter(b=>(b.t==="txt"||b.t==="tx")&&b.v&&b.v.trim()).flatMap(b=>[b.v.trim(),""]));
   sec("POST-ITS",bl.filter(b=>b.t==="post"&&b.v&&b.v.trim()).map(b=>"- "+b.v.trim().replace(/\n+/g," ")));
   bl.filter(b=>b.t==="esc"&&(b.sc||[]).length).forEach((b,n)=>sec(n?`ESCALETA ${n+1}`:"ESCALETA",lineasEsc(b)));
-  sec("REFERENCIAS",bl.filter(b=>b.t==="ref").map(b=>data.ideas.find(x=>x.id===b.ref)).filter(Boolean).map(i=>`- #${i.numero||"?"} (${label(i.tipo)}): ${(i.texto||"").replace(/\s+/g," ").trim()}`));
+  sec("TAREAS",bl.filter(b=>b.t==="tar").map(b=>listas.find(z=>z.id===b.ref)).filter(Boolean).flatMap(L=>[(L.titulo||"").trim()?(L.titulo.trim()+":"):null,...(L.lista||[]).map(t=>(t.hecho?"[x] ":"[ ] ")+t.v)].filter(Boolean)));
+  sec("REFERENCIAS",bl.filter(b=>b.t==="ref").map(b=>data[kDe(b)].find(x=>x.id===b.ref)).filter(Boolean).map(i=>`- #${i.numero||"?"} (${i.tipo?label(i.tipo):"frase"}): ${(i.texto||"").replace(/\s+/g," ").trim()}${i.autor?" — "+i.autor:""}`));
   sec("LINKS",bl.filter(b=>b.t==="link").map(b=>`- ${b.titulo?b.titulo+": ":""}${b.url}`));
   sec("FECHAS",bl.filter(b=>b.t==="cal").flatMap(b=>b.ev||[]).sort((a,c)=>a.d<c.d?-1:a.d>c.d?1:0).map(e=>{const [y,m,dd]=e.d.split("-");return `- ${dd}/${m}/${y}: ${e.t}`}));
   const ni=bl.filter(b=>b.t==="img").length;if(ni)L.push("","",`(${ni} ${ni>1?"imágenes quedan":"imagen queda"} en la plancha, no van en el texto.)`);
@@ -3785,7 +3876,7 @@ drawComposer();setVista(vista);try{if(localStorage.getItem("pestana")==="diario"
   for(const k of ["ideas","frases"]){
     cols[k]=db.collection(k);
     cols[k].orderBy("creado","desc").onSnapshot(s=>{
-      data[k]=s.docs.map(d=>({id:d.id,...d.data(),_pend:!!(d.metadata&&d.metadata.hasPendingWrites)}));pintarMain();sincronizarAbierto(k);if(k==="ideas"){refrescarRefs();window.__ideasListas=true;if(window.__invitado)setTimeout(abrirInvitado,0);setTimeout(revisarVivos,1500);if(window.revisarEntradas)setTimeout(window.revisarEntradas,0)}
+      data[k]=s.docs.map(d=>({id:d.id,...d.data(),_pend:!!(d.metadata&&d.metadata.hasPendingWrites)}));pintarMain();sincronizarAbierto(k);refrescarRefs();if(k==="ideas"){pintarTareas();window.__ideasListas=true;if(window.__invitado)setTimeout(abrirInvitado,0);setTimeout(revisarVivos,1500);if(window.revisarEntradas)setTimeout(window.revisarEntradas,0)}
       if(!$("panel-cal").hidden&&!escribiendo())pintarCalMain();
       if(linkInicial){const i=data[k].find(x=>x.id===linkInicial);if(i){linkInicial=null;abrir(k,i.id)}}
       if(k===vista&&!encuadrado[k]&&data[k].length){lzMain.encuadrar(lzMain.limites());encuadrado[k]=true}
@@ -3808,8 +3899,12 @@ drawComposer();setVista(vista);try{if(localStorage.getItem("pestana")==="diario"
   colTrazos.onSnapshot(s=>{trazos=s.docs.map(d=>({id:d.id,...d.data()}));pintarTrazosMain()},()=>{});
   docPila=db.doc("config/pila");docPila.onSnapshot(s=>{pilaCargada=true;const d=s.exists&&s.data();if(d&&isFinite(d.x)&&isFinite(d.y)){pilaPos={x:d.x,y:d.y};limCache=null}pilaTitulo=(d&&d.titulo)||"";pintarPila()},()=>{});
   colPilas=db.collection("pilas");colPilas.onSnapshot(s=>{pilas=s.docs.map(d=>({id:d.id,...d.data()}));pilasCargadas=true;limCache=null;pintarMain()},()=>{});
-  docTareas=db.doc("config/tareas");docTareas.onSnapshot(s=>{const d=s.exists&&s.data();const ab=tecleaEn(nodoTar)||tecleaEn(document.querySelector("#lista-plana>.tareas.plana"));if(ab&&tareasCargadas)return;
-    tareas={x:d&&typeof d.x==="number"?d.x:null,y:d&&typeof d.y==="number"?d.y:null,lista:Array.isArray(d&&d.lista)?d.lista.map(t=>({...t})):[]};tareasCargadas=true;limCache=null;pintarTareas();pintarLista()},()=>{});
+  colTareas=db.collection("tareas");colTareas.onSnapshot(sn=>{const viejas=new Map(listas.map(l=>[l.id,l]));
+    listas=sn.docs.map(d=>{const v=d.data(),o=viejas.get(d.id);if(o&&editandoLista(d.id))return o;const nl=(v.lista||[]).map(t=>({...t}));
+      if(o){for(const k of Object.keys(o))if(k!=="id"&&k!=="lista"&&!k.startsWith("_"))delete o[k];const {lista:_l,...resto}=v;Object.assign(o,resto);o.lista=JSON.stringify(limpiarItems(o.lista))===JSON.stringify(limpiarItems(nl))?o.lista:nl;return o}
+      return {id:d.id,...v,lista:nl}});for(const id of [...listasNuevas])if(listas.some(l=>l.id===id))listasNuevas.delete(id);
+    tareasCargadas=true;limCache=null;pintarTareas();pintarLista();if(docTareasVieja)docTareasVieja.get().then(x=>migrarTareasViejas(x.exists&&x.data())).catch(()=>{})},()=>{});
+  docTareasVieja=db.doc("config/tareas");
   colDeco=db.collection("deco");
   colDeco.onSnapshot(s=>{decos=s.docs.map(d=>({id:d.id,...d.data()}));pintarMain()},()=>{});
 })();
