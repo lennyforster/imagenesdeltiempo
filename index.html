@@ -1046,6 +1046,10 @@ body.barra-abierta .barra-extra.h-extra:not(.abierta){display:none}
 @media (hover:none){.pila-ed{opacity:.6}}
 .pila-tit-ed{width:100%;border:0;border-bottom:1.5px dashed var(--ink);background:transparent;font:700 22px/1.1 var(--hand);color:var(--ink);padding:2px 0;user-select:text;-webkit-user-select:text;touch-action:auto}
 .pila-tit-ed:focus{outline:none}
+
+.bpila>.pila.propia{position:relative;width:200px;height:200px;z-index:auto;cursor:grab}
+.bpila.destino>.pila .pila-frente{outline:3px dashed var(--paper);outline-offset:8px}
+.bpila.sel>.pila .pila-frente{outline:2px solid var(--paper);outline-offset:4px}
 </style>
 <div class="cargando" id="cargando" hidden role="status"><span class="cg-punto"></span>Cargando tu plancha…</div>
 <div class="conectar" id="conectar" hidden>
@@ -2251,7 +2255,7 @@ function nodoBloque(b){
   if(b.t==="img"){const asa=el("div","asa");n.append(asa);redimensionable(asa,lzHoja,{inicio:()=>parseFloat(n.style.width),mover:w=>{n.style.width=w+"px";pintarHilos()},soltar:()=>{b.w=Math.round(parseFloat(n.style.width));guardarBloques()}})}
   arrastrable(n,lzHoja,{solo:b.t==="tar"?".tr-cab":b.t==="txt"||b.t==="tx"||b.t==="post"||b.t==="cal"||b.t==="esc"?".grip":null,inicio:()=>({x:parseFloat(n.style.left),y:parseFloat(n.style.top)}),mover:(x,y)=>{n.style.left=x+"px";n.style.top=y+"px";pintarHilos();const dp=destinoPilaHoja(n,b);marcarPilaHoja(dp);if(!dp&&!n.classList.contains("msel"))seguirApilarHoja(n,b)},
     soltar:()=>{b.x=Math.round(parseFloat(n.style.left));b.y=Math.round(parseFloat(n.style.top));const dp=destinoPilaHoja(n,b);marcarPilaHoja(null);if(dp){soltarApilarHoja(n,b);meterEnPilaHoja(dp,[b]);return}if(soltarApilarHoja(n,b))return;alFrente(b);guardarBloques()},
-    tocar:()=>{if(modoHilo){tocarHilo(b.id);return}const ya=selB===b.id;marcar();borrarB=null;q.textContent="Quitar";if(b.t==="img")verImagen(b.a,{recortar:recortarB});if(b.t==="ref"&&ya)irARef(b.ref,kDe(b));if(b.t==="pila"&&ya)abrirPilaHoja(b.id)}});
+    tocar:()=>{if(modoHilo){tocarHilo(b.id);return}const ya=selB===b.id;marcar();borrarB=null;q.textContent="Quitar";if(b.t==="img")verImagen(b.a,{recortar:recortarB});if(b.t==="ref"&&ya)irARef(b.ref,kDe(b));if(b.t==="pila")abrirPilaHoja(b.id)}});
   return n;
 }
 function editarTituloLink(n,b,host){const tb=n.querySelector(":scope>b");if(!tb)return;const i=el("input","link-tit");i.type="text";i.value=b.titulo||"";i.placeholder=host||"Título";i.setAttribute("aria-label","Título del link");tb.replaceWith(i);
@@ -2263,15 +2267,19 @@ const miembrosHP=pid=>abierto?abierto.doc.bloques.filter(b=>b.en===pid):[];
 const NOMBRE_B={post:"Post-it",txt:"Nota",tx:"Texto",img:"Imagen",link:"Link",ref:"Referencia",tar:"Tareas",cal:"Calendario",esc:"Escaleta",pila:"Pila"};
 const fotoDeB=x=>x.t==="img"?x.a:x.t==="ref"&&kDe(x)==="ideas"?(((data.ideas.find(i=>i.id===x.ref)||{}).bloques||[]).find(y=>y.t==="img"&&y.a)||{}).a:null;
 const textoDeB=x=>{if(x.t==="ref"){const i=data[kDe(x)].find(z=>z.id===x.ref);return i?(i.texto||""):""}if(x.t==="link"){let h=x.url;try{h=new URL(x.url).hostname.replace(/^www\./,"")}catch(_){}return x.titulo||h}if(x.t==="tar"){const L=listas.find(z=>z.id===x.ref);return L?((L.titulo||"Tareas")+": "+(L.lista||[]).map(t=>t.v).slice(0,4).join(", ")):""}return x.v||""};
-function editarTituloPilaHoja(n,b){const tt=n.querySelector(".hp-tit");if(!tt||n._editTit)return;n._editTit=true;const i=el("input","pila-tit-ed");i.type="text";i.value=b.titulo||"";i.placeholder="Pila";i.maxLength=80;i.setAttribute("aria-label","Título de la pila");tt.replaceWith(i);
+function editarTituloPilaHoja(n,b){const tt=n.querySelector(".pila-titulo");if(!tt||n._editTit)return;n._editTit=true;const i=el("input","pila-tit-ed");i.type="text";i.value=b.titulo||"";i.placeholder="Pila";i.maxLength=80;i.setAttribute("aria-label","Título de la pila");tt.replaceWith(i);
   let hecho=false;const fin=ok=>{if(hecho)return;hecho=true;n._editTit=false;if(ok){const v=i.value.trim();if(v)b.titulo=v;else delete b.titulo;guardarBloques()}pintarPilaHoja(n,b)};
   i.onkeydown=e=>{e.stopPropagation();if(e.key==="Enter"){e.preventDefault();fin(true)}else if(e.key==="Escape"){e.preventDefault();fin(false)}};i.onblur=()=>fin(true);i.onpointerdown=e=>e.stopPropagation();requestAnimationFrame(()=>{i.focus();i.select()})}
-function pintarPilaHoja(n,b){const ms=miembrosHP(b.id);n.querySelectorAll(":scope>.hp-frente").forEach(x=>x.remove());const f=el("div","hp-frente");
-  const m=el("div","meta");m.append(el("span",null,"Pila"),el("span",null,ms.length===1?"1 adentro":`${ms.length} adentro`));const tt=el("p","hp-tit",(b.titulo||"").trim()||"Pila");tt.title="Doble clic para cambiar el título";
-  tt.addEventListener("dblclick",e=>{e.stopPropagation();editarTituloPilaHoja(n,b)});const eb=el("button","pila-ed","✎");eb.type="button";eb.title="Cambiar el título";eb.onclick=e=>{e.stopPropagation();editarTituloPilaHoja(n,b)};f.append(m,tt,eb);
-  const im=ms.map(fotoDeB).find(Boolean);if(im){const i=el("img","hp-img");i.alt="";i.draggable=false;i.onerror=()=>i.remove();cargarImg(i,im);f.append(i)}
-  else{const tx=ms.map(textoDeB).find(v=>v&&v.trim());if(tx)f.append(el("p","hp-txt",tx))}
-  const ab=el("button","hp-abrir","Abrir");ab.type="button";ab.onclick=e=>{e.stopPropagation();abrirPilaHoja(b.id)};f.append(ab);n.prepend(f);n.title="Tocala dos veces para ver lo que hay adentro"}
+function pintarPilaHoja(n,b){const ms=miembrosHP(b.id);n.querySelectorAll(":scope>.pila,:scope>.hp-frente").forEach(x=>x.remove());
+  /* misma pila que en la plancha: hojas de atrás, tapa con cinta, número arriba y foto si hay */
+  const c=el("div","pila propia en-hoja"),tope=ms[ms.length-1];let col="#ffe76a";
+  if(tope){if(tope.t==="post")col=tope.c||PALETA[1];else if(tope.t==="ref"){const i=data[kDe(tope)].find(z=>z.id===tope.ref);if(i)col=colorDe(kDe(tope),i)}else col="#fffdf6"}c.style.setProperty("--c",col);
+  const f=el("div","pila-frente"),m=el("div","meta");m.append(el("span","pt-num","Pila"),el("span"));
+  const tt=el("p","pila-titulo",(b.titulo||"").trim()||"Pila");tt.title="Doble clic para cambiar el título";tt.addEventListener("dblclick",e=>{e.stopPropagation();editarTituloPilaHoja(n,b)});f.append(m,tt);
+  const im=ms.map(fotoDeB).find(Boolean);if(im){c.classList.add("con-img");const i=el("img","pila-img");i.alt="";i.draggable=false;i.onerror=()=>i.remove();cargarImg(i,im);f.append(i)}
+  else{const tx=ms.map(textoDeB).find(v=>v&&v.trim());if(tx)f.append(el("p","pila-txt",tx))}
+  const eb=el("button","pila-ed","✎");eb.type="button";eb.title="Cambiar el título";eb.setAttribute("aria-label","Cambiar el título de la pila");eb.onclick=e=>{e.stopPropagation();editarTituloPilaHoja(n,b)};f.append(eb);
+  c.append(el("i","pila-hoja h3"),el("i","pila-hoja h2"),f,el("span","pila-badge",String(ms.length)));n.prepend(c);n.title="Tocala para ver lo que hay adentro"}
 /* si soltás algo encima de otra cosa sin quedarte quieto, queda encima (capas). Si te quedás ~1 segundo encima, se marca y al soltar se apilan */
 let apilarHoja={sobre:null,t:0,listo:false,tm:null};
 function bajoHoja(n){const r=n.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+Math.min(r.height/2,60);
@@ -2280,7 +2288,7 @@ function seguirApilarHoja(n,b){if(!b||b.t==="pila"){return}const p=bajoHoja(n),i
   if(id!==apilarHoja.sobre){clearTimeout(apilarHoja.tm);document.querySelectorAll("#capa-hoja .pieza.por-apilar").forEach(x=>x.classList.remove("por-apilar"));apilarHoja={sobre:id,listo:!!id,tm:null};if(id)nodoHoja(id)?.classList.add("por-apilar")}}
 function soltarApilarHoja(n,b){clearTimeout(apilarHoja.tm);const {sobre,listo}=apilarHoja;apilarHoja={sobre:null,listo:false,tm:null};document.querySelectorAll("#capa-hoja .pieza.por-apilar").forEach(x=>x.classList.remove("por-apilar"));
   if(!listo||!sobre||!abierto)return false;const otro=abierto.doc.bloques.find(x=>x.id===sobre);if(!otro||otro.t==="pila")return false;
-  const pb={id:bid(),t:"pila",x:otro.x,y:otro.y};abierto.doc.bloques.push(pb);for(const x of [otro,b]){x.en=pb.id;nodoHoja(x.id)?.remove()}$("capa-hoja").append(nodoBloque(pb));if(selB===b.id||selB===otro.id)selB=null;guardarBloques();pintarHilos();toast("Pila armada. Tocala dos veces para ver lo que tiene.");return true}
+  const pb={id:bid(),t:"pila",x:otro.x,y:otro.y};abierto.doc.bloques.push(pb);for(const x of [otro,b]){x.en=pb.id;nodoHoja(x.id)?.remove()}$("capa-hoja").append(nodoBloque(pb));if(selB===b.id||selB===otro.id)selB=null;guardarBloques();pintarHilos();toast("Pila armada. Tocala para ver lo que tiene.");return true}
 function destinoPilaHoja(n,b){if(!b||b.t==="pila")return null;const r=n.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+Math.min(r.height/2,60);
   for(const p of document.querySelectorAll("#capa-hoja .pieza.bpila")){if(p===n||p.classList.contains("msel")&&n.classList.contains("msel"))continue;const q=p.getBoundingClientRect();if(cx>q.left&&cx<q.right&&cy>q.top&&cy<q.bottom)return p.dataset.bid}return null}
 function marcarPilaHoja(pid){document.querySelectorAll("#capa-hoja .pieza.bpila").forEach(p=>p.classList.toggle("destino",p.dataset.bid===pid))}
@@ -2307,7 +2315,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("hpila").hidden)
 $("add-pila").onclick=()=>{if(!abierto)return;const c=centroNuevo(),pb={id:bid(),t:"pila",titulo:"Pila nueva",x:Math.round(c.x-100),y:Math.round(c.y-90)};abierto.doc.bloques.push(pb);$("capa-hoja").append(nodoBloque(pb));guardarBloques();toast("Pila nueva: arrastrá cosas encima para meterlas.")};
 lzHoja.onApilarSel=ns=>{if(!abierto)return;const bs=ns.map(n=>abierto.doc.bloques.find(b=>b.id===n.dataset.bid)).filter(b=>b&&b.t!=="pila");if(bs.length<2)return;
   const pb={id:bid(),t:"pila",x:Math.min(...bs.map(b=>b.x)),y:Math.min(...bs.map(b=>b.y))};selLimpiar(lzHoja);abierto.doc.bloques.push(pb);for(const b of bs){b.en=pb.id;nodoHoja(b.id)?.remove()}
-  $("capa-hoja").append(nodoBloque(pb));guardarBloques();pintarHilos();toast("Apilados. Tocá la pila dos veces para ver lo que hay adentro.")};
+  $("capa-hoja").append(nodoBloque(pb));guardarBloques();pintarHilos();toast("Apilados. Tocá la pila para ver lo que hay adentro.")};
 function agregarBloque(b){abierto.doc.bloques.push(b);selB=b.id;document.querySelectorAll("#capa-hoja .pieza").forEach(x=>x.classList.remove("sel"));const n=nodoBloque(b);$("capa-hoja").append(n);guardarBloques();return n}
 /* ---------- Referencias: un post-it (o una frase) vive en su lugar y aparece adentro de otros ---------- */
 const refNuevos=new Set();let catRef=null,kRef="ideas";
@@ -3023,7 +3031,7 @@ const AYUDA=[
   [null,"La forma más fácil: arrastrá una cosa y soltala encima de otra, igual que en la plancha. Se arma la pila."],
   [{chip:"Pila"},"También con doble clic en el fondo (o el «+») → «Pila»: crea una pila vacía para ir metiéndole cosas."],
   [{chip:"Apilar"},"O seleccioná dos o más cosas (Shift + arrastrar en el fondo) y tocá «Apilar» en la barra de arriba."],
-  [null,"Para meter algo más, arrastralo encima de la pila. Para ver lo que hay adentro, tocá la pila dos veces o «Abrir»."],
+  [null,"Para meter algo más, arrastralo encima de la pila. Para ver lo que hay adentro, tocala."],
   [{chip:"Sacar ↗"},"Adentro de la pila, vuelve esa cosa a la hoja. «Deshacer pila» saca todo. Si borrás la pila, lo de adentro no se borra: vuelve a la hoja."],
   [null,"La tapa muestra la primera foto que haya adentro (o el primer texto). Adentro también podés reordenar arrastrando."],
   [null,"Si algo de adentro tenía una flecha o un hilo, mientras está en la pila queda enganchado a la pila."]]},
@@ -3127,6 +3135,7 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
  {n:30,f:"15 de noviembre",it:[
+  ["Las pilas de adentro de los post-its ahora son iguales a las de la plancha, y se abren con un toque.",null,2],
   ["Ahora le cambiás el título a una pila sin entrar: pasá por arriba y tocá el lápiz ✎.",null,2],
   ["Adentro de un post-it, soltás una cosa encima de otra y se apilan al toque, como en la plancha. No hay que esperar.",null,2],
   ["Las referencias ahora se marcan con una flechita ↗, más discreta.",null,3]]},
