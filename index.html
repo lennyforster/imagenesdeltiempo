@@ -1880,7 +1880,10 @@ function gridPrevia(c,k,x,y){const cols=colsGrilla(k),resto=gridPrev&&gridPrev.i
   if(gridPrev&&gridPrev.id===c._id&&gridPrev.idx===idx)return;gridPrev={id:c._id,idx,resto,cols};
   const yo=data[k].find(z=>z.id===c._id),orden=resto.slice();if(yo)orden.splice(idx,0,yo);const pos=layoutGrilla(orden,cols);
   resto.forEach(i=>{const nd=nodosNota.get(k+":"+i.id),p=pos.get(i.id);if(!nd||!p)return;nd.classList.add("reacomodando");nd.style.left=p.x+"px";nd.style.top=p.y+"px"})}
-function gridCancelar(){if(!gridPrev)return;gridPrev=null;document.querySelectorAll(".nota.reacomodando").forEach(n=>n.classList.remove("reacomodando"));pintarMain()}
+/* en la Grilla, si el post-it que arrastrás queda arriba de otro, los demás vuelven a su lugar y se quedan quietos: así podés apilar */
+let gridOrig=null;
+function gridQuieto(){if(!gridPrev||!gridOrig)return;gridPrev=null;for(const [n,o] of gridOrig){n.classList.add("reacomodando");n.style.left=o.x+"px";n.style.top=o.y+"px"}}
+function gridCancelar(){document.querySelectorAll(".nota.reacomodando").forEach(n=>n.classList.remove("reacomodando"));if(!gridPrev)return;gridPrev=null;pintarMain()}
 function gridSoltar(c,k){const {idx,resto,cols:nc}=gridPrev;gridPrev=null;const yo=data[k].find(z=>z.id===c._id),orden=resto.slice();if(yo)orden.splice(idx,0,yo);
   const pos=layoutGrilla(orden,nc);orden.forEach(i=>{const {x,y}=pos.get(i.id);if(i.x!==x||i.y!==y){i.x=x;i.y=y;escribir(cols[k],i.id,{x,y},{silencioso:true})}});
   const pp=pos.get(c._id)||{x:0,y:0};c.classList.add("reacomodando");c.style.left=pp.x+"px";c.style.top=pp.y+"px";
@@ -1897,9 +1900,9 @@ function nodoNota(k,i){
     soltar:()=>{const e=Math.round((parseFloat(c.style.scale)||1)*100)/100,it=data[k].find(z=>z.id===c._id);if(it)it.esc=e;c._firma=null;escribir(cols[k],c._id,{esc:e});limCache=null;if(enGrilla(k))hacerLugar(k,c._id)}});
   c.append(xb,eb);c.addEventListener("dblclick",e=>{if(!c._editando)e.stopPropagation()});
   arrastrable(c,lzMain,{
-    inicio:()=>({x:parseFloat(c.style.left),y:parseFloat(c.style.top)}),
-    mover:(x,y)=>{c.style.left=x+"px";c.style.top=y+"px";pedirFlechas();if(k==="ideas")marcarDestino(c);if(enGrilla(k)&&!c.classList.contains("msel"))gridPrevia(c,k,x,y)},
-    soltar:()=>{if(k==="ideas"){const t=pilaDestino(c);limpiarDestino();if(t){gridCancelar();apilar(t,[c,...(c.classList.contains("msel")?selNodos(lzMain).filter(o=>o!==c&&o._k==="ideas"):[])]);return}}
+    inicio:()=>{gridOrig=null;if(enGrilla(k)){gridOrig=new Map();for(const [key,n] of nodosNota)if(key.startsWith(k+":")&&n!==c)gridOrig.set(n,{x:parseFloat(n.style.left),y:parseFloat(n.style.top)})}return {x:parseFloat(c.style.left),y:parseFloat(c.style.top)}},
+    mover:(x,y)=>{c.style.left=x+"px";c.style.top=y+"px";pedirFlechas();if(k==="ideas")marcarDestino(c);if(enGrilla(k)&&!c.classList.contains("msel")){if(destinoAct&&gridOrig)gridQuieto();else gridPrevia(c,k,x,y)}},
+    soltar:()=>{if(k==="ideas"){const t=pilaDestino(c);limpiarDestino();gridOrig=null;if(t){gridCancelar();apilar(t,[c,...(c.classList.contains("msel")?selNodos(lzMain).filter(o=>o!==c&&o._k==="ideas"):[])]);return}}
       if(gridPrev&&gridPrev.id===c._id){gridSoltar(c,k);return}
       const x=Math.round(parseFloat(c.style.left)),y=Math.round(parseFloat(c.style.top));fijarSinPosicion(k,c._id);if(k===vista&&ordenActual[k])recordarOrden(null);
       const it=data[k].find(z=>z.id===c._id);if(it){it.x=x;it.y=y}escribir(cols[k],c._id,{x,y})},
@@ -3213,6 +3216,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:34,f:"15 de noviembre",it:[
+  ["En la Grilla ya se pueden armar pilas: cuando el post-it que arrastrás queda arriba de otro, los demás se quedan quietos y al soltar se apilan.",null,2]]},
  {n:33,f:"15 de noviembre",mio:true,it:[
   ["*Recorrido guiado (prueba, solo lo ves vos):* en «Cómo se usa» está el botón verde. Abre una plancha de prueba con ejemplos y te lleva paso a paso, haciendo cada cosa de verdad. No toca tus datos ni tus preferencias.",null,1],
   ["Cuando creás una lista de tareas y apretás Enter en el nombre, ya quedás escribiendo la primera tarea.",null,3]]},
@@ -3702,7 +3707,7 @@ function pintarPilas(){const vivos=new Set();
 /* soltar un post-it arriba de otro (o de una pila) */
 function pilaDestino(c){const cx=(parseFloat(c.style.left)||0)+100,cy=(parseFloat(c.style.top)||0)+100,den=(x,y,w,h,m)=>cx>x+m&&cx<x+w-m&&cy>y+m&&cy<y+h-m;
   for(const n of nodosPila.values()){if(den(parseFloat(n.style.left),parseFloat(n.style.top),n.offsetWidth||230,n.offsetHeight||230,0))return n}
-  for(const [key,n] of nodosNota){if(!key.startsWith("ideas:")||n===c||n.classList.contains("msel")||n.classList.contains("fuera"))continue;if(den(parseFloat(n.style.left),parseFloat(n.style.top),200,200,24))return n}
+  for(const [key,n] of nodosNota){if(!key.startsWith("ideas:")||n===c||n.classList.contains("msel")||n.classList.contains("fuera"))continue;const o=gridOrig&&gridOrig.get(n);if(den(o?o.x:parseFloat(n.style.left),o?o.y:parseFloat(n.style.top),200,200,24))return n}
   return null}
 let destinoAct=null;
 function marcarDestino(c){if(vista!=="ideas")return;const t=pilaDestino(c);if(t===destinoAct)return;if(destinoAct)destinoAct.classList.remove("destino");destinoAct=t;if(t)t.classList.add("destino")}
