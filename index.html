@@ -938,7 +938,6 @@ html.plano .lp-fila:hover .lp-t,html.plano .lp-fila:focus-visible .lp-t{text-dec
 .nota.dest1 .txt{font:700 24px/1.1 var(--hand)}
 .nota.dest2 .txt{font:700 26px/1.05 var(--hand)}
 .nota:is(.dest1,.dest2) .txt{overflow-wrap:normal;word-break:normal}
-.nota.dest2{box-shadow:0 0 0 3px var(--ink),0 10px 14px -8px rgba(20,10,0,.55)}
 .nota .x-del.x-edit{right:31px}
 .nota.editando{z-index:60!important;cursor:auto;transform:none!important;box-shadow:0 0 0 3px var(--paper),0 18px 30px -12px rgba(0,0,0,.6)}
 .nota.editando .cuerpo{-webkit-mask-image:none;mask-image:none;overflow:visible}
@@ -3146,6 +3145,7 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
  {n:31,f:"15 de noviembre",it:[
+  ["Los post-its con letra «Título» ya no tienen el borde negro.",null,3],
   ["Sacamos el hilo rojo. Las flechas siguen estando.",null,2],
   ["«Cómo se usa» más ordenado: las pilas de adentro de un post-it están en «Adentro de un post-it» y Tareas quedó más abajo.",null,3],
   ["En el modo Grilla, si agrandás un post-it, los demás se acomodan alrededor en vez de quedar tapados.",null,2]]},
