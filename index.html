@@ -993,6 +993,18 @@ html:not(.plano).fondo-cuad #vp-main{background-color:#1a5a3e;--mat-major:transp
 .bpila .hp-abrir{justify-self:start;font:600 12px var(--ui);color:var(--paper);background:var(--ink);border:0;border-radius:999px;padding:5px 10px;cursor:pointer}
 .bpila.destino .hp-frente{outline:3px dashed var(--paper);outline-offset:6px}
 .hp-vista{z-index:21}
+
+.nota,.bpost{transform-origin:0 0}
+.esc-asa{position:absolute;right:0;bottom:0;width:22px;height:22px;z-index:3;cursor:nwse-resize;opacity:0;transition:opacity .15s;touch-action:none;
+  background:linear-gradient(135deg,transparent 52%,rgba(43,37,32,.45) 52%,rgba(43,37,32,.45) 60%,transparent 60%,transparent 70%,rgba(43,37,32,.45) 70%,rgba(43,37,32,.45) 78%,transparent 78%)}
+.nota:hover .esc-asa,.pieza.bpost:hover .esc-asa,.pieza.bpost.sel .esc-asa{opacity:1}
+@media (hover:none){.esc-asa{opacity:.6}}
+.nota.editando .esc-asa{display:none}
+
+.ay-hist-intro{margin:0 0 14px;color:var(--soft);font:500 14px/1.4 var(--ui)}
+.ay-hist-fecha{margin:18px 0 8px;font:600 11px var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--soft);border-bottom:1px solid rgba(43,37,32,.15);padding-bottom:6px}
+.ay-sec ul.ay-hist{list-style:disc;padding-left:20px;margin:0;display:grid;gap:7px}
+.ay-sec ul.ay-hist li{display:list-item;font:500 14.5px/1.45 var(--ui);color:var(--ink);padding:0;border:0;grid-template-columns:none}
 </style>
 <div class="cargando" id="cargando" hidden role="status"><span class="cg-punto"></span>Cargando tu plancha…</div>
 <div class="conectar" id="conectar" hidden>
@@ -1740,7 +1752,10 @@ function nodoNota(k,i){
   const xb=el("button","x-del","×");xb.type="button";xb.setAttribute("aria-label","Despegar este post-it");xb.title="Despegar";let xs=false,xt;
   xb.onclick=e=>{e.stopPropagation();if(!xs){xs=true;xb.textContent="Despegar";xb.classList.add("sure");clearTimeout(xt);xt=setTimeout(()=>{xs=false;xb.textContent="×";xb.classList.remove("sure")},3500);return}borrarDePlancha([c])};
   const eb=el("button","x-del x-edit","✎");eb.type="button";eb.setAttribute("aria-label","Editar acá");eb.title="Editar acá, sin abrirlo";eb.onclick=e=>{e.stopPropagation();editarEnPlancha(c)};
-  c.append(xb,eb);c.addEventListener("dblclick",e=>{if(!c._editando)e.stopPropagation()});
+  const ea=el("div","asa esc-asa");ea.title="Arrastrá para achicarlo o agrandarlo";
+  redimensionable(ea,lzMain,{inicio:()=>200*(parseFloat(c.style.scale)||1),mover:w=>{c.style.scale=String(Math.max(.45,Math.min(2.5,w/200)));pedirFlechas()},
+    soltar:()=>{const e=Math.round((parseFloat(c.style.scale)||1)*100)/100,it=data[k].find(z=>z.id===c._id);if(it)it.esc=e;c._firma=null;escribir(cols[k],c._id,{esc:e});limCache=null}});
+  c.append(xb,eb,ea);c.addEventListener("dblclick",e=>{if(!c._editando)e.stopPropagation()});
   arrastrable(c,lzMain,{
     inicio:()=>({x:parseFloat(c.style.left),y:parseFloat(c.style.top)}),
     mover:(x,y)=>{c.style.left=x+"px";c.style.top=y+"px";pedirFlechas();if(k==="ideas")marcarDestino(c);if(enGrilla(k)&&!c.classList.contains("msel"))gridPrevia(c,k,x,y)},
@@ -1774,9 +1789,9 @@ function pintarNota(c,k,i,p){
   const esIdea=k==="ideas";
   if(!c.classList.contains("arrastrando")){c.style.left=p.x+"px";c.style.top=p.y+"px"}
   if(c._editando)return;
-  const px0=proximo(i),firma=[i.g||"",+i.dest||0,i.numero,i.tipo,esIdea?label(i.tipo):"",colorDe(k,i),i.texto,i.autor,i.creado,i.estado,i.vivo||"",px0?px0.d+px0.t:"",resumenExtra(i),coincide(i),modoHilo&&origenHilo===i.id].join("\u0001");
+  const px0=proximo(i),firma=[+i.esc||1,i.g||"",+i.dest||0,i.numero,i.tipo,esIdea?label(i.tipo):"",colorDe(k,i),i.texto,i.autor,i.creado,i.estado,i.vivo||"",px0?px0.d+px0.t:"",resumenExtra(i),coincide(i),modoHilo&&origenHilo===i.id].join("\u0001");
   if(c._firma===firma)return;c._firma=firma;
-  if(i.g)c.dataset.g=i.g;else delete c.dataset.g;c.style.zIndex=2;c.style.setProperty("--c",colorDe(k,i));c.classList.toggle("en-vivo",!!i.vivo);c.classList.toggle("dest1",esIdea&&+i.dest===1);c.classList.toggle("dest2",esIdea&&+i.dest===2);c.style.setProperty("--r",giro(i.id)+"deg");
+  if(i.g)c.dataset.g=i.g;else delete c.dataset.g;c.style.scale=+i.esc&&+i.esc!==1?String(+i.esc):"";c.style.zIndex=2;c.style.setProperty("--c",colorDe(k,i));c.classList.toggle("en-vivo",!!i.vivo);c.classList.toggle("dest1",esIdea&&+i.dest===1);c.classList.toggle("dest2",esIdea&&+i.dest===2);c.style.setProperty("--r",giro(i.id)+"deg");
   c.setAttribute("aria-label",`Abrir ${esIdea?"idea":"frase"} ${i.numero||""}`);
   c.children[0].replaceChildren(el("span",null,`#${i.numero||"?"}${esIdea?" · "+label(i.tipo):""}`),el("span",null,i.creado?new Date(i.creado).toLocaleDateString("es-AR",{day:"2-digit",month:"2-digit"}).replace(/\//g,"."):""));
   const cuerpo=c.children[1];cuerpo.replaceChildren(el("p","txt",esIdea?(i.texto||""):`“${(i.texto||"").replace(/^[«“"]|[»”"]$/g,"")}”`));
@@ -2144,7 +2159,7 @@ function alFrente(b){if(!abierto)return;const bl=abierto.doc.bloques,i=bl.indexO
 function nodoBloque(b){
   const tipo={txt:"btxt",tx:"btexto",link:"blink",img:"bimg",post:"bpost",cal:"bcal",esc:"besc",ref:"bref",tar:"btar",pila:"bpila"}[b.t]||"btxt";
   const n=el("div","pieza "+tipo+(selB===b.id?" sel":""));n.dataset.bid=b.id;if(b.g)n.dataset.g=b.g;n.style.left=b.x+"px";n.style.top=b.y+"px";n.style.width=(b.t==="post"||b.t==="ref"||b.t==="pila"?200:b.t==="tar"?(b.w||260):b.t==="cal"?280:(b.w||(b.t==="img"?300:260)))+"px";n.style.zIndex=capaDe(b);
-  n.style.setProperty("--r",giro(b.id)*(b.t==="post"?1:.6)+"deg");
+  n.style.setProperty("--r",giro(b.id)*(b.t==="post"?1:.6)+"deg");if(b.t==="post"&&+b.esc&&+b.esc!==1)n.style.scale=String(+b.esc);
   const marcar=()=>{if(selB!==b.id){selB=b.id;selHilo=null;document.querySelectorAll("#capa-hoja .pieza.sel").forEach(x=>x.classList.remove("sel"));n.classList.add("sel");pintarHilos()}};
   if(b.t==="esc"){const g=el("div","grip esc-cab","Escaleta");g.title="Arrastrá para mover";n.append(g);const cont=el("div");n.append(cont);pintarEsc(cont,b,n)}
   else if(b.t==="cal"){n.append(el("div","grip"));const cont=el("div");n.append(cont);pintarCal(cont,b)}
@@ -2184,6 +2199,8 @@ function nodoBloque(b){
     redimensionable(asa,lzHoja,{inicio:()=>parseFloat(n.style.width),mover:w=>{n.style.width=Math.max(120,w)+"px";if(b.t==="txt")n.style.minHeight=n.style.width;if(ta)autosize(ta);pintarHilos()},soltar:()=>{b.w=Math.round(parseFloat(n.style.width));guardarBloques()}})}
   if(b.t==="link"){let host=b.url;try{host=new URL(b.url).hostname.replace(/^www\./,"")}catch(_){}const tt=el("button",null,"Título");tt.type="button";tt.title="Cambiarle el título al link";tt.onclick=()=>editarTituloLink(n,b,host);herr.prepend(tt);
     const asa=el("div","asa lado");asa.title="Arrastrá para achicarlo o agrandarlo";n.append(asa);redimensionable(asa,lzHoja,{inicio:()=>parseFloat(n.style.width),mover:w=>{n.style.width=Math.max(150,Math.min(900,w))+"px";pintarHilos()},soltar:()=>{b.w=Math.round(parseFloat(n.style.width));guardarBloques()}})}
+  if(b.t==="post"){const asa=el("div","asa esc-asa");asa.title="Arrastrá para achicarlo o agrandarlo";n.append(asa);
+    redimensionable(asa,lzHoja,{inicio:()=>200*(parseFloat(n.style.scale)||1),mover:w=>{n.style.scale=String(Math.max(.45,Math.min(2.5,w/200)));pintarHilos()},soltar:()=>{b.esc=Math.round((parseFloat(n.style.scale)||1)*100)/100;if(b.esc===1)delete b.esc;guardarBloques()}})}
   if(b.t==="img"){const asa=el("div","asa");n.append(asa);redimensionable(asa,lzHoja,{inicio:()=>parseFloat(n.style.width),mover:w=>{n.style.width=w+"px";pintarHilos()},soltar:()=>{b.w=Math.round(parseFloat(n.style.width));guardarBloques()}})}
   arrastrable(n,lzHoja,{solo:b.t==="tar"?".tr-cab":b.t==="txt"||b.t==="tx"||b.t==="post"||b.t==="cal"||b.t==="esc"?".grip":null,inicio:()=>({x:parseFloat(n.style.left),y:parseFloat(n.style.top)}),mover:(x,y)=>{n.style.left=x+"px";n.style.top=y+"px";pintarHilos();marcarPilaHoja(destinoPilaHoja(n,b))},
     soltar:()=>{b.x=Math.round(parseFloat(n.style.left));b.y=Math.round(parseFloat(n.style.top));const dp=destinoPilaHoja(n,b);marcarPilaHoja(null);if(dp){meterEnPilaHoja(dp,[b]);return}alFrente(b);guardarBloques()},
@@ -2408,7 +2425,7 @@ function crearSvgHilos(capa){
   cortarHoja=el("button","cortar","Cortar hilo");cortarHoja.type="button";cortarHoja.hidden=true;cortarHoja.addEventListener("pointerdown",e=>e.stopPropagation());
   cortarHoja.onclick=()=>{if(!abierto||!selHilo)return;abierto.doc.hilos=(abierto.doc.hilos||[]).filter(h=>h.id!==selHilo);selHilo=null;pintarHilos();guardarHoja("hilos",abierto.doc.hilos)};
   capa.append(svg,cortarHoja)}
-function anclaHoja(id){const n=nodoHoja(id);if(!n)return null;return {x:(parseFloat(n.style.left)||0)+(parseFloat(n.style.width)||n.offsetWidth)/2,y:(parseFloat(n.style.top)||0)+12}}
+function anclaHoja(id){const n=nodoHoja(id);if(!n)return null;const e=parseFloat(n.style.scale)||1;return {x:(parseFloat(n.style.left)||0)+(parseFloat(n.style.width)||n.offsetWidth)*e/2,y:(parseFloat(n.style.top)||0)+12*e}}
 /* los hilos son sogas con física: cuelgan, se balancean y se acomodan cuando movés las piezas */
 const sogas=new Map(),N_SOGA=18,quieto=matchMedia("(prefers-reduced-motion: reduce)").matches;let sogaRAF=null,sogaQuieta=0,hiloNuevo=null;
 function sogaDe(id,A,B,cx,cy){let s=sogas.get(id);if(s)return s;const recto=id===hiloNuevo;s={pts:[],nuevo:recto};
@@ -2450,7 +2467,7 @@ document.addEventListener("keydown",e=>{if((e.key==="Delete"||e.key==="Backspace
 
 /* ---------- Flechas ---------- */
 const svgEl=(tag,at)=>{const e=document.createElementNS(NS,tag);for(const k in at)e.setAttribute(k,at[k]);return e};
-const cajaDe=n=>({x:parseFloat(n.style.left)||0,y:parseFloat(n.style.top)||0,w:n.offsetWidth||200,h:n.offsetHeight||200});
+const cajaDe=n=>{const e=parseFloat(n.style.scale)||1;return {x:parseFloat(n.style.left)||0,y:parseFloat(n.style.top)||0,w:(n.offsetWidth||200)*e,h:(n.offsetHeight||200)*e}};
 function puntaBorde(b,hacia,gap){const cx=b.x+b.w/2,cy=b.y+b.h/2,dx=hacia.x-cx,dy=hacia.y-cy,L=Math.hypot(dx,dy);if(L<1)return {x:cx,y:cy};
   const t=Math.min(dx?Math.abs(b.w/2/dx):Infinity,dy?Math.abs(b.h/2/dy):Infinity);return {x:cx+dx*t+dx/L*gap,y:cy+dy*t+dy/L*gap}}
 function dibujarFlecha(g,A,B,sel,onTocar){
@@ -2879,7 +2896,8 @@ const AYUDA=[
   [{chip:"✎"},"Pasá por arriba de un post-it y tocá el lápiz: lo editás ahí mismo, sin abrirlo. Cambiás el texto, la categoría (los puntitos de colores) y el tamaño de la letra: «Grande» o «Título» para que un proyecto se destaque en la plancha."],
   [null,"Cuando creás un post-it con doble clic, los puntitos de colores le eligen la categoría antes de pegarlo."],
   [{chip:"Ctrl + G"},"Con varias cosas seleccionadas (Shift + arrastrar en el fondo), las agrupa: después se mueven juntas. Ctrl + Shift + G las separa. También está el botón «Agrupar» en la barra de arriba. Funciona en la plancha y adentro de los post-its."],
-  [null,"En el modo «Grilla», si arrastrás un post-it los demás se corren para hacerle lugar, y queda ese orden."]]},
+  [null,"En el modo «Grilla», si arrastrás un post-it los demás se corren para hacerle lugar, y queda ese orden."],
+  [{chip:"◢"},"La esquinita de abajo a la derecha de un post-it: arrastrala para hacerlo más chico o más grande. Anda en la plancha y en los post-its de adentro."]]},
  {t:"Tareas",it:[
   [{h:'<span class="ay-chip"><span class="ic-lista"></span></span>'},"En el •••, al lado de la «A»: crea una lista de tareas nueva en la plancha. Podés tener todas las que quieras. Le ponés nombre arriba y la movés arrastrándola del título."],
   [{chip:"☐"},"Cuando hacés una tarea, tocá el cuadradito: se tacha y queda anotada sola en el diario de hoy, con la hora («Terminé: …»). Si la destachás, se borra del diario."],
@@ -3018,6 +3036,8 @@ let ayActiva=0;
 function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
   AYUDA.forEach((sec,n)=>{const b=el("button",null,sec.t);b.type="button";b.setAttribute("role","tab");b.setAttribute("aria-selected",String(n===ayActiva));b.onclick=()=>{ayActiva=n;pintarAyuda()};idx.append(b)});
   const cu=$("ay-cuerpo"),sec=AYUDA[ayActiva];cu.replaceChildren();const se=el("section","ay-sec");se.append(el("h3",null,sec.t));const ul=el("ul");
+  if(sec.hist){se.append(el("p","ay-hist-intro","Todo lo que fue cambiando en la web, de lo más nuevo a lo más viejo."));for(const d of sec.hist){se.append(el("h4","ay-hist-fecha",d.f));const l=el("ul","ay-hist");for(const t of d.items)l.append(el("li",null,t));se.append(l)}
+    cu.append(se,el("p","ay-pie","¿Algo no anda o se te ocurre una mejora? ¡Avisame!"));cu.scrollTop=0;return}
   for(const [k,txt] of sec.it){const li=el("li",k?null:"solo");if(k)li.append(claveAyuda(k));li.append(el("span",null,txt));ul.append(li)}
   for(const a of ul.querySelectorAll(".ay-atajo-link")){if(LINK_ATAJO){const l=el("a","ay-chip ay-btn","Bajar el atajo");l.href=LINK_ATAJO;l.target="_blank";l.rel="noopener";a.append(l)}else a.append(el("span","ay-chip","Pedíselo a Lenny"))}
   se.append(ul);cu.append(se,el("p","ay-pie","¿Algo no anda o se te ocurre una mejora? ¡Avisame!"));cu.scrollTop=0}
@@ -3027,6 +3047,9 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:25,f:"15 de noviembre",it:[
+  ["Ahora podés hacer los post-its más chicos o más grandes: arrastrá la esquinita de abajo a la derecha. Anda en la plancha y adentro de los post-its.",null,2],
+  ["El historial de cambios en «Cómo se usa» ahora es una lista por día, más fácil de leer.",null,3]]},
  {n:24,f:"15 de noviembre",it:[
   ["Reordenar arrastrando adentro de las pilas ahora va mucho más fluido, también con muchas fotos.",null,3]]},
  {n:23,f:"15 de noviembre",it:[
@@ -3108,7 +3131,9 @@ const NOVEDADES=[
    1 = cambia cómo se usa la web, 2 = útil pero no imprescindible, 3 = detalle (va al final, en una línea). */
 /* «Cómo se usa» → Historial de cambios: todo lo que fue saliendo en los carteles, del más nuevo al más viejo */
 {const sinMarcas=t=>String(t||"").replace(/\*([^*]+)\*/g,"$1").replace(/_([^_]+)_/g,"$1"),i=AYUDA.findIndex(x=>x.t==="Tus datos");
-  AYUDA.splice(i<0?AYUDA.length:i,0,{t:"Historial de cambios",it:NOVEDADES.filter(n=>!n.mio).flatMap(n=>n.it.map((x,j)=>[j===0?{chip:n.f}:null,sinMarcas(x[1]===null||x[1]===undefined||x[1]===""?x[0]:x[0]+". "+x[1])]))})}
+  /* agrupado por día: un título con la fecha y abajo la lista de lo que cambió */
+  const dias=[];for(const n of NOVEDADES.filter(n=>!n.mio)){let d=dias.find(x=>x.f===n.f);if(!d){d={f:n.f,items:[]};dias.push(d)}for(const x of n.it){const t=sinMarcas(x[1]===null||x[1]===undefined||x[1]===""?x[0]:x[0]+". "+x[1]);if(!d.items.includes(t))d.items.push(t)}}
+  AYUDA.splice(i<0?AYUDA.length:i,0,{t:"Historial de cambios",it:[],hist:dias})}
 /* texto del cartel escrito por Lenny: *así* va en negrita y _así_ en itálica */
 function fmtNov(tag,cls,txt){const n=el(tag,cls);for(const p of String(txt).split(/(\*[^*]+\*|_[^_]+_)/))if(p){if(/^\*[^*]+\*$/.test(p))n.append(el("b",null,p.slice(1,-1)));else if(/^_[^_]+_$/.test(p))n.append(el("i",null,p.slice(1,-1)));else n.append(p)}return n}
 function verNovedades(todas,comoAmigo){if(window.__invitado||$("novedades"))return;const ult=NOVEDADES[0].n;let v=null;try{v=localStorage.getItem("nov_vista")}catch(_){}
