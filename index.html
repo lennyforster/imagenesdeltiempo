@@ -1039,7 +1039,6 @@ body.barra-abierta .barra-extra.h-extra:not(.abierta){display:none}
 
 .bref .ref-ic{font:700 13px/1 var(--ui);color:var(--soft);opacity:.8}
 
-.pila-frente{position:relative}
 .pila-ed{position:absolute;top:6px;right:6px;z-index:3;min-width:24px;height:24px;border-radius:999px;border:0;padding:0;background:rgba(43,37,32,.1);color:rgba(43,37,32,.6);font:600 13px/24px var(--ui);cursor:pointer;opacity:0;transition:opacity .15s}
 .pila:hover .pila-ed,.bpila:hover .pila-ed,.bpila.sel .pila-ed{opacity:1}
 .pila-ed:hover{background:rgba(43,37,32,.2);color:var(--ink)}
@@ -3135,6 +3134,7 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
  {n:30,f:"15 de noviembre",it:[
+  ["Arreglado: la tapa de las pilas se veía cortada por la mitad.",null,3],
   ["Las pilas de adentro de los post-its ahora son iguales a las de la plancha, y se abren con un toque.",null,2],
   ["Ahora le cambiás el título a una pila sin entrar: pasá por arriba y tocá el lápiz ✎.",null,2],
   ["Adentro de un post-it, soltás una cosa encima de otra y se apilan al toque, como en la plancha. No hay que esperar.",null,2],
