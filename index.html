@@ -1038,6 +1038,14 @@ body.barra-abierta .barra-extra.h-extra:not(.abierta){display:none}
 @media (prefers-reduced-motion:reduce){#h-vivo .vivo-pt{animation:none}}
 
 .bref .ref-ic{font:700 13px/1 var(--ui);color:var(--soft);opacity:.8}
+
+.pila-frente{position:relative}
+.pila-ed{position:absolute;top:6px;right:6px;z-index:3;min-width:24px;height:24px;border-radius:999px;border:0;padding:0;background:rgba(43,37,32,.1);color:rgba(43,37,32,.6);font:600 13px/24px var(--ui);cursor:pointer;opacity:0;transition:opacity .15s}
+.pila:hover .pila-ed,.bpila:hover .pila-ed,.bpila.sel .pila-ed{opacity:1}
+.pila-ed:hover{background:rgba(43,37,32,.2);color:var(--ink)}
+@media (hover:none){.pila-ed{opacity:.6}}
+.pila-tit-ed{width:100%;border:0;border-bottom:1.5px dashed var(--ink);background:transparent;font:700 22px/1.1 var(--hand);color:var(--ink);padding:2px 0;user-select:text;-webkit-user-select:text;touch-action:auto}
+.pila-tit-ed:focus{outline:none}
 </style>
 <div class="cargando" id="cargando" hidden role="status"><span class="cg-punto"></span>Cargando tu plancha…</div>
 <div class="conectar" id="conectar" hidden>
@@ -2255,8 +2263,12 @@ const miembrosHP=pid=>abierto?abierto.doc.bloques.filter(b=>b.en===pid):[];
 const NOMBRE_B={post:"Post-it",txt:"Nota",tx:"Texto",img:"Imagen",link:"Link",ref:"Referencia",tar:"Tareas",cal:"Calendario",esc:"Escaleta",pila:"Pila"};
 const fotoDeB=x=>x.t==="img"?x.a:x.t==="ref"&&kDe(x)==="ideas"?(((data.ideas.find(i=>i.id===x.ref)||{}).bloques||[]).find(y=>y.t==="img"&&y.a)||{}).a:null;
 const textoDeB=x=>{if(x.t==="ref"){const i=data[kDe(x)].find(z=>z.id===x.ref);return i?(i.texto||""):""}if(x.t==="link"){let h=x.url;try{h=new URL(x.url).hostname.replace(/^www\./,"")}catch(_){}return x.titulo||h}if(x.t==="tar"){const L=listas.find(z=>z.id===x.ref);return L?((L.titulo||"Tareas")+": "+(L.lista||[]).map(t=>t.v).slice(0,4).join(", ")):""}return x.v||""};
+function editarTituloPilaHoja(n,b){const tt=n.querySelector(".hp-tit");if(!tt||n._editTit)return;n._editTit=true;const i=el("input","pila-tit-ed");i.type="text";i.value=b.titulo||"";i.placeholder="Pila";i.maxLength=80;i.setAttribute("aria-label","Título de la pila");tt.replaceWith(i);
+  let hecho=false;const fin=ok=>{if(hecho)return;hecho=true;n._editTit=false;if(ok){const v=i.value.trim();if(v)b.titulo=v;else delete b.titulo;guardarBloques()}pintarPilaHoja(n,b)};
+  i.onkeydown=e=>{e.stopPropagation();if(e.key==="Enter"){e.preventDefault();fin(true)}else if(e.key==="Escape"){e.preventDefault();fin(false)}};i.onblur=()=>fin(true);i.onpointerdown=e=>e.stopPropagation();requestAnimationFrame(()=>{i.focus();i.select()})}
 function pintarPilaHoja(n,b){const ms=miembrosHP(b.id);n.querySelectorAll(":scope>.hp-frente").forEach(x=>x.remove());const f=el("div","hp-frente");
-  const m=el("div","meta");m.append(el("span",null,"Pila"),el("span",null,ms.length===1?"1 adentro":`${ms.length} adentro`));f.append(m,el("p","hp-tit",(b.titulo||"").trim()||"Pila"));
+  const m=el("div","meta");m.append(el("span",null,"Pila"),el("span",null,ms.length===1?"1 adentro":`${ms.length} adentro`));const tt=el("p","hp-tit",(b.titulo||"").trim()||"Pila");tt.title="Doble clic para cambiar el título";
+  tt.addEventListener("dblclick",e=>{e.stopPropagation();editarTituloPilaHoja(n,b)});const eb=el("button","pila-ed","✎");eb.type="button";eb.title="Cambiar el título";eb.onclick=e=>{e.stopPropagation();editarTituloPilaHoja(n,b)};f.append(m,tt,eb);
   const im=ms.map(fotoDeB).find(Boolean);if(im){const i=el("img","hp-img");i.alt="";i.draggable=false;i.onerror=()=>i.remove();cargarImg(i,im);f.append(i)}
   else{const tx=ms.map(textoDeB).find(v=>v&&v.trim());if(tx)f.append(el("p","hp-txt",tx))}
   const ab=el("button","hp-abrir","Abrir");ab.type="button";ab.onclick=e=>{e.stopPropagation();abrirPilaHoja(b.id)};f.append(ab);n.prepend(f);n.title="Tocala dos veces para ver lo que hay adentro"}
@@ -3039,6 +3051,7 @@ const AYUDA=[
   [{chip:"Dejar de compartir"},"Tocás dos veces y el link deja de andar al toque."]]},
  {t:"Pilas",it:[
   [{h:'<span class="ay-apilar"><span class="ay-post"></span><span class="ay-flechita">→</span><span class="ay-pila"><i></i><i></i><span class="ay-post"></span><em>2</em></span></span>'},"Arrastrá un post-it y soltalo arriba de otro: se arma una pila. Soltá más encima para sumarlos."],
+  [{chip:"✎"},"Pasá por arriba de una pila y tocá el lápiz: le cambiás el título sin entrar. (Adentro de un post-it también, o con doble clic en el título.)"],
   [{h:'<span class="ay-pila"><i></i><i></i><span class="ay-post"></span><em>5</em></span>'},"Tocala para ver todo lo que tiene. Ahí le ponés título, sacás una nota con «Sacar ↗», o usás «Deshacer pila» (las notas quedan sueltas) o «Borrar pila» (se borra con todo)."],
   [{h:'<span class="ay-pila keep"><i></i><i></i><span class="ay-post"><small>De Keep</small></span></span>'},"Lo que importaste de Google Keep vive en esa pila hasta que lo vayas sacando."],
   [null,"Las pilas con título no se deshacen solas aunque queden con una nota o vacías: sirven de carpeta (por ejemplo, «Locaciones»)."],
@@ -3114,6 +3127,7 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
  {n:30,f:"15 de noviembre",it:[
+  ["Ahora le cambiás el título a una pila sin entrar: pasá por arriba y tocá el lápiz ✎.",null,2],
   ["Adentro de un post-it, soltás una cosa encima de otra y se apilan al toque, como en la plancha. No hay que esperar.",null,2],
   ["Las referencias ahora se marcan con una flechita ↗, más discreta.",null,3]]},
  {n:29,f:"15 de noviembre",it:[
@@ -3554,11 +3568,19 @@ function crearNodoPila(id){const keep=id==="keep",c=el("div","pila"+(keep?" keep
   if(keep)f.append(el("span","pila-cap","Pila"),el("b","pila-tit","De Keep"),el("span","pila-n"),el("span","pila-q"),el("span","pila-abrir","Tocá para abrirla"));
   else{const m=el("div","meta");m.append(el("span","pt-num"),el("span"));f.append(m,el("p","pila-titulo"),el("p","pila-txt"),(()=>{const im=el("img","pila-img");im.alt="";im.draggable=false;im.hidden=true;im.onerror=()=>{im.hidden=true};return im})(),el("span","pila-q"));c.append(el("span","pila-badge"))}
   c.prepend(el("i","pila-hoja h3"),el("i","pila-hoja h2"),f);
+  {const eb=el("button","pila-ed","✎");eb.type="button";eb.title="Cambiar el título sin abrirla";eb.setAttribute("aria-label","Cambiar el título de la pila");eb.onclick=e=>{e.stopPropagation();editarTituloPila(c,id)};f.append(eb)}
   arrastrable(c,lzMain,{inicio:()=>({x:parseFloat(c.style.left),y:parseFloat(c.style.top)}),mover:(x,y)=>{c.style.left=x+"px";c.style.top=y+"px";pedirFlechas()},
     soltar:()=>{const x=Math.round(parseFloat(c.style.left)),y=Math.round(parseFloat(c.style.top));limCache=null;
       if(keep){pilaPos={x,y};if(docPila)docPila.set({...pilaPos,titulo:pilaTitulo,orden:keepOrden}).catch(()=>{})}else{const p=pilas.find(z=>z.id===id);if(p){p.x=x;p.y=y}if(colPilas)escribir(colPilas,id,{x,y})}},
     tocar:()=>abrirPila(id)});
   c.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();abrirPila(id)}};return c}
+/* cambiar el título de una pila desde la plancha, sin entrar */
+function editarTituloPila(c,id){if(c._editTit)return;const keep=id==="keep",tp=c.querySelector(keep?".pila-tit":".pila-titulo"),actual=keep?(pilaTitulo||""):((pilas.find(z=>z.id===id)||{}).titulo||"");
+  const i=el("input","pila-tit-ed");i.type="text";i.value=actual;i.placeholder=keep?"De Keep":"Título de la pila";i.maxLength=80;i.setAttribute("aria-label","Título de la pila");c._editTit=true;if(tp)tp.style.display="none";(tp||c.querySelector(".pila-frente").firstChild).after(i);
+  let hecho=false;const fin=ok=>{if(hecho)return;hecho=true;c._editTit=false;const v=i.value.trim();i.remove();if(tp)tp.style.display="";
+    if(ok&&v!==actual){if(keep){pilaTitulo=v;if(docPila)docPila.set({...pilaXY("keep"),titulo:v,orden:keepOrden}).catch(()=>{})}else{const p=pilas.find(z=>z.id===id);if(p)p.titulo=v;if(colPilas)escribir(colPilas,id,{titulo:v})}}pintarPilas()};
+  i.onkeydown=e=>{e.stopPropagation();if(e.key==="Enter"){e.preventDefault();fin(true)}else if(e.key==="Escape"){e.preventDefault();fin(false)}};i.onblur=()=>fin(true);i.onpointerdown=e=>e.stopPropagation();i.onclick=e=>e.stopPropagation();
+  requestAnimationFrame(()=>{i.focus();i.select()})}
 function pintarPila(){pintarPilas()}
 function pintarPilas(){const vivos=new Set();
   if(vista==="ideas"){const cuenta=new Map();for(const i of data.ideas){const id=enPilaId(i);if(id)cuenta.set(id,(cuenta.get(id)||0)+1);if(Array.isArray(i.pilasExtra))for(const x of i.pilasExtra)if(x!==id&&pilas.some(p=>p.id===x))cuenta.set(x,(cuenta.get(x)||0)+1)}
