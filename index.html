@@ -708,6 +708,9 @@ body.en-diario .dia-herr{display:flex}
 .pila.propia .pila-frente .meta{display:flex;justify-content:space-between;font:500 10px var(--mono);color:var(--muted);text-transform:uppercase}
 .pila-txt{margin:0;font:600 15px/1.3 var(--hand);overflow:hidden;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;word-break:break-word}
 .pila.propia .pila-q{justify-self:start}
+.pila-img{width:100%;height:104px;object-fit:cover;display:block;border-radius:2px;background:rgba(43,37,32,.1)}
+.pila.con-img .pila-titulo{-webkit-line-clamp:2;font-size:20px}
+.pila.con-img .pila-txt{-webkit-line-clamp:2}
 .pila-badge{position:absolute;z-index:3;top:-12px;right:-12px;min-width:30px;height:30px;padding:0 8px;border-radius:999px;background:var(--ink);color:var(--paper);font:700 14px/30px var(--ui);text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.35)}
 .destino{outline:3px dashed var(--paper);outline-offset:8px}
 .pila.destino .pila-frente{outline:3px dashed var(--paper);outline-offset:8px}
@@ -2801,7 +2804,7 @@ const AYUDA=[
   [{h:'<span class="ay-pila keep"><i></i><i></i><span class="ay-post"><small>De Keep</small></span></span>'},"Lo que importaste de Google Keep vive en esa pila hasta que lo vayas sacando."],
   [null,"Las pilas con título no se deshacen solas aunque queden con una nota o vacías: sirven de carpeta (por ejemplo, «Locaciones»)."],
   [{chip:"+ Nuevo acá"},"Adentro de una pila, crea un post-it nuevo ya guardado ahí, con la categoría de la pila."],
-  [null,"Si un post-it tiene una imagen adentro, en la pila se ve grande y con la foto. Sirve, por ejemplo, para las locaciones."],
+  [null,"Si un post-it tiene una imagen adentro, en la pila se ve grande y con la foto. Sirve, por ejemplo, para las locaciones. Y la pila muestra una de esas fotos en la tapa, en la plancha."],
   ["Doble clic adentro de una pila","Escribís un post-it nuevo ahí mismo, ya guardado en la pila. Enter lo pega, Esc lo cancela."],
   [null,"Si creás un post-it desde «Referencia» con una categoría que se llama igual que una pila, va directo adentro de esa pila."]]},
  {t:"Barra izquierda",it:[
@@ -2866,6 +2869,10 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:20,f:"14 de noviembre",it:[
+  ["*Nueva función*: Listas de tareas. Podés tener todas las que quieras en la plancha (botón ☑ en el •••) y también adentro de un post-it, en el «+» → «Tareas». Si ponés la misma lista adentro y afuera, es la misma: lo que tachás en un lado se tacha en el otro.",null,1],
+  ["Las frases también se pueden poner adentro de un post-it con «Referencia». Y la podés crear ahí mismo.",null,2],
+  ["Si una pila tiene fotos adentro, ahora se ve una en la tapa, en la plancha. Así de un vistazo sabés qué hay.",null,2]]},
  {n:19,f:"14 de noviembre",it:[
   ["*Nueva función*: _Referencias_. Ahora un mismo post-it puede estar en dos lugares a la vez. Ejemplo: tenés una locación guardada en la pila «Locaciones» y la querés ver también adentro del post-it de tu película. Entrás a la película, tocás el «+» de la izquierda, elegís «Referencia» y buscás la locación (o la creás ahí mismo). Aparece adentro como un post-it chiquito. No es una copia: si la cambiás en un lado, cambia en el otro.",null,1],
   ["En las pilas, los post-its que tienen una imagen adentro ahora se ven grandes y con la foto.",null,1],
@@ -3249,7 +3256,7 @@ function pilaXY(id){id=id||"keep";if(id!=="keep"){const p=pilas.find(x=>x.id===i
 function crearNodoPila(id){const keep=id==="keep",c=el("div","pila"+(keep?" keep":" propia"));c._pila=id;c.tabIndex=0;c.setAttribute("role","button");c.setAttribute("aria-label",keep?"Abrir la pila de Keep":"Abrir esta pila");
   const f=el("div","pila-frente");
   if(keep)f.append(el("span","pila-cap","Pila"),el("b","pila-tit","De Keep"),el("span","pila-n"),el("span","pila-q"),el("span","pila-abrir","Tocá para abrirla"));
-  else{const m=el("div","meta");m.append(el("span","pt-num"),el("span"));f.append(m,el("p","pila-titulo"),el("p","pila-txt"),el("span","pila-q"));c.append(el("span","pila-badge"))}
+  else{const m=el("div","meta");m.append(el("span","pt-num"),el("span"));f.append(m,el("p","pila-titulo"),el("p","pila-txt"),(()=>{const im=el("img","pila-img");im.alt="";im.draggable=false;im.hidden=true;im.onerror=()=>{im.hidden=true};return im})(),el("span","pila-q"));c.append(el("span","pila-badge"))}
   c.prepend(el("i","pila-hoja h3"),el("i","pila-hoja h2"),f);
   arrastrable(c,lzMain,{inicio:()=>({x:parseFloat(c.style.left),y:parseFloat(c.style.top)}),mover:(x,y)=>{c.style.left=x+"px";c.style.top=y+"px";pedirFlechas()},
     soltar:()=>{const x=Math.round(parseFloat(c.style.left)),y=Math.round(parseFloat(c.style.top));limCache=null;
@@ -3268,7 +3275,10 @@ function pintarPilas(){const vivos=new Set();
       if(id==="keep"){c.style.setProperty("--c",colorPila());c.querySelector(".pila-tit").textContent=pilaTitulo||"De Keep";c.querySelector(".pila-n").textContent=n===1?"1 nota adentro":`${n} notas adentro`}
       else{const t=topePila(id),tit=(pilas.find(z=>z.id===id)||{}).titulo||"";c.style.setProperty("--c",t?colorDe("ideas",t):((cats.find(z=>(z.nombre||"").trim().toLowerCase()===tit.trim().toLowerCase())||{}).color||"#ffe76a"));c.querySelector(".pila-badge").textContent=String(n);
         c.querySelector(".pt-num").textContent=tit?"Pila":t?`#${t.numero||"?"} · ${label(t.tipo)}`:"";const pt=c.querySelector(".pila-titulo");pt.hidden=!tit;pt.textContent=tit;
-        const tx=c.querySelector(".pila-txt");tx.hidden=!!tit;tx.textContent=t?(t.texto||""):""}}}
+        const tx=c.querySelector(".pila-txt");tx.hidden=!!tit;tx.textContent=t?(t.texto||""):"";
+        /* si alguna nota de la pila tiene una foto, se ve en la tapa */
+        const im=c.querySelector(".pila-img"),con=itemsPila(id).sort((a,b)=>(b.pilaT||0)-(a.pilaT||0)).map(i=>(i.bloques||[]).find(b=>b.t==="img"&&b.a)).find(Boolean);
+        c.classList.toggle("con-img",!!con);if(im){im.hidden=!con;if(con&&im.dataset.ref!==con.a){im.dataset.ref=con.a;cargarImg(im,con.a)}}}}}
   for(const [id,c] of nodosPila)if(!vivos.has(id)){c.remove();nodosPila.delete(id)}}
 /* soltar un post-it arriba de otro (o de una pila) */
 function pilaDestino(c){const cx=(parseFloat(c.style.left)||0)+100,cy=(parseFloat(c.style.top)||0)+100,den=(x,y,w,h,m)=>cx>x+m&&cx<x+w-m&&cy>y+m&&cy<y+h-m;
