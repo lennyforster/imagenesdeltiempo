@@ -47,6 +47,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
 .nov-cuerpo ul{margin:0 0 8px;padding-left:18px;display:grid;gap:7px;font:500 .95rem/1.4 var(--ui)}
 .nov-cuerpo b{font-weight:700}
 .nov-cuerpo li.nov-1+li:not(.nov-1){margin-top:6px}
+.nov-intro{margin:0 0 12px;font:500 .95rem/1.45 var(--ui)}
 .nov-chicos{margin:4px 0 8px;font:500 .85rem/1.45 var(--ui);color:var(--muted)}
 .nov-pie{display:flex;justify-content:space-between;gap:8px;padding:12px 18px 16px}
 .ay-hoja{width:min(860px,100%);height:min(620px,calc(100dvh - 32px));display:grid;grid-template-rows:auto 1fr;background:#fbf7ec;border-radius:12px;box-shadow:0 30px 60px -20px rgba(0,0,0,.6);overflow:hidden;color:var(--ink)}
@@ -2809,6 +2810,13 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:17,f:"14 de noviembre",intro:["Hola!! Cómo estás? Soy Lenny. En persona, aunque no lo creas. Haceme saber si leíste esto.","Te comparto las nuevas actualizaciones:"],it:[
+  ["*Nueva función* llamada _Referencias_. Adentro de un post-it, «Referencia» te deja meter otro post-it que vive en otro lado, como una locación adentro de una película. Es el mismo post-it: si lo cambiás, cambia en todos lados. Se entiende? usalo y me contas.",null,1],
+  ["*Nueva función*: Lista de tareas. En la plancha de ideas principal podes agregar una lista de tareas. Cuando tachás una, queda anotada sola en el diario con la hora en la que la completaste.",null,1],
+  ["*Algo que me frustraba mucho*: Editar sin abrir. Con el ✎ de cada post-it cambiás el texto, la categoría y el tamaño de la letra ahí mismo, así además podes hacer que algunas ideas te llamen más la atención en la plancha principal.",null,1],
+  ["Categoría al crear con doble clic. Con los puntitos de colores.",null,2],
+  ["Pilas con título. Ya no se deshacen solas, y adentro tenés «+ Nuevo acá».",null,2],
+  ["Detalles: opción de fondo cuadriculado en el •••, y el fondo de siempre un poco más suave.",null,2]]},
  {n:16,f:"14 de noviembre",it:[
   ["Arreglado «+ Nueva idea» (ahora sí)","El lugar para escribir quedaba aplastado y no veías lo que tipeabas. Lo mismo pasaba en «Dictar» y en «Exportar».",3]]},
  {n:15,f:"14 de noviembre",it:[
@@ -2847,6 +2855,8 @@ const NOVEDADES=[
   ["Sin el subrayado rojo del corrector","",3]]}];
 /* El cartel junta todo lo que la persona no vio y lo ordena por importancia, no por fecha:
    1 = cambia cómo se usa la web, 2 = útil pero no imprescindible, 3 = detalle (va al final, en una línea). */
+/* texto del cartel escrito por Lenny: *así* va en negrita y _así_ en itálica */
+function fmtNov(tag,cls,txt){const n=el(tag,cls);for(const p of String(txt).split(/(\*[^*]+\*|_[^_]+_)/))if(p){if(/^\*[^*]+\*$/.test(p))n.append(el("b",null,p.slice(1,-1)));else if(/^_[^_]+_$/.test(p))n.append(el("i",null,p.slice(1,-1)));else n.append(p)}return n}
 function verNovedades(todas,comoAmigo){if(window.__invitado||$("novedades"))return;const ult=NOVEDADES[0].n;let v=null;try{v=localStorage.getItem("nov_vista")}catch(_){}
   const marcar=()=>{try{localStorage.setItem("nov_vista",String(ult))}catch(_){}};
   if(!todas&&window.__entraNuevo){marcar();return}/* quien recién entra ve la guía, no hace falta el cartel */
@@ -2857,7 +2867,8 @@ function verNovedades(todas,comoAmigo){if(window.__invitado||$("novedades"))retu
   const vistos=new Set(),its=[];for(const nv of nuevas)for(const [t,d,nivel] of nv.it){if(vistos.has(t))continue;vistos.add(t);its.push({t,d,nivel:nivel||2})}
   its.sort((a,b)=>a.nivel-b.nivel);const cu=el("div","nov-cuerpo"),ul=el("ul");
   const solosChicos=!its.some(x=>x.nivel<3);/* si todo es chico, se muestra igual que lo demás */
-  for(const it of its.filter(x=>solosChicos||x.nivel<3)){const li=el("li",it.nivel===1?"nov-1":null);li.append(el("b",null,it.t+(it.d?". ":"")),it.d);ul.append(li)}if(ul.children.length)cu.append(ul);
+  {const intro=(nuevas.find(x=>x.intro)||{}).intro;if(intro)for(const pa of [].concat(intro))cu.append(fmtNov("p","nov-intro",pa))}
+  for(const it of its.filter(x=>solosChicos||x.nivel<3)){const li=el("li",it.nivel===1?"nov-1":null);if(it.d===null)li.append(fmtNov("span",null,it.t));else li.append(el("b",null,it.t+(it.d?". ":"")),it.d);ul.append(li)}if(ul.children.length)cu.append(ul);
   const chicos=solosChicos?[]:its.filter(x=>x.nivel>=3);if(chicos.length)cu.append(el("p","nov-chicos",(ul.children.length?"Y algunos detalles: ":"")+chicos.map(x=>x.t).join(" · ")+"."));
   const pie=el("div","nov-pie"),guia=el("button","btn","Ver la guía"),ok=el("button","btn oscuro","Listo");guia.type="button";ok.type="button";pie.append(guia,ok);h.append(cab,cu,pie);ov.append(h);document.body.append(ov);
   const tecla=e=>{if(e.key==="Escape"||e.key==="Enter"){e.preventDefault();e.stopImmediatePropagation();cerrar2()}};
