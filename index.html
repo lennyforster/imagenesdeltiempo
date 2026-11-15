@@ -1024,12 +1024,18 @@ body.barra-abierta .barra-extra.h-extra:not(.abierta){display:none}
 #capa-hoja .pieza.por-apilar{outline:3px dashed var(--paper);outline-offset:6px}
 #capa-hoja .pieza.por-apilar::after{content:"Soltá para apilar";position:absolute;left:50%;bottom:-36px;transform:translateX(-50%);background:var(--ink);color:var(--paper);font:600 12px var(--ui);padding:4px 10px;border-radius:999px;white-space:nowrap;z-index:9}
 
-.esc-asa{width:26px;height:26px;right:-10px;bottom:-10px;border-radius:50%;background:var(--paper);box-shadow:0 1px 2px rgba(0,0,0,.25),0 3px 8px rgba(0,0,0,.25);display:grid;place-items:center}
-.esc-asa::before{content:"";width:12px;height:12px;background:var(--ink);
-  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M1 5V1h4M11 7v4H7M1 1l10 10' stroke='black' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;
-  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M1 5V1h4M11 7v4H7M1 1l10 10' stroke='black' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat}
-.esc-asa:hover{background:#fff;transform:scale(1.1)}
+.esc-asa{width:24px;height:24px;right:0;bottom:0;border-radius:0;background:none;box-shadow:none;display:block}
+.esc-asa::before{content:"";position:absolute;right:5px;bottom:5px;width:7px;height:7px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;border-radius:0 0 2px 0;color:rgba(43,37,32,.35);transition:color .15s,width .15s,height .15s}
+.esc-asa:hover{background:none;transform:none}
+.esc-asa:hover::before{color:rgba(43,37,32,.75);width:9px;height:9px}
 @media (hover:none){.esc-asa{opacity:0}.nota:focus-within .esc-asa,.pieza.bpost.sel .esc-asa{opacity:1}}
+
+.esc-asa{border:0!important;transform:none!important;border-radius:0!important}
+#h-vivo{background:#d42020;color:#fff;display:inline-flex;align-items:center;gap:8px;box-shadow:0 2px 10px -2px rgba(212,32,32,.6)}
+#h-vivo:hover{background:#b71818}
+#h-vivo .vivo-pt{width:9px;height:9px;border-radius:50%;background:#fff;animation:vivoLate 1.4s ease-in-out infinite}
+@keyframes vivoLate{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.7)}50%{box-shadow:0 0 0 5px rgba(255,255,255,0)}}
+@media (prefers-reduced-motion:reduce){#h-vivo .vivo-pt{animation:none}}
 </style>
 <div class="cargando" id="cargando" hidden role="status"><span class="cg-punto"></span>Cargando tu plancha…</div>
 <div class="conectar" id="conectar" hidden>
@@ -1489,7 +1495,7 @@ window.claude={use:async n=>{if(INVITADO&&n==="db"){if(!listo)listo=conectar();r
     <div class="meta"><span>Esta idea</span><button type="button" class="cerrar" id="cerrar-mas" aria-label="Cerrar">×</button></div>
     <div id="mas-cat" class="mas-sec"><span class="nota-panel">Categoría</span><div class="colores" id="h-colores" role="group" aria-label="Categoría"></div></div>
     <div id="mas-est" class="mas-sec"><span class="nota-panel">Estado</span><div class="colores" id="h-estados" role="group" aria-label="Estado de la idea"></div></div>
-    <div class="mas-fila"><button class="btn" id="h-vivo" type="button">● En vivo</button><button class="btn" id="h-compartir" type="button">Compartir</button><button class="btn" id="h-exportar" type="button">Exportar</button><button class="btn" id="h-a-pila" type="button" hidden>Devolver a la pila</button></div>
+    <div class="mas-fila"><button class="btn" id="h-vivo" type="button" title="Compartí un link y editen este post-it juntos, en tiempo real (los otros no necesitan cuenta)"><span class="vivo-pt"></span>En vivo · editar con otros</button><button class="btn" id="h-compartir" type="button">Compartir</button><button class="btn" id="h-exportar" type="button">Exportar</button><button class="btn" id="h-a-pila" type="button" hidden>Devolver a la pila</button></div>
     <div class="mas-pie"><button class="btn" id="h-ayuda" type="button">Cómo se usa?</button><button class="btn" id="h-del" type="button" hidden>Borrar este día</button></div>
   </div>
   <form class="panel" id="linkform" hidden>
@@ -2829,8 +2835,7 @@ document.addEventListener("keydown",e=>{if(e.key!=="Tab"||e.shiftKey||e.ctrlKey|
     const pl=mk();pl.id="btn-plano";ex.lastElementChild.before(pl);
     {const fb=el("button","btn");fb.type="button";fb.id="btn-fondo";fb.append(el("span","ic-cuad"));const pf=si=>{document.documentElement.classList.toggle("fondo-cuad",si);try{localStorage.setItem("fondo",si?"cuad":"")}catch(_){}fb.setAttribute("aria-pressed",String(si));const t=si?"Volver al fondo original":"Fondo cuadriculado";fb.title=t;fb.setAttribute("aria-label",t)};
       fb.onclick=()=>pf(!document.documentElement.classList.contains("fondo-cuad"));let f0=false;try{f0=localStorage.getItem("fondo")==="cuad"}catch(_){}pf(f0);ex.lastElementChild.before(fb)}
-    {const nb=el("button","btn");nb.type="button";nb.id="btn-lista";nb.append(el("span","ic-lista"));nb.title="Nueva lista de tareas en la plancha";nb.setAttribute("aria-label","Nueva lista de tareas en la plancha");
-      nb.onclick=async()=>{if(vista!=="ideas")setVista("ideas");const c=lzMain.aMundo(innerWidth/2,innerHeight/2),id=await nuevaLista({enPlancha:true,x:Math.round(c.x-125),y:Math.round(c.y-100)});if(id)setTimeout(()=>enfocarLista(id,".tr-tit"),250)};ex.lastElementChild.before(nb)}
+    
     const enPost=mk();enPost.id="h-plano";$("h-ayuda").before(enPost);
     window.revisarPlano=()=>{let puesto=false;try{puesto=localStorage.getItem("plano")==="1"}catch(_){}poner(puesto)};window.revisarPlano()}
   $("btn-menu").before(ex);
@@ -2917,7 +2922,7 @@ $("h-vivo").onclick=async()=>{if(!abierto||abierto.k!=="ideas")return;const d=ab
   const b=$("h-vivo");b.disabled=true;b.textContent="Creando…";
   try{vaciarPendientes();const m=await modVivo();const id=await m.crear(camposVivo(d));d.vivo=id;guardarHoja("vivo",id);b.setAttribute("aria-pressed","true");
     const t=$("capa-hoja").querySelector(".principal textarea");if(t)enlazarVivo(t,d);abrirPanelVivo();const n=nodosNota.get("ideas:"+abierto.id);if(n)n._firma=null;toast("Listo: este post-it ya se puede editar en vivo.")}
-  catch(e){console.error(e);toast("No se pudo crear. Revisá la conexión.")}finally{b.disabled=false;b.textContent="● En vivo"}};
+  catch(e){console.error(e);toast("No se pudo crear. Revisá la conexión.")}finally{b.disabled=false;b.replaceChildren(el("span","vivo-pt"),"En vivo · editar con otros")}};
 $("cerrar-vivo").onclick=()=>{$("panel-vivo").hidden=true};
 $("vivo-copiar").onclick=async()=>{try{await navigator.clipboard.writeText($("vivo-link").value);toast("Link copiado.")}catch(_){$("vivo-link").select();toast("Copialo a mano: ya está marcado.")}};
 {let seguro=false,tm;$("vivo-dejar").onclick=()=>{const b=$("vivo-dejar");if(!abierto)return;
@@ -2952,9 +2957,9 @@ const AYUDA=[
   [null,"Cuando creás un post-it con doble clic, los puntitos de colores le eligen la categoría antes de pegarlo."],
   [{chip:"Ctrl + G"},"Con varias cosas seleccionadas (Shift + arrastrar en el fondo), las agrupa: después se mueven juntas. Ctrl + Shift + G las separa. También está el botón «Agrupar» en la barra de arriba. Funciona en la plancha y adentro de los post-its."],
   [null,"En el modo «Grilla», si arrastrás un post-it los demás se corren para hacerle lugar, y queda ese orden."],
-  [{chip:"⤡"},"El circulito en la esquina de abajo a la derecha de un post-it (aparece al pasar por arriba): arrastralo para hacerlo más chico o más grande. Anda en la plancha y en los post-its de adentro."]]},
+  [{chip:"⌟"},"La esquinita de abajo a la derecha de un post-it (aparece al pasar por arriba): arrastrala para hacerlo más chico o más grande. Anda en la plancha y en los post-its de adentro."]]},
  {t:"Tareas",it:[
-  [{h:'<span class="ay-chip"><span class="ic-lista"></span></span>'},"En el •••, al lado de la «A»: crea una lista de tareas nueva en la plancha. Podés tener todas las que quieras. Le ponés nombre arriba y la movés arrastrándola del título."],
+  [{chip:"Doble clic"},"En el fondo de la plancha de ideas → «Lista de tareas»: crea una lista nueva ahí. Podés tener todas las que quieras. Le ponés nombre arriba y la movés arrastrándola del título."],
   [{chip:"☐"},"Cuando hacés una tarea, tocá el cuadradito: se tacha y queda anotada sola en el diario de hoy, con la hora («Terminé: …»). Si la destachás, se borra del diario."],
   [{chip:"×"},"Arriba a la derecha de la lista: la saca de la plancha. Si está adentro de algún post-it, sigue ahí; si no, se borra (te pregunta antes)."],
   [{chip:"Tareas"},"Adentro de un post-it, en el «+»: armás una lista nueva ahí o ponés una que ya existe. Es la misma lista en los dos lados: si tachás o borrás algo adentro, cambia afuera también."],
@@ -3106,6 +3111,10 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:29,f:"15 de noviembre",it:[
+  ["Las listas de tareas nuevas en la plancha ahora se crean con doble clic en el fondo → «Lista de tareas» (el botón del ••• se fue).",null,3],
+  ["«En vivo» ahora se ve en rojo y dice lo que hace: compartís un link y editan el post-it juntos, al mismo tiempo. Probalo con alguien.",null,2],
+  ["La esquinita para agrandar o achicar post-its ahora es más discreta.",null,3]]},
  {n:28,f:"15 de noviembre",it:[
   ["*Doble clic = menú para crear*. Donde hagas doble clic (adentro de un post-it o en la plancha de ideas) aparece el menú con todo lo que podés crear, y lo crea ahí mismo.",null,1],
   ["*Pilas adentro de los post-its, más fácil*: arrastrá una cosa encima de otra y quedate un segundo quieto. Cuando aparece «Soltá para apilar», soltás y listo. También está «Pila» en el menú.",null,1],
