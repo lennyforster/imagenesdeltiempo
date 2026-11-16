@@ -1447,6 +1447,8 @@ body.gu-mitad .pila-vista{left:var(--gu-corte,50%);background-color:#1f6b4a;back
 @media print{.gu-ortl{display:none}}
 .gu-sugs{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}.gu-sugs button{border:0;border-radius:999px;background:#ffe76a;padding:5px 11px;font:600 13px var(--ui);cursor:pointer;color:var(--ink)}
 .gu-cuerpo{position:relative}
+.gu-tl-pjn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;font:500 11px var(--ui);text-transform:uppercase}
+.gu-tl-hn{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
 </style>
 <div class="cargando" id="cargando" hidden role="status"><span class="cg-punto"></span>Cargando tu plancha…</div>
 <div class="conectar" id="conectar" hidden>
@@ -3539,7 +3541,7 @@ const AYUDA=[
   [{chip:"Tab"},"Cambia el tipo de renglón: escena, acción, personaje, diálogo, paréntesis, transición. Enter pasa al que sigue. Cuando escribís un personaje y queda una sola opción, Enter lo completa."],
   [null,"A la izquierda tenés las escenas, los personajes y las locaciones, con buscador. Las locaciones se vuelven post-its adentro de la película solas."],
   [{chip:"Colores"},"En la lista de escenas, el circulito le pone color a cada escena."],
-  [{chip:"▤ Línea de tiempo"},"La peli entera en el tiempo, con hilos narrativos y personajes. Al lado está la Escaleta, que se arma sola. Las podés ver abajo del guion, al costado (la escaleta) o en pantalla completa. Arrastrando escenas reordenás el guion."],
+  [{chip:"▤ Línea de tiempo"},"La peli entera en el tiempo, con hilos narrativos y personajes. Al lado está la Escaleta, que se arma sola. Las podés ver abajo del guion, al costado (la escaleta) o en pantalla completa. Arrastrando escenas reordenás el guion. Con la × al lado de un personaje lo sacás de la línea."],
   [{chip:"↗ Vincular"},"Marcás un pedazo y se crea un post-it con eso adentro de la película. Sin marcar nada, lo atás a un post-it que ya existe."],
   [{chip:"💬 Comentar"},"Deja un comentario al costado del renglón. Tocalo para editarlo o resolverlo."],
   [null,"Ortografía: las palabras mal escritas quedan subrayadas en rojo (diccionario rioplatense, con voseo). Clic derecho para ver sugerencias o agregarla a tu diccionario. Se apaga en Archivo → Formato."],
@@ -3629,6 +3631,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:57,f:"16 de noviembre",it:[
+  ["Guion: en la línea de tiempo ahora podés sacar personajes. Con la × al lado del nombre sacás uno, y con «Sacar de la línea» sacás todos.",null,3]]},
  {n:56,f:"16 de noviembre",intro:"¡Llegó el *guion*! Ahora todos pueden escribir guiones adentro de la web 🎬",it:[
   ["Entrá al post-it de tu película y tocá *+ → Guion*. Se abre un editor con formato profesional: A4, Courier, *Tab* para cambiar entre escena, acción, personaje y diálogo, y se guarda solo.",null,1],
   ["Las locaciones del guion se vuelven post-its adentro de la película, y con *Vincular* atás pedazos del guion a tus ideas.",null,1],
@@ -5963,9 +5967,14 @@ function pintarLinea(cu,es){const Z=tlZoom,tot=es[es.length-1].x+es[es.length-1]
     for(const e of es){const on=e.hl.includes(h.id);const c=mk("div","gu-tl-c"+(on?" on":""));c.style.left=(e.x*Z)+"px";c.style.width=Math.max(6,e.largo*Z-2)+"px";c.title=`${e.n}. ${e.tit}`+(lee?"":on?"\nTocá para sacarla de este hilo":"\nTocá para sumarla a este hilo");
       if(!lee)c.onclick=()=>{marcar();const m=metaDe(e.id);const v=new Set(m.hl||[]);if(v.has(h.id))v.delete(h.id);else v.add(h.id);if(v.size)m.hl=[...v];else delete m.hl;limpiarMeta(e.id);cambio();pintarTL()};t.append(c)}}
   /* personajes (solo) */
-  const pjs=new Map();for(const e of es)for(const n of e.pj)pjs.set(n,(pjs.get(n)||0)+1);const top=[...pjs].sort((a,b)=>b[1]-a[1]).slice(0,14);
-  if(top.length){const s2=mk("div","gu-tl-sep");s2.append(mk("span",null,"Personajes"),mk("small",null,"se arma solo"));g.append(s2);
-    for(const [n] of top){const t=fila(n,"gu-tl-pj");for(const e of es)if(e.pj.includes(n)){const c=mk("div","gu-tl-c on");c.style.left=(e.x*Z)+"px";c.style.width=Math.max(6,e.largo*Z-2)+"px";c.title=`${e.n}. ${e.tit}`;c.onclick=()=>irAEscena(e.id);t.append(c)}}}}
+  const pjs=new Map();for(const e of es)for(const n of e.pj)pjs.set(n,(pjs.get(n)||0)+1);const top=[...pjs].sort((a,b)=>b[1]-a[1]);
+  const vpj=verPj();const ocultos=new Set(vpj.ocultos);const vis=top.filter(([n])=>!ocultos.has(n)).slice(0,14);
+  if(top.length){const s2=mk("div","gu-tl-sep");s2.append(mk("span",null,"Personajes"));
+    s2.append(btn("gu-tl-mas",vpj.no?"Mostrar":"Sacar de la línea",()=>{vpj.no=!vpj.no;guardarVerPj(vpj);pintarTL()}));
+    if(!vpj.no&&ocultos.size)s2.append(btn("gu-tl-mas",`Volver a mostrar ${ocultos.size===1?"1 oculto":ocultos.size+" ocultos"}`,()=>{vpj.ocultos=[];guardarVerPj(vpj);pintarTL()}));g.append(s2);
+    if(!vpj.no)for(const [n] of vis){const lb=mk("div","gu-tl-hn");lb.append(mk("span","gu-tl-pjn",n));const x=mk("button","gu-tl-hx","×");x.type="button";x.title="Sacar a "+n+" de la línea de tiempo";x.onclick=()=>{vpj.ocultos=[...new Set([...vpj.ocultos,n])];guardarVerPj(vpj);pintarTL()};lb.append(x);const t=fila(lb,"gu-tl-pj");for(const e of es)if(e.pj.includes(n)){const c=mk("div","gu-tl-c on");c.style.left=(e.x*Z)+"px";c.style.width=Math.max(6,e.largo*Z-2)+"px";c.title=`${e.n}. ${e.tit}`;c.onclick=()=>irAEscena(e.id);t.append(c)}}}}
+function verPj(){try{const v=JSON.parse(localStorage.getItem("gu_tlpj:"+G.id)||"{}");return{no:!!v.no,ocultos:Array.isArray(v.ocultos)?v.ocultos:[]}}catch(_){return{no:false,ocultos:[]}}}
+function guardarVerPj(v){try{localStorage.setItem("gu_tlpj:"+G.id,JSON.stringify(v))}catch(_){}}
 function arrastreTL(b,e,es,pista,Z){let x0=0,mov=false,marca=null;
   b.onpointerdown=ev=>{if(ev.button)return;x0=ev.clientX;mov=false;b.setPointerCapture(ev.pointerId)};
   b.onpointermove=ev=>{if(!b.hasPointerCapture(ev.pointerId))return;const dx=ev.clientX-x0;if(!mov&&Math.abs(dx)<6)return;if(soloLee())return;mov=true;b.classList.add("mov");b.style.transform=`translateX(${dx}px)`;
