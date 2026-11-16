@@ -21,7 +21,7 @@
 <style>
 /* Plancha de corte infinita (verde o azul): se hace zoom con la rueda o pellizcando, se arrastra el fondo para moverse, y los post-its e imágenes se acomodan a mano. Cada post-it abre su propia plancha. Look único elegido a propósito. */
 :root{--rl:32px;
-  --mat:#1f6b4a; --mat-minor:rgba(190,235,190,.22); --mat-major:rgba(210,245,200,.5); --mat-diag:rgba(210,245,200,.16);
+  --mat:#1f6b4a; --mat-minor:rgba(190,235,190,.18); --mat-major:rgba(210,245,200,.4); --mat-diag:rgba(210,245,200,.13);
   --ink:#2b2520; --muted:#5b4a3a; --paper:#fffdf6; --chip-bg:rgba(255,253,246,.92); --soft:rgba(43,37,32,.6);
   --p-corto:#ffe76a; --p-largo:#ffb3cf; --p-obra:#ffc36b; --p-serie:#a9e6b8; --p-negocio:#a8d8ff; --p-otro:#fff4a8; --p-frase:#ffffff;
   --danger:#b3261e; --link:#1d4f8f;
@@ -124,7 +124,7 @@ body.invitado #volver,body.invitado #h-mas,body.invitado>.barra,body.invitado #b
     linear-gradient(90deg,var(--mat-major) 1.5px,transparent 1.5px),
     linear-gradient(var(--mat-minor) 1px,transparent 1px),
     linear-gradient(90deg,var(--mat-minor) 1px,transparent 1px),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .12 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 .vista.paneando{cursor:grabbing}
 .vista.soltando{box-shadow:inset 0 0 0 6px var(--paper)}
 .capa{position:absolute;left:0;top:0;transform-origin:0 0;--inv:1}
@@ -958,8 +958,8 @@ html.plano .lp-dest .lp-t{font-weight:700!important}
 .ic-cuad{display:inline-block;width:14px;height:14px;vertical-align:-2px;border:1.5px solid currentColor;border-radius:2px;background-image:linear-gradient(currentColor 1px,transparent 1px),linear-gradient(90deg,currentColor 1px,transparent 1px);background-size:4.4px 4.4px;background-position:-1px -1px}
 #btn-fondo[aria-pressed="true"] .ic-cuad{background-color:rgba(43,37,32,.18)}
 /* Fondo de la plancha: un poquito más suave, y la opción de cuadritos como adentro de las pilas */
-html:not(.plano) #vp-main{--mat-minor:rgba(190,235,190,.19);--mat-major:rgba(210,245,200,.46);--mat-diag:rgba(210,245,200,.13)}
-html:not(.plano).fondo-cuad #vp-main{background-color:#1a5a3e;--mat-major:transparent;--mat-diag:transparent;--mat-minor:rgba(190,235,190,.22)}
+html:not(.plano) #vp-main{--mat-minor:rgba(190,235,190,.15);--mat-major:rgba(210,245,200,.37);--mat-diag:rgba(210,245,200,.1)}
+html:not(.plano).fondo-cuad #vp-main{background-color:#1a5a3e;--mat-major:transparent;--mat-diag:transparent;--mat-minor:rgba(190,235,190,.18)}
 
 .bref .ref-img{width:100%;height:130px;object-fit:cover;display:block;border-radius:2px;background:rgba(43,37,32,.1);pointer-events:none}
 .bref .ref-txt{-webkit-line-clamp:4}
@@ -1083,7 +1083,7 @@ body.barra-abierta .barra-extra.h-extra:not(.abierta){display:none}
 .ay-recorrido{display:inline-block;margin:0 0 14px;background:#1f6b4a!important;color:#fff!important;text-decoration:none;padding:9px 14px!important;font-size:14px!important}
 
 /* ---------- Guion ---------- */
-.gu{position:fixed;inset:0;z-index:45;background-color:#1f6b4a;background-image:linear-gradient(rgba(255,255,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.07) 1px,transparent 1px);background-size:32px 32px;color:var(--ink);font-family:var(--ui);display:flex;flex-direction:column}
+.gu{position:fixed;inset:0;z-index:45;background-color:#1f6b4a;background-image:linear-gradient(rgba(255,255,255,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.055) 1px,transparent 1px);background-size:32px 32px;color:var(--ink);font-family:var(--ui);display:flex;flex-direction:column}
 .gu[hidden]{display:none}
 .gu-b{border:0;border-radius:999px;background:rgba(255,253,246,.92);color:var(--ink);font:600 13px var(--ui);padding:7px 12px;cursor:pointer;white-space:nowrap}
 .gu-b:hover{background:#fff}
@@ -1207,7 +1207,7 @@ body.barra-abierta .barra-extra.h-extra:not(.abierta){display:none}
 ::highlight(gu-busca){background:#ffe76a99}
 ::highlight(gu-busca-act){background:#ff9f1c}
 /* ventanas */
-.gu-modal{position:fixed;inset:0;z-index:62;background:rgba(10,10,10,.5);display:flex;align-items:center;justify-content:center;padding:16px}
+.gu-modal{font-family:var(--ui);color:var(--ink);position:fixed;inset:0;z-index:62;background:rgba(10,10,10,.5);display:flex;align-items:center;justify-content:center;padding:16px}
 .gu-modal[hidden]{display:none}
 .gu-mh{background:#fffdf6;border-radius:16px;width:min(520px,100%);max-height:calc(100vh - 32px);overflow:auto;padding:20px 22px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
 .gu-mh h3{margin:0 0 14px;font:800 22px var(--hand)}
@@ -1318,7 +1318,7 @@ body.gu-lectura .gu-pie span:last-child{display:none}
 .gu-b.gu-compartir{background:#e0457b;color:#fff}.gu-b.gu-compartir:hover{background:#c93469}
 .gu-titulo::placeholder{color:rgba(255,253,246,.55)}
 /* la plancha al lado usa el mismo fondo que el guion */
-body.gu-mitad #vp-hoja{background-color:#1f6b4a!important;background-image:linear-gradient(rgba(255,255,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.07) 1px,transparent 1px)!important;background-size:32px 32px!important}
+body.gu-mitad #vp-hoja{background-color:#1f6b4a!important;background-image:linear-gradient(rgba(255,255,255,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.055) 1px,transparent 1px)!important;background-size:32px 32px!important}
 /* división arrastrable */
 .gu-corte{display:none;position:fixed;top:0;bottom:0;left:var(--gu-corte,50%);width:14px;margin-left:-7px;z-index:48;cursor:col-resize;touch-action:none}
 body.gu-mitad .gu-corte{display:block}
@@ -1335,7 +1335,25 @@ body.gu-lectura .gu-texto{-webkit-user-select:none;user-select:none}
 .gu-acc-sep{align-items:center}.gu-chico{background:none!important;color:#888!important;font:600 12.5px var(--ui)!important;padding:6px 4px!important}
 @media (max-width:480px){.gu-comp-op{grid-template-columns:1fr}}
 .gu-mh>.gu-link-f{margin-top:14px}
-body.gu-mitad .pila-vista{left:var(--gu-corte,50%);background-color:#1f6b4a;background-image:linear-gradient(rgba(255,255,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.07) 1px,transparent 1px);background-size:32px 32px}
+body.gu-mitad .pila-vista{left:var(--gu-corte,50%);background-color:#1f6b4a;background-image:linear-gradient(rgba(255,255,255,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.055) 1px,transparent 1px);background-size:32px 32px}
+
+/* el guion principal, en la tarjeta del post-it */
+.gu-princ{display:flex;align-items:center;gap:10px;width:100%;margin-top:6px;border:0;border-radius:6px;background:#fffdf6;padding:9px 12px;cursor:pointer;box-shadow:0 1px 0 rgba(0,0,0,.08),0 0 0 1px rgba(43,37,32,.14);text-align:left;color:var(--ink)}
+.gu-princ:hover{box-shadow:0 0 0 2px var(--ink)}
+.gu-princ .gu-pag{flex:none;position:relative;width:22px;height:28px;background:#fff;border:1px solid rgba(43,37,32,.35);border-radius:1px;background-image:repeating-linear-gradient(transparent 0 5px,rgba(43,37,32,.28) 5px 6px);background-size:12px 100%;background-position:7px 4px;background-repeat:no-repeat}
+.gu-princ .gu-pag::before,.gu-princ .gu-pag::after{content:"";position:absolute;left:2px;width:3px;height:3px;border-radius:50%;background:#b8892e}
+.gu-princ .gu-pag::before{top:5px}.gu-princ .gu-pag::after{bottom:5px}
+.gu-princ b{font:700 14px "Courier Prime","Courier New",Courier,monospace;letter-spacing:.08em}
+.gu-princ small{font:500 11px var(--mono);color:var(--soft)}
+.gu-princ-ir{margin-left:auto;font:600 12px var(--ui)}
+/* los otros guiones: una tapita de guion */
+.pieza.blink.gu-tapa{background:#fffdf6;border-radius:2px;padding:22px 16px 14px 26px;min-height:150px;display:flex;flex-direction:column;gap:8px;box-shadow:0 2px 2px rgba(0,0,0,.12),0 14px 22px -10px rgba(0,0,0,.5);background-image:radial-gradient(circle at 11px 26px,#b8892e 2.5px,transparent 3px),radial-gradient(circle at 11px calc(100% - 26px),#b8892e 2.5px,transparent 3px)}
+.pieza.blink.gu-tapa>b{font:700 15px/1.3 "Courier Prime","Courier New",Courier,monospace;text-transform:uppercase;text-align:center;margin:auto 0}
+.pieza.blink.gu-tapa>span:not(.gu-tapa-lbl){display:none}
+.pieza.blink.gu-tapa .gu-tapa-lbl{font:600 10px var(--mono);text-transform:uppercase;letter-spacing:.1em;color:var(--soft);text-align:center}
+.pieza.blink.gu-tapa>a{align-self:center}
+.gu-elegir-g{display:flex;flex-direction:column;gap:8px;margin:6px 0 4px}.gu-elegir-g button{text-align:left}
+.pieza.blink.gu-tapa>b{color:var(--ink)}.pieza.blink.gu-tapa>a{background:var(--ink);color:var(--paper)}
 </style>
 <div class="cargando" id="cargando" hidden role="status"><span class="cg-punto"></span>Cargando tu plancha…</div>
 <div class="conectar" id="conectar" hidden>
@@ -3507,6 +3525,11 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:54,f:"16 de noviembre",it:[
+  ["Le bajé un poquito la intensidad a la cuadrícula del fondo, para que canse menos la vista.",null,3]]},
+ {n:53,f:"16 de noviembre",mio:true,it:[
+  ["*El guion principal ahora se abre desde la tarjeta del post-it de la película:* abajo del título aparece «GUION · tantas escenas · Abrir». Ya no queda el link suelto en la plancha.",null,1],
+  ["Si querés otro guion para la misma película (otra versión, por ejemplo), andá a *+ → Guion → «+ Otro guion»*. Los que no son el principal quedan en la plancha como una tapita de guion.",null,2]]},
  {n:52,f:"16 de noviembre",mio:true,it:[
   ["Guion: el menú de Escena / Acción / Personaje ahora usa la misma letra que el resto de la web, y en la lista de escenas ya no sale el numerito de vínculos.",null,3]]},
  {n:51,f:"16 de noviembre",it:[
@@ -4848,8 +4871,8 @@ raiz.innerHTML=`
 <div class="gu-modal" id="gu-modal" hidden><div class="gu-mh" id="gu-mh"></div></div>
 <input type="file" id="gu-file" accept=".fdx,.fountain,.txt,.xml" hidden>`;
 document.body.append(raiz);
-const Q=id=>raiz.querySelector("#"+id);
-const ed=Q("gu-texto"),hojas=Q("gu-hojas"),escala=Q("gu-escala"),spacer=Q("gu-spacer"),scroller=Q("gu-scroll"),chips=Q("gu-chips"),acBox=Q("gu-ac"),pop=Q("gu-pop"),modal=Q("gu-modal"),mh=Q("gu-mh");
+const Q=id=>raiz.querySelector("#"+id)||document.getElementById(id);
+const ed=Q("gu-texto"),hojas=Q("gu-hojas"),escala=Q("gu-escala"),spacer=Q("gu-spacer"),scroller=Q("gu-scroll"),chips=Q("gu-chips"),acBox=Q("gu-ac"),pop=Q("gu-pop"),modal=Q("gu-modal"),mh=Q("gu-mh");addEventListener("keydown",e=>{if(raiz.hidden&&!modal.hidden&&e.key==="Escape"){e.preventDefault();e.stopImmediatePropagation();cerrarModal()}},true);document.body.append(modal); /* así también sale arriba del post-it, no solo adentro del guion */
 /* desplegable propio (el <select> nativo abre la lista con la letra del sistema) */
 const selTipo=(()=>{const bt=Q("gu-tipo"),mn=Q("gu-tipo-menu");let v=CICLO[0];const o={onchange:null,get value(){return v},set value(x){v=x;bt.textContent=(T[x]||x)+" ▾";for(const b of mn.children)b.classList.toggle("on",b.dataset.t===x)}};
   const cerrarM=()=>{mn.hidden=true};
@@ -4865,9 +4888,14 @@ raiz.addEventListener("pointerdown",e=>{const b=e.target.closest("button");if(b&
 const tab=mk("button","tab","Guion");tab.type="button";tab.id="tab-guion";tab.setAttribute("role","tab");tab.setAttribute("aria-selected","false");tab.title="Guiones (prueba)";
 /* ya no es una pestaña: el guion vive adentro del post-it de la película (+ → Guion) */
 {const t=$("add-esc");const b=mk("button","tool","Guion");b.type="button";b.id="add-guion";b.title="Guion de esta película";b.onclick=()=>guionDePostit();if(t)t.after(b);else document.body.append(b)}
-function guionDePostit(){if(!abierto||abierto.k!=="ideas")return;const pid=abierto.id,it=itemDe("ideas",pid);const g=guiones.find(x=>x.postit===pid);
-  if(g){vuelveGuion=null;entrar(g.id);return}
-  const tit=((it&&it.texto)||"").split("\n")[0].trim().slice(0,120);vuelveGuion=null;
+const guionesDe=pid=>guiones.filter(g=>g.postit===pid).sort((a,b)=>(a.creado||0)-(b.creado||0)||String(a.id).localeCompare(b.id));
+const principalDe=pid=>guionesDe(pid)[0]||null;
+function abrirGuionDesdeHoja(id){vuelveGuion=null;if(abierto){mitadCambia=true;try{cerrar()}finally{mitadCambia=false}}entrar(id)}
+function guionDePostit(){if(!abierto||abierto.k!=="ideas")return;const pid=abierto.id,it=itemDe("ideas",pid);const gs=guionesDe(pid);
+  if(gs.length){abrirModal(m=>{m.append(mk("h3",null,"Guion"));const l=mk("div","gu-elegir-g");for(const g of gs)l.append(btn(null,(g===gs[0]?"Abrir el guion principal · ":"Abrir «")+(g.titulo||"Sin título")+(g===gs[0]?"":"»"),()=>{cerrarModal();abrirGuionDesdeHoja(g.id)}));
+      l.append(btn("si","+ Otro guion",()=>{cerrarModal();crearGuionPara(pid,`${((it&&it.texto)||"").split("\n")[0].trim().slice(0,100)} (versión ${gs.length+1})`)}));m.append(l);const a=mk("div","acc");a.append(btn(null,"Cancelar",cerrarModal));m.append(a)});return}
+  crearGuionPara(pid,((it&&it.texto)||"").split("\n")[0].trim().slice(0,120))}
+function crearGuionPara(pid,tit){vuelveGuion=null;
   mitadCambia=true;try{cerrar()}finally{mitadCambia=false}
   raiz.hidden=false;document.body.classList.add("en-guion");nuevo({titulo:tit,portada:{},opciones:{...OPC0},bloques:[{id:rid(),t:"escena",h:""}],postit:pid})}
 
@@ -5110,7 +5138,13 @@ function escenaAlLado(gid,bid){const g=guiones.find(x=>x.id===gid);if(!g){toast(
   if(!G||G.id!==gid)abrirGuion(g,null,bid);else{const p=ed.querySelector(`p[data-id="${CSS.escape(bid)}"]`);if(p)setTimeout(()=>irABloque(p),60)}
   if(!mitad){ladoAntes=Q("gu-side").hidden;Q("gu-side").hidden=true;try{lzHoja.tx-=corteX()/2;lzHoja.apply()}catch(_){}}document.body.classList.add("gu-mitad");mitad=true;Q("gu-ed").querySelector('[data-a="mitad"]').setAttribute("aria-pressed","true");zoomAuto=true;pedirLayout();pintarVolverG();
   setTimeout(()=>{const p=ed.querySelector(`p[data-id="${CSS.escape(bid)}"]`);if(p){p.classList.add("gu-flash");setTimeout(()=>p.classList.remove("gu-flash"),1600)}},250)}
-function pintarEnGuion(){{const b=$("add-guion");if(b)b.hidden=!abierto||abierto.k!=="ideas"||!!(itemDe("ideas",abierto.id)||{}).dentro}if(!abierto||abierto.k==="diario")return;const p=$("capa-hoja").querySelector(".principal");if(!p)return;let a=p.querySelector(".aparece.ap-guion");
+function pintarEnGuion(){{const b=$("add-guion");if(b)b.hidden=!abierto||abierto.k!=="ideas"||!!(itemDe("ideas",abierto.id)||{}).dentro}if(!abierto||abierto.k==="diario")return;const p=$("capa-hoja").querySelector(".principal");if(!p)return;
+  {let gb=p.querySelector(".gu-princ");const g=abierto.k==="ideas"?principalDe(abierto.id):null;
+    if(!g){if(gb)gb.remove()}else{if(!gb){gb=mk("button","gu-princ");gb.type="button";gb.addEventListener("pointerdown",e=>e.stopPropagation());p.append(gb)}
+      const nE=(g.bloques||[]).filter(b=>b.t==="escena"&&(b.h||"").trim()).length;gb.title="Abrir el guion";gb.onclick=e=>{e.stopPropagation();abrirGuionDesdeHoja(g.id)};
+      {const bl=abierto.doc.bloques,k=bl.findIndex(b=>b.t==="link"&&!b.en&&(b.url||"").includes("#guion="+g.id));if(k>=0){const id=bl[k].id;bl.splice(k,1);sinHistoria();guardarBloques();nodoHoja(id)?.remove();try{pintarHilos()}catch(_){}}}
+      gb.replaceChildren(mk("i","gu-pag"),mk("b",null,"GUION"),mk("small",null,nE===1?"1 escena":nE+" escenas"),mk("span","gu-princ-ir","Abrir →"))}}
+  for(const n of document.querySelectorAll("#capa-hoja .pieza.blink")){const a=n.querySelector('a[href*="#guion="]');n.classList.toggle("gu-tapa",!!a);if(a&&!n.querySelector(".gu-tapa-lbl"))n.prepend(mk("span","gu-tapa-lbl","Guion"))}let a=p.querySelector(".aparece.ap-guion");
   const l=apariciones(abierto.k,abierto.id);if(!l.length){if(a)a.remove();return}
   if(!a){a=mk("div","aparece ap-guion");p.append(a)}
   a.replaceChildren(mk("span",null,"En el guion:"),...l.slice(0,12).map(x=>{const b=btn(null,`${x.g.titulo||"Sin título"} · esc. ${x.n}`,()=>escenaAlLado(x.g.id,x.bid));b.style.setProperty("--c","#e9e4d8");b.title="Ir a esa escena";return b}))}
@@ -5248,9 +5282,12 @@ async function sincLocaciones(extra){if(!G||!cols.ideas||sincEnCurso)return;cons
     const titulo=tituloG,url=urlGuion(GG.id);
     const locs=[...new Set([...data.ideas.filter(i=>i.dentro===pe.id&&!borrar.has(i.id)).map(i=>i.id),...idsNuevos,...migrados])];
     editarPeli(bl=>{let cambio=false;
-      let lk=bl.find(b=>b.t==="link"&&(b.url||"").includes("#guion="+GG.id));
-      if(!lk){const p0=lugarLibreEn(bl);lk={id:bid(),t:"link",url,titulo:"Guion · "+titulo,x:p0.x,y:p0.y,w:260};bl.push(lk);cambio=true}
-      else if(lk.titulo!=="Guion · "+titulo||lk.url!==url){lk.titulo="Guion · "+titulo;lk.url=url;cambio=true}
+      /* el guion principal se abre desde la tarjeta del post-it; los otros quedan como una tapita de guion */
+      const esPrin=(principalDe(pe.id)||{}).id===GG.id;let lk=bl.find(b=>b.t==="link"&&(b.url||"").includes("#guion="+GG.id));
+      if(esPrin){if(lk){const k=bl.indexOf(lk);const ref={x:lk.x,y:lk.y};bl.splice(k,1);lk=ref;cambio=true}}
+      else if(!lk){const p0=lugarLibreEn(bl);lk={id:bid(),t:"link",url,titulo:titulo,x:p0.x,y:p0.y,w:200};bl.push(lk);cambio=true}
+      else if(lk.titulo!==titulo||lk.url!==url){lk.titulo=titulo;lk.url=url;cambio=true}
+      if(!lk){const p0=lugarLibreEn(bl);lk={x:p0.x,y:p0.y}}
       if(locs.length){let pb=bl.find(b=>b.t==="pila"&&b.id===GG.doc.pilaHoja)||bl.find(b=>b.t==="pila"&&norm(b.titulo)==="locaciones");
         if(!pb){pb={id:bid(),t:"pila",titulo:"Locaciones",x:lk.x,y:lk.y+150};bl.push(pb);cambio=true}
         if(GG.doc.pilaHoja!==pb.id){GG.doc.pilaHoja=pb.id;sucio=true;guardarPronto(500)}
