@@ -1470,7 +1470,7 @@ async function subirNube(){
   finally{const subidos=[...enVuelo.keys()];enVuelo=new Map();enVueloBin=null;subiendo=false;avisar(subidos.filter(k=>docs.has(k)||!pend.has(k)));if(pend.size||binPend.size)programar(400)}}
 /* --- historial para deshacer / rehacer (Ctrl+Z) --- */
 const hist={atras:[],adelante:[]};let grupoH=null,tGrupoH=null,grabando=true;
-function registrar(k,v){if(!grabando||k.startsWith("guiones/"))return; /* el guion tiene su propio deshacer */const a=JSON.stringify(docs.has(k)?docs.get(k):null),d=JSON.stringify(v===undefined?null:v);if(a===d)return;
+function registrar(k,v){if(!grabando||window.__sinHistoria||k.startsWith("guiones/"))return; /* lo que hace la web sola (mudar locaciones, etc.) no entra en el Ctrl+Z */ /* el guion tiene su propio deshacer */const a=JSON.stringify(docs.has(k)?docs.get(k):null),d=JSON.stringify(v===undefined?null:v);if(a===d)return;
   if(!grupoH){grupoH=new Map();hist.atras.push(grupoH);if(hist.atras.length>100)hist.atras.shift();hist.adelante.length=0}
   if(grupoH.has(k))grupoH.get(k).despues=JSON.parse(d);else grupoH.set(k,{antes:JSON.parse(a),despues:JSON.parse(d)});
   if(!tGrupoH)tGrupoH=setTimeout(()=>{grupoH=null;tGrupoH=null},0)}
@@ -3482,6 +3482,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:45,f:"16 de noviembre",mio:true,it:[
+  ["Lo que la web hace sola (como mudar las locaciones adentro de la película) ya no entra en el Ctrl+Z, así deshacer no lo puede revertir ni borrar.",null,3]]},
  {n:44,f:"16 de noviembre",mio:true,it:[
   ["Guion mitad y mitad: la plancha de al lado usa el mismo fondo que el guion, y la *división se arrastra* para darle más lugar a uno o al otro (doble clic la vuelve al medio). Se acuerda de dónde la dejaste.",null,2]]},
  {n:43,f:"16 de noviembre",mio:true,it:[
@@ -5165,7 +5167,7 @@ function editarPeli(fn,pe0){const pe=pe0?itemDe("ideas",pe0.id)||pe0:peli();if(!
   const bl=JSON.parse(JSON.stringify(pe.bloques||[]));if(fn(bl))escribir(cols.ideas,pe.id,{bloques:bl},{silencioso:true});return true}
 function lugarLibreEn(bl){const xs=bl.filter(b=>!b.en&&isFinite(b.x)),x=xs.length?Math.max(...xs.map(b=>b.x+(b.w||220)))+60:460;return {x:Math.round(x),y:0}}
 const creandoLoc=new Set();let sincEnCurso=false;
-async function sincLocaciones(extra){if(!G||!cols.ideas||sincEnCurso)return;const pe=peli();if(!pe)return;const GG=G,tituloG=Q("gu-titulo").value.trim()||"Sin título";
+async function sincLocaciones(extra){if(!G||!cols.ideas||sincEnCurso)return;const pe=peli();if(!pe)return;sinHistoria();const GG=G,tituloG=Q("gu-titulo").value.trim()||"Sin título";
   const actualP=document.activeElement===ed?actual():null;
   const lugares=new Map();for(const p of bloques()){if(p.dataset.t!=="escena"||p===actualP)continue;const txt=p.textContent;if(!/\s[-–—]\s*\S/.test(txt))continue;const l=lugarDe(txt);if(l&&l.length>=2)lugares.set(norm(l),l)}
   for(const l of extra||[])lugares.set(norm(l),l);
@@ -5176,7 +5178,7 @@ async function sincLocaciones(extra){if(!G||!cols.ideas||sincEnCurso)return;cons
     for(const [k,l] of lugares){if(postitDeLugar(l)||creandoLoc.has(k))continue;creandoLoc.add(k);numero++;
       const body={texto:capitalizar(l),tipo:cat?cat.id:"otro",creado:ahora+nuevos.length,numero,dentro:pe.id,guionLoc:GG.id,guionLocTxt:capitalizar(l)};
       nuevos.push(cols.ideas.add(body).then(r=>r.id).catch(()=>null).finally(()=>setTimeout(()=>creandoLoc.delete(k),4000)))}
-    const idsNuevos=(await Promise.all(nuevos)).filter(Boolean);
+    const idsNuevos=(await Promise.all(nuevos)).filter(Boolean);sinHistoria();
     /* las que armó el guion y ya no se usan (y nadie tocó) se van */
     const borrar=new Set();
     for(const i of data.ideas){if(i.guionLoc!==GG.id||i.dentro!==pe.id)continue;if(lugares.has(norm(i.texto))||(i.bloques||[]).length||i.texto!==i.guionLocTxt)continue;
@@ -5200,7 +5202,8 @@ async function sincLocaciones(extra){if(!G||!cols.ideas||sincEnCurso)return;cons
   finally{sincEnCurso=false}}
 /* las pilas «Locaciones · …» que armaba la versión anterior en la plancha se mudan adentro del post-it de su película */
 let migrando=false;
-async function migrarPilasViejas(){if(migrando||!cols.ideas||!colPilas||!pilasCargadas||!cargados)return;const viejas=pilas.filter(p=>/^Locaciones · /.test(p.titulo||""));if(!viejas.length)return;migrando=true;
+function sinHistoria(){window.__sinHistoria=true;clearTimeout(sinHistoria.t);sinHistoria.t=setTimeout(()=>{window.__sinHistoria=false},50)}
+async function migrarPilasViejas(){if(migrando||!cols.ideas||!colPilas||!pilasCargadas||!cargados)return;const viejas=pilas.filter(p=>/^Locaciones · /.test(p.titulo||""));if(!viejas.length)return;migrando=true;sinHistoria();
   try{for(const pl of viejas){const nombre=norm(pl.titulo.replace(/^Locaciones · /,""));
       let g=guiones.find(x=>x.id===pl.guion&&x.postit&&itemDe("ideas",x.postit))||guiones.find(x=>x.postit&&itemDe("ideas",x.postit)&&norm(x.titulo)===nombre);
       let pe=g?itemDe("ideas",g.postit):null;
@@ -5210,7 +5213,7 @@ async function migrarPilasViejas(){if(migrando||!cols.ideas||!colPilas||!pilasCa
       for(const i of ms)escribir(cols.ideas,i.id,{pila:"",dentro:pe.id,guionLoc:i.guionLoc||(g?g.id:""),guionLocTxt:i.guionLocTxt||i.texto},{silencioso:true});
       editarPeli(bl=>{let pb=bl.find(b=>b.t==="pila"&&norm(b.titulo)==="locaciones");let c=false;if(!pb){const p0=lugarLibreEn(bl);pb={id:bid(),t:"pila",titulo:"Locaciones",x:p0.x,y:p0.y};bl.push(pb);c=true}
         for(const i of ms)if(!bl.some(b=>b.t==="ref"&&b.ref===i.id)){bl.push({id:bid(),t:"ref",ref:i.id,en:pb.id,x:pb.x,y:pb.y});c=true}return c},pe);
-      try{await colPilas.doc(pl.id).delete()}catch(_){}
+      sinHistoria();try{await colPilas.doc(pl.id).delete()}catch(_){}
       toast(`Mudé «${pl.titulo}» adentro de «${(pe.texto||"").split("\n")[0].slice(0,40)}».`)}}
   finally{migrando=false}}
 /* las locaciones de una película no aparecen sueltas en la plancha principal */
