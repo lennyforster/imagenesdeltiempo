@@ -1464,6 +1464,14 @@ body.gu-foco .gu-salirfoco{display:block;position:fixed;top:10px;right:14px;z-in
 body.gu-foco .gu-salirfoco:hover{opacity:1}
 .gu-irpag{font-size:10.5px;padding:0 5px}
 .gu-texto ::selection,.gu-texto::selection{background:#ffe066;color:#111}
+.gu-zoom #gu-zv{width:auto;min-width:40px;background:none;font:500 11px var(--mono);padding:0 2px;border-radius:6px}.gu-zoom #gu-zv:hover{background:rgba(43,37,32,.08)}
+
+.gu-com-nuevo{position:absolute;z-index:12;width:210px;background:#fffdf6;border-radius:4px 14px 14px 14px;padding:10px;box-shadow:0 6px 22px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:6px;font-family:var(--ui);color:var(--ink)}
+.gu-com-nuevo>b{font:700 10px var(--mono);text-transform:uppercase;letter-spacing:.04em;opacity:.6}
+.gu-com-nuevo .gu-mq{margin:0}.gu-com-nuevo .gu-com-in{font-size:13px;resize:none}
+.gu-com-nuevo .acc{display:flex;gap:6px;justify-content:flex-end}.gu-com-nuevo .acc button{border:0;border-radius:999px;padding:6px 12px;font:600 12px var(--ui);cursor:pointer;background:rgba(43,37,32,.07);color:var(--ink)}.gu-com-nuevo .acc button.si{background:var(--ink);color:var(--paper)}
+body.gu-foco .gu-com-nuevo{display:none}
+.gu-com-nuevo .gu-com-in:focus{outline:none;border-color:#e0b800;box-shadow:0 0 0 2px rgba(255,224,102,.6)}.gu-com-nuevo{width:196px}
 </style>
 <div class="cargando" id="cargando" hidden role="status"><span class="cg-punto"></span>Cargando tu plancha…</div>
 <div class="conectar" id="conectar" hidden>
@@ -3647,6 +3655,9 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:60,f:"16 de noviembre",it:[
+  ["Guion: el comentario nuevo se escribe al costado de la hoja, sin tapar nada. Enter lo deja, Esc lo cancela.",null,3],
+  ["Guion: el zoom que elegís ya no se reinicia cuando abrís el panel de escenas. Tocando el % volvés al tamaño automático.",null,3]]},
  {n:59,f:"16 de noviembre",it:[
   ["El texto que marcás ahora se pinta de amarillo, no de celeste.",null,3]]},
  {n:58,f:"16 de noviembre",it:[
@@ -4959,7 +4970,7 @@ let opc={...OPC0};
 const meta=new Map();     // id de bloque -> {refs:[{k,id,loc}]}
 let sucio=false,tGuardar=null,guardando=false,ultGuardado=0,miEditado=0;
 let pilaU=[],pilaR=[],ultMarca=0,grupoU="";
-const soloLee=()=>document.body.classList.contains("gu-lectura");let zoomPintado=0,arrancado=false,seguir=false,ligero=false;let zoom=1,zoomAuto=true,lay=null,tLay=0,tSide=0,ladoTab="escenas",vuelveGuion=null;
+const soloLee=()=>document.body.classList.contains("gu-lectura");let zoomManual=false,zoomPintado=0,arrancado=false,seguir=false,ligero=false;let zoom=1,zoomAuto=true,lay=null,tLay=0,tSide=0,ladoTab="escenas",vuelveGuion=null;
 
 /* ---------- interfaz ---------- */
 const raiz=mk("div","gu");raiz.id="guion";raiz.hidden=true;
@@ -5000,7 +5011,7 @@ raiz.innerHTML=`
       <hr>
       <button type="button" class="peligro solo-duenio" data-a="borrar">Borrar este guion</button>
     </div></div>
-    <div class="gu-zoom solo-ancho"><button type="button" data-a="zm" aria-label="Alejar">−</button><span id="gu-zv">100%</span><button type="button" data-a="zp" aria-label="Acercar">+</button></div>
+    <div class="gu-zoom solo-ancho"><button type="button" data-a="zm" aria-label="Alejar">−</button><button type="button" id="gu-zv" data-a="zauto" title="Volver al tamaño automático">100%</button><button type="button" data-a="zp" aria-label="Acercar">+</button></div>
   </div>
   <div class="gu-cuerpo">
     <aside class="gu-side" id="gu-side"><div class="gu-stabs" role="tablist"><button type="button" data-lado="escenas">Escenas</button><button type="button" data-lado="personajes">Personajes</button><button type="button" data-lado="locaciones">Locaciones</button></div><input class="gu-sq" id="gu-sq" type="search" placeholder="Buscar…" aria-label="Buscar en la lista"><div class="gu-sc" id="gu-sc"></div></aside>
@@ -5376,7 +5387,7 @@ function maquetar(){if(!G)return;const pg=PAGINAS[opc.pagina]||PAGINAS.a4,H=Math
   [...hojas.children].forEach((h,n)=>{h.style.top=(off+n*PASO)+"px";h.style.width=pg.w+"px";h.style.height=pg.h+"px";let np=h.querySelector(".np");if(opc.numPaginas&&n>0){if(!np){np=mk("span","np");h.append(np)}np.textContent=(n+1)+".";np.style.right=MR+"px"}else if(np)np.remove()});
   const alto=off+N*PASO-GAP;escala.style.height=alto+"px";escala.style.width=pg.w+"px";
   const W=scroller.clientWidth,z0=zoomPintado||zoom,top0=spacer.offsetTop,ancla=(scroller.scrollTop-top0+scroller.clientHeight*.3)/z0;
-  if(zoomAuto){zoom=Math.max(.35,Math.min(1,(W-(mitad?24:48))/pg.w))}
+  if(zoomAuto&&!zoomManual){zoom=Math.max(.35,Math.min(1,(W-(mitad?24:48))/pg.w))}
   /* la hoja siempre al medio; los carteles de vínculos van al costado (si no entran, se scrollea) */
   escala.style.transform=`scale(${zoom})`;const pw=pg.w*zoom;spacer.style.width=pw+"px";spacer.style.marginLeft=Math.max(12,(W-pw)/2)+"px";spacer.style.marginRight="0";spacer.style.height=alto*zoom+"px";Q("gu-zv").textContent=Math.round(zoom*100)+"%";zoomPintado=zoom;
   /* si cambió el zoom (botones, panel, mitad y mitad), quedarse en el mismo lugar de la hoja */
@@ -5563,9 +5574,9 @@ function entrar(gid,scroll,irA){if(!col){toast("Todavía se están cargando tus 
   raiz.hidden=false;document.body.classList.add("en-guion");tab.setAttribute("aria-selected","true");try{localStorage.setItem("pestana","guion")}catch(_){}
   let id=gid;if(id===undefined){try{id=localStorage.getItem("guion_ult")}catch(_){}}
   const g=id&&guiones.find(x=>x.id===id);if(g)abrirGuion(g,scroll,irA);else mostrarLista()}
-function ocultar(){cerrarAC();cerrarPop();salirMitad(true);raiz.hidden=true;document.body.classList.remove("en-guion","gu-foco");tab.setAttribute("aria-selected","false")}
+function ocultar(){cerrarAC();cerrarPop();cerrarComposer();salirMitad(true);raiz.hidden=true;document.body.classList.remove("en-guion","gu-foco");tab.setAttribute("aria-selected","false")}
 function salir(){guardarYa();vuelveGuion=null;ocultar();desconectarVivo();try{localStorage.setItem("pestana","")}catch(_){}}
-function abrirGuion(g,scroll,irA){guardarYa();cerrarTL();G={id:g.id,doc:JSON.parse(JSON.stringify(g))};delete G.doc.id;try{localStorage.setItem("guion_ult",g.id)}catch(_){}
+function abrirGuion(g,scroll,irA){guardarYa();zoomManual=false;cerrarTL();G={id:g.id,doc:JSON.parse(JSON.stringify(g))};delete G.doc.id;try{localStorage.setItem("guion_ult",g.id)}catch(_){}
   Q("gu-lista").hidden=true;Q("gu-ed").hidden=false;
   if(V&&(!g.vivo||V.id!==g.vivo.e))desconectarVivo();if(g.vivo&&g.vivo.e&&(!V||V.id!==g.vivo.e))setTimeout(()=>{if(G&&G.id===g.id)conectarVivo(g.vivo.e,"e",miNombreVivo()).catch(e=>{console.error(e);toast("No pude conectar el guion en vivo. Lo que escribas igual se guarda.")})},50);
   setTimeout(()=>{if(!G||G.id!==g.id)return;const vieja=pilas.find(p=>p.id===G.doc.pilaLoc||(p.guion===G.id&&/^Locaciones · /.test(p.titulo||"")));if(vieja&&!G.doc.pilaLoc){G.doc.pilaLoc=vieja.id;sucio=true}
@@ -5750,7 +5761,7 @@ raiz.addEventListener("click",e=>{const b=e.target.closest("[data-a],[data-lado]
   ({salir,mis:mostrarLista,nuevo:()=>nuevo(),importar:()=>Q("gu-file").click(),lado:()=>{const s=Q("gu-side");s.hidden=!s.hidden;zoomAuto=true;pedirLayout()},
     mitad:alternarMitad,foco:()=>modoFoco(true),comentar:()=>comentar(),linea:()=>{if(tl&&!tl.hidden)cerrarTL();else abrirTL()},b:()=>formato("b"),i:()=>formato("i"),u:()=>formato("u"),vincular,buscar:abrirBuscar,archivo:()=>{m.hidden=!m.hidden},
     volverp:()=>{const pe=peli();if(!pe){mostrarLista();return}guardarYa();salir();setTimeout(()=>abrir("ideas",pe.id),0)},compartir:compartirUI,portada,opciones,pdf,fdx:()=>{bajar(nombreArchivo("fdx"),aFDX(),"application/xml");toast("Exportado para Final Draft.")},fountain:()=>bajar(nombreArchivo("fountain"),aFountain(),"text/plain"),atajos,borrar:borrarGuion,
-    zm:()=>{zoomAuto=false;zoom=Math.max(.4,Math.round((zoom-.1)*10)/10);maquetar()},zp:()=>{zoomAuto=false;zoom=Math.min(2,Math.round((zoom+.1)*10)/10);maquetar()},
+    zauto:()=>{zoomManual=false;zoomAuto=true;maquetar()},zm:()=>{zoomAuto=false;zoomManual=true;zoom=Math.max(.4,Math.round((zoom-.1)*10)/10);maquetar()},zp:()=>{zoomAuto=false;zoomManual=true;zoom=Math.min(2,Math.round((zoom+.1)*10)/10);maquetar()},
     "f-ant":()=>irHall(-1),"f-sig":()=>irHall(1),"f-cerrar":cerrarBuscar,"f-uno":()=>reemplazar(false),"f-todo":()=>reemplazar(true)}[a]||(()=>{}))()});
 /* clic en el papel debajo del texto: el cursor va al final */
 Q("gu-spacer").addEventListener("mousedown",e=>{if(e.target.closest(".gu-chip")||e.target===ed||ed.contains(e.target))return;if(e.target.classList.contains("gu-hoja")||e.target===hojas||e.target===escala||e.target===spacer){e.preventDefault();ed.focus({preventScroll:true});const ps=bloques();let mejor=ps[ps.length-1];for(const p of ps){if(p.getBoundingClientRect().top>e.clientY){mejor=p.previousElementSibling||p;break}}caret(mejor,"fin")}});
@@ -5928,10 +5939,14 @@ addEventListener("keydown",e=>{if(raiz.hidden)return;if(e.key==="Enter"&&(e.ctrl
 /* ---------- comentarios ---------- */
 function comentar(){if(soloLee())return;const r=rango();let p=r?bloqueDe(r.startContainer):null;if(!p)p=actual()||ultP;if(!p||!p.isConnected){toast("Poné el cursor en el renglón que querés comentar.");return}
   const q=String(getSelection()).replace(/\s+/g," ").trim().slice(0,160);
-  abrirModal(m=>{m.append(mk("h3",null,"Comentario"));if(q)m.append(mk("p","gu-mq","«"+q+"»"));const t=mk("textarea","gu-com-in");t.rows=4;t.placeholder="Escribí tu comentario…";m.append(t);
-    const ok=()=>{const x=t.value.trim();if(!x){cerrarModal();return}marcar();const mm=metaDe(p.dataset.id);mm.co=[...(mm.co||[]),{id:rid(),x,a:miNombreVivo(),f:Date.now(),...(q?{q}:{})}];cerrarModal();cambio();pedirLayout()};
-    t.onkeydown=e=>{if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)){e.preventDefault();ok()}};
-    const a=mk("div","acc");a.append(btn(null,"Cancelar",cerrarModal),btn("si","Comentar",ok));m.append(a);setTimeout(()=>t.focus(),30)})}
+  cerrarComposer();const er=escala.getBoundingClientRect(),pg=PAGINAS[opc.pagina]||PAGINAS.a4,angosto=mitad||scroller.clientWidth<pg.w*zoom+230;
+  const box=mk("div","gu-com-nuevo");box.style.top=((p.getBoundingClientRect().top-er.top)/zoom-4)+"px";box.style.left=(angosto?pg.w-226:pg.w+14)+"px";
+  box.append(mk("b",null,miNombreVivo()));if(q)box.append(mk("p","gu-mq","«"+q+"»"));const t=mk("textarea","gu-com-in");t.rows=3;t.placeholder="Escribí tu comentario…";box.append(t);
+  const ok=()=>{const x=t.value.trim();cerrarComposer();if(!x){volverAlTexto();return}marcar();const mm=metaDe(p.dataset.id);mm.co=[...(mm.co||[]),{id:rid(),x,a:miNombreVivo(),f:Date.now(),...(q?{q}:{})}];cambio();pedirLayout();volverAlTexto()};
+  t.onkeydown=e=>{e.stopPropagation();if(e.key==="Enter"&&(e.metaKey||e.ctrlKey||!e.shiftKey)){e.preventDefault();ok()}else if(e.key==="Escape"){e.preventDefault();cerrarComposer();volverAlTexto()}};
+  const a=mk("div","acc");a.append(btn(null,"Cancelar",()=>{cerrarComposer();volverAlTexto()}),btn("si","Comentar",ok));box.append(a);escala.append(box);composer=box;
+  requestAnimationFrame(()=>{t.focus({preventScroll:true});const r=box.getBoundingClientRect(),sr=scroller.getBoundingClientRect();if(r.right>sr.right)scroller.scrollLeft+=r.right-sr.right+12;if(r.bottom>sr.bottom)scroller.scrollTop+=r.bottom-sr.bottom+12})}
+let composer=null;function cerrarComposer(){if(composer){composer.remove();composer=null}}
 function abrirComentario(pid,cid,ancla){const m=meta.get(pid),co=m&&(m.co||[]).find(x=>x.id===cid);if(!co)return;pop.replaceChildren();
   const f=co.f?new Date(co.f).toLocaleDateString("es-AR",{day:"numeric",month:"short"}):"";pop.append(mk("div","k","Comentario · "+(co.a||"Alguien")+(f?" · "+f:"")));
   if(co.q)pop.append(mk("p","gu-mq","«"+co.q+"»"));const t=mk("textarea","gu-com-in");t.rows=3;t.value=co.x;pop.append(t);
