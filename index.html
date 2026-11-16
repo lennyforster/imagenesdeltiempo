@@ -1081,7 +1081,7 @@ body.barra-abierta .barra-extra.h-extra:not(.abierta){display:none}
 .ay-recorrido{display:inline-block;margin:0 0 14px;background:#1f6b4a!important;color:#fff!important;text-decoration:none;padding:9px 14px!important;font-size:14px!important}
 
 /* ---------- Guion ---------- */
-.gu{position:fixed;inset:0;z-index:45;background:#3b3a37;color:var(--ink);font-family:var(--ui);display:flex;flex-direction:column}
+.gu{position:fixed;inset:0;z-index:45;background-color:#1f6b4a;background-image:linear-gradient(rgba(255,255,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.07) 1px,transparent 1px);background-size:32px 32px;color:var(--ink);font-family:var(--ui);display:flex;flex-direction:column}
 .gu[hidden]{display:none}
 .gu-b{border:0;border-radius:999px;background:rgba(255,253,246,.92);color:var(--ink);font:600 13px var(--ui);padding:7px 12px;cursor:pointer;white-space:nowrap}
 .gu-b:hover{background:#fff}
@@ -1102,10 +1102,10 @@ body.barra-abierta .barra-extra.h-extra:not(.abierta){display:none}
 /* editor */
 .gu-ed{flex:1;display:flex;flex-direction:column;min-height:0}
 .gu-ed[hidden]{display:none}
-.gu-top{display:flex;gap:6px;align-items:center;padding:10px 12px;background:#2c2b29;flex-wrap:wrap}
+.gu-top{display:flex;gap:6px;align-items:center;padding:10px 12px;background:rgba(10,40,26,.35);flex-wrap:wrap}
 .gu-titulo{background:transparent;border:0;color:var(--paper);font:700 17px var(--ui);min-width:120px;width:240px;padding:6px 8px;border-radius:8px}
 .gu-titulo:focus{background:rgba(255,255,255,.08);outline:0}
-.gu-estado{font:500 11px var(--mono);color:rgba(255,253,246,.55);min-width:70px}
+.gu-estado{font:500 11px var(--mono);color:rgba(255,253,246,.75);min-width:70px}
 .gu-sel{border:0;border-radius:999px;background:#ffe76a;color:var(--ink);font:700 13px var(--ui);padding:7px 10px;cursor:pointer}
 .gu-ic{width:32px;padding:7px 0;text-align:center}
 .gu-mw{position:relative}
@@ -1120,31 +1120,35 @@ body.barra-abierta .barra-extra.h-extra:not(.abierta){display:none}
 .gu-zoom button{border:0;background:none;font:600 15px var(--ui);width:28px;height:28px;border-radius:50%;cursor:pointer}
 .gu-zoom span{font:500 11px var(--mono);min-width:38px;text-align:center}
 .gu-cuerpo{flex:1;display:flex;min-height:0}
-.gu-side{width:250px;flex:none;background:#2c2b29;color:var(--paper);display:flex;flex-direction:column;min-height:0;border-top:1px solid rgba(255,255,255,.06)}
+.gu-side{width:260px;flex:none;background:#fffdf6;color:var(--ink);display:flex;flex-direction:column;min-height:0;margin:10px 0 10px 10px;border-radius:16px;box-shadow:0 10px 26px rgba(0,0,0,.3);overflow:hidden}
 .gu-side[hidden]{display:none}
 .gu-stabs{display:flex;gap:2px;padding:8px}
-.gu-stabs button{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;border:0;background:none;color:rgba(255,253,246,.6);font:600 12px var(--ui);padding:6px 4px;border-radius:8px;cursor:pointer}
-.gu-stabs button[aria-selected="true"]{background:rgba(255,253,246,.12);color:var(--paper)}
+.gu-stabs button{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;border:0;background:none;color:rgba(43,37,32,.6);font:600 12px var(--ui);padding:6px 4px;border-radius:8px;cursor:pointer}
+.gu-stabs button[aria-selected="true"]{background:#ffe76a;color:var(--ink)}
 .gu-sc{flex:1;overflow:auto;padding:0 8px 20px}
 .gu-it{display:flex;gap:8px;align-items:flex-start;width:100%;border:0;background:none;color:inherit;text-align:left;padding:7px 8px;border-radius:8px;cursor:pointer;font:500 12.5px/1.3 var(--ui)}
-.gu-it:hover{background:rgba(255,255,255,.07)}
-.gu-it.act{background:rgba(255,231,106,.16)}
-.gu-it .n{font:600 11px var(--mono);color:#ffe76a;min-width:18px;padding-top:1px}
+.gu-it:hover{background:rgba(43,37,32,.06)}
+.gu-it.act{background:#fff1a6}
+.gu-it .gu-n{font:700 11px var(--mono);color:#c2462a;min-width:18px;padding-top:1px}
 .gu-it .x{flex:1;text-transform:uppercase;word-break:break-word}
-.gu-it .p{font:500 10.5px var(--mono);color:rgba(255,253,246,.45);padding-top:1px}
-.gu-it .ch{font:600 10px var(--mono);color:#9fdcd6;padding-top:1px}
-.gu-loc{padding:8px;border-radius:10px;background:rgba(255,255,255,.05);margin-bottom:8px;font:500 12.5px/1.35 var(--ui)}
+.gu-it .p{font:500 10.5px var(--mono);color:rgba(43,37,32,.45);padding-top:1px}
+.gu-it .ch{font:700 10px var(--mono);color:#1f6b4a;padding-top:1px}
+.gu-loc{padding:9px;border-radius:12px;background:#e3f4f1;margin-bottom:8px;font:500 12.5px/1.35 var(--ui)}
 .gu-loc b{display:block;text-transform:uppercase;margin-bottom:2px}
-.gu-loc small{color:rgba(255,253,246,.55)}
+.gu-loc small{color:rgba(43,37,32,.6)}
 .gu-loc img{width:100%;height:90px;object-fit:cover;border-radius:6px;margin:6px 0 4px;display:block}
 .gu-loc .acc{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
-.gu-loc .acc button,.gu-per button.mini{border:0;border-radius:999px;background:rgba(255,253,246,.14);color:var(--paper);font:600 11.5px var(--ui);padding:4px 9px;cursor:pointer}
+.gu-loc .acc button{border:0;border-radius:999px;background:var(--ink);color:var(--paper);font:600 11.5px var(--ui);padding:4px 9px;cursor:pointer}
 .gu-per{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:8px;font:600 12.5px var(--ui)}
-.gu-per:hover{background:rgba(255,255,255,.06)}
+.gu-per:hover{background:rgba(43,37,32,.05)}
+.gu-av{flex:none;width:30px;height:30px;border-radius:50%;background:#ffb3cf;color:var(--ink);display:flex;align-items:center;justify-content:center;font:800 13px var(--ui);box-shadow:inset 0 0 0 2px rgba(43,37,32,.12)}
+.gu-per .gu-ren{border:0;background:none;color:rgba(43,37,32,.55);font:600 11px var(--ui);cursor:pointer;padding:3px 4px;border-radius:6px}
+.gu-per .gu-ren:hover{background:rgba(43,37,32,.08);color:var(--ink)}
 .gu-per .x{flex:1;text-transform:uppercase;cursor:pointer}
-.gu-per small{font:500 10.5px var(--mono);color:rgba(255,253,246,.5)}
-.gu-per input{flex:1;min-width:0;font:600 12.5px var(--ui);text-transform:uppercase;border-radius:6px;border:0;padding:4px 6px}
-.gu-snota{font:500 11.5px/1.4 var(--ui);color:rgba(255,253,246,.5);padding:4px 8px 10px}
+.gu-per small{font:500 10.5px var(--mono);color:rgba(43,37,32,.5)}
+.gu-per input{flex:1;min-width:0;font:600 12.5px var(--ui);text-transform:uppercase;border-radius:6px;border:1px solid rgba(43,37,32,.25);padding:4px 6px}
+.gu-snota{font:500 11.5px/1.4 var(--ui);color:rgba(43,37,32,.55);padding:4px 8px 10px}
+.gu-sq{margin:0 10px 8px;border:1px solid rgba(43,37,32,.18);border-radius:999px;padding:7px 12px;font:500 13px var(--ui);background:#fff;color:var(--ink)}
 .gu-scroll{flex:1;overflow:auto;position:relative;min-width:0}
 .gu-spacer{position:relative;margin:28px auto 80px}
 .gu-escala{position:absolute;left:0;top:0;transform-origin:0 0}
@@ -1171,7 +1175,7 @@ body.barra-abierta .barra-extra.h-extra:not(.abierta){display:none}
 .gu-chip.loc::before{content:"";flex:none;width:8px;height:8px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#1f6b4a}
 .gu-chip.fr{background:#fff;font-style:italic}
 .gu-chip.auto{opacity:.85}
-.gu-pie{display:flex;gap:16px;align-items:center;padding:6px 14px;background:#2c2b29;color:rgba(255,253,246,.65);font:500 11.5px var(--mono)}
+.gu-pie{display:flex;gap:16px;align-items:center;padding:6px 14px;background:rgba(10,40,26,.35);color:rgba(255,253,246,.8);font:500 11.5px var(--mono)}
 .gu-pie b{color:var(--paper);font-weight:600}
 /* sugerencias */
 .gu-ac{position:fixed;z-index:60;background:#fffdf6;border-radius:10px;box-shadow:0 10px 26px rgba(0,0,0,.4);padding:4px;min-width:200px;max-width:340px;max-height:260px;overflow:auto}
@@ -1179,7 +1183,7 @@ body.barra-abierta .barra-extra.h-extra:not(.abierta){display:none}
 .gu-ac button{display:flex;gap:8px;align-items:center;width:100%;border:0;background:none;text-align:left;font:15px "Courier Prime","Courier New",monospace;text-transform:uppercase;padding:6px 10px;border-radius:7px;cursor:pointer;color:#111}
 .gu-ac button.on{background:#ffe76a}
 .gu-ac button small{margin-left:auto;font:600 10px var(--ui);text-transform:none;color:#1f6b4a;background:#e7f3ec;border-radius:999px;padding:2px 7px}
-.gu-ac .pie{font:500 10.5px var(--ui);color:#999;padding:4px 10px 2px}
+.gu-ac .gu-acpie{font:500 10.5px var(--ui);color:#999;padding:4px 10px 2px}
 /* popover de vínculos */
 .gu-pop{position:fixed;z-index:61;width:290px;background:#fffdf6;border-radius:14px;box-shadow:0 14px 34px rgba(0,0,0,.5);padding:14px;font:500 14px/1.45 var(--ui)}
 .gu-pop[hidden]{display:none}
@@ -1212,15 +1216,18 @@ body.barra-abierta .barra-extra.h-extra:not(.abierta){display:none}
 .gu-mh .acc{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
 .gu-mh .acc button{border:0;border-radius:999px;padding:9px 16px;font:600 14px var(--ui);cursor:pointer;background:rgba(43,37,32,.08)}
 .gu-mh .acc .si{background:var(--ink);color:var(--paper)}
-.gu-mh .nota{font:500 12.5px/1.45 var(--ui);color:#777;margin:8px 0 0}
+.gu-mh .gu-nota{font:500 12.5px/1.45 var(--ui);color:#777;margin:8px 0 0}
 .gu-atajos{width:100%;border-collapse:collapse;font:14px var(--ui)}
 .gu-atajos td{padding:6px 4px;border-bottom:1px solid rgba(43,37,32,.08);vertical-align:top}
 .gu-atajos td:first-child{white-space:nowrap;font:600 12.5px var(--mono);color:#1f6b4a;padding-right:14px}
 .gu-pick{display:grid;gap:4px;margin-top:10px;max-height:50vh;overflow:auto}
 .gu-pick button{display:flex;gap:10px;align-items:center;border:0;border-radius:9px;background:rgba(43,37,32,.04);padding:8px 10px;text-align:left;cursor:pointer;font:500 14px var(--ui)}
 .gu-pick button:hover{background:rgba(43,37,32,.1)}
-.gu-pick .c{flex:none;width:14px;height:14px;border-radius:3px;background:var(--c);box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
-.gu-pick .n{font:600 11px var(--mono);color:#888;min-width:34px}
+.gu-pick .gu-pc{flex:none;width:16px;height:16px;border-radius:4px;background:var(--c);box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.gu-pick .gu-pt{display:grid;gap:1px;min-width:0}.gu-pick .gu-pt b{font:600 14px/1.3 var(--ui);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gu-pick .gu-pt small{font:500 11px var(--mono);color:#888}
+.gu-pick .gu-crear{background:#e7f3ec;color:#14523a;font-weight:700}.gu-pick .gu-crear:hover{background:#d3eadc}
+.gu-mas{flex:none;width:22px;height:22px;border-radius:50%;background:#1f6b4a;color:#fff;display:flex;align-items:center;justify-content:center;font:800 15px var(--ui)}
+.gu-fil{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}.gu-fil button{border:0;border-radius:999px;padding:6px 12px;font:600 12.5px var(--ui);background:rgba(43,37,32,.07);cursor:pointer}.gu-fil button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
 /* impresión / PDF */
 #gu-print{display:none}
 @media print{
@@ -1258,12 +1265,19 @@ body.barra-abierta .barra-extra.h-extra:not(.abierta){display:none}
 .gcal-conf input{width:100%;box-sizing:border-box;border:1px solid rgba(43,37,32,.2);border-radius:9px;padding:10px;font:15px var(--ui);margin:8px 0}
 .gcal-conf .si{border:0;border-radius:999px;padding:9px 16px;font:600 14px var(--ui);cursor:pointer;background:var(--ink);color:var(--paper)}
 .gcal-conf ol{padding-left:20px;color:#555}
-.gu-stabs button b{font:700 15px var(--ui);color:var(--paper)}
-.gu-stabs button[aria-selected="true"] b{color:#ffe76a}
-.gu-pilaloc{padding:10px;border-radius:10px;background:rgba(159,220,214,.14);margin-bottom:10px;display:grid;gap:6px;font:500 12px/1.4 var(--ui)}
+.gu-stabs button b{font:800 16px var(--ui);color:var(--ink)}
+.gu-stabs button[aria-selected="true"] b{color:var(--ink)}
+.gu-pilaloc{padding:10px;border-radius:12px;background:#9fdcd6;color:var(--ink);margin-bottom:10px;display:grid;gap:6px;font:500 12px/1.4 var(--ui)}
 .gu-pilaloc b{font:700 13px var(--ui)}
-.gu-pilaloc small{color:rgba(255,253,246,.65)}
-.gu-pilaloc button{justify-self:start;border:0;border-radius:999px;background:#9fdcd6;color:#123;font:700 12px var(--ui);padding:6px 11px;cursor:pointer}
+.gu-pilaloc small{color:rgba(43,37,32,.7)}
+.gu-pilaloc button{justify-self:start;border:0;border-radius:999px;background:var(--ink);color:var(--paper);font:700 12px var(--ui);padding:6px 11px;cursor:pointer}
+/* guion y plancha, mitad y mitad */
+body.gu-mitad #guion{right:50%}
+body.gu-mitad #detalle{left:50%;transform:translateZ(0);box-shadow:-6px 0 22px rgba(0,0,0,.35)}
+body.gu-mitad .panel{left:75%!important;width:min(420px,calc(50vw - 24px))!important}
+@media (max-width:900px){.gu-top [data-a="mitad"]{display:none}}
+.gu-pilaloc .acc{display:flex;gap:6px;flex-wrap:wrap}.gu-pilaloc .gu-sec{background:rgba(43,37,32,.12);color:var(--ink)}
+.gu-mh>input{margin-top:12px}
 </style>
 <div class="cargando" id="cargando" hidden role="status"><span class="cg-punto"></span>Cargando tu plancha…</div>
 <div class="conectar" id="conectar" hidden>
@@ -3401,6 +3415,12 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:36,f:"16 de noviembre",mio:true,it:[
+  ["*Cada guion es de una película:* cuando creás uno te pregunta de qué post-it es (por ejemplo, el de ActionGay en Largo). Adentro de ese post-it quedan un acceso directo al guion y la pila «Locaciones», que se arma sola con cada lugar que escribís en los encabezados. Ya no aparecen sueltas en la plancha principal.",null,1],
+  ["*◧ Plancha al lado:* guion a la izquierda y la plancha de la película a la derecha, mitad y mitad, para ir poniendo imágenes mientras escribís.",null,1],
+  ["*Vincular* más claro: dice a qué escena va, separa post-its, frases y locaciones, y si marcaste texto te ofrece crear un post-it con eso.",null,2],
+  ["Buscador en las listas de escenas, personajes y locaciones.",null,2],
+  ["El guion tiene los colores de la web, la hoja queda centrada cuando cerrás el costado, y cada personaje tiene su circulito (ahí va a ir su foto).",null,3]]},
  {n:35,f:"16 de noviembre",mio:true,it:[
   ["*Guion (prueba, solo lo ves vos):* nueva pestaña «Guion» al lado de Diario. Formato de industria en A4, Courier Prime, páginas reales, números de escena, (CONT.) solo. *Tab* cambia el tipo de línea (Escena, Acción, Personaje, Paréntesis, Diálogo…), Enter pasa al que sigue, y te sugiere lugares, momentos del día y personajes. Se guarda solo.",null,1],
   ["Al costado: escenas, personajes (con renombrar en todo el guion) y locaciones. Las locaciones se arman solas como una pila «Locaciones · (el título)» en la plancha, y se reconocen por el nombre en cada encabezado.",null,1],
@@ -4660,6 +4680,7 @@ raiz.innerHTML=`
     <button type="button" class="gu-b gu-ic solo-ancho" data-a="i" title="Itálica (${CTRL}+I)"><i>I</i></button>
     <button type="button" class="gu-b gu-ic solo-ancho" data-a="u" title="Subrayado (${CTRL}+U)"><u>U</u></button>
     <button type="button" class="gu-b" data-a="vincular" title="Vincular un post-it o una frase a esta escena (${CTRL}+K)">↗ Vincular</button>
+    <button type="button" class="gu-b solo-ancho" data-a="mitad" title="Guion y plancha de la película, mitad y mitad">◧ Plancha al lado</button>
     <button type="button" class="gu-b solo-ancho" data-a="buscar" title="Buscar y reemplazar (${CTRL}+F)">Buscar</button>
     <div class="gu-mw"><button type="button" class="gu-b" data-a="archivo">Archivo ▾</button><div class="gu-menu" id="gu-m-archivo" hidden>
       <button type="button" data-a="portada">Portada…</button>
@@ -4677,7 +4698,7 @@ raiz.innerHTML=`
     <div class="gu-zoom solo-ancho"><button type="button" data-a="zm" aria-label="Alejar">−</button><span id="gu-zv">100%</span><button type="button" data-a="zp" aria-label="Acercar">+</button></div>
   </div>
   <div class="gu-cuerpo">
-    <aside class="gu-side" id="gu-side"><div class="gu-stabs" role="tablist"><button type="button" data-lado="escenas">Escenas</button><button type="button" data-lado="personajes">Personajes</button><button type="button" data-lado="locaciones">Locaciones</button></div><div class="gu-sc" id="gu-sc"></div></aside>
+    <aside class="gu-side" id="gu-side"><div class="gu-stabs" role="tablist"><button type="button" data-lado="escenas">Escenas</button><button type="button" data-lado="personajes">Personajes</button><button type="button" data-lado="locaciones">Locaciones</button></div><input class="gu-sq" id="gu-sq" type="search" placeholder="Buscar…" aria-label="Buscar en la lista"><div class="gu-sc" id="gu-sc"></div></aside>
     <div class="gu-scroll" id="gu-scroll"><div class="gu-spacer" id="gu-spacer"><div class="gu-escala" id="gu-escala"><div id="gu-hojas"></div><div class="gu-texto" id="gu-texto" contenteditable="true" spellcheck="true" lang="es" role="textbox" aria-multiline="true" aria-label="Guion"></div><div class="gu-chips" id="gu-chips"></div></div></div></div>
     <div class="gu-find" id="gu-find" hidden>
       <div class="f"><input id="gu-f-q" placeholder="Buscar…" aria-label="Buscar"><span class="c" id="gu-f-c"></span><button type="button" data-a="f-ant" aria-label="Anterior">↑</button><button type="button" data-a="f-sig" aria-label="Siguiente">↓</button><button type="button" data-a="f-cerrar" aria-label="Cerrar">×</button></div>
@@ -4844,8 +4865,8 @@ function insertarBloques(bl){const r=rango();if(r&&!r.collapsed)r.deleteContents
 /* ---------- sugerencias (como el SmartType de Final Draft / Celtx) ---------- */
 let acItems=[],acSel=-1;
 function lugarDe(txt){return may((txt||"").replace(RX_PREF,"").split(/\s+[-–—]\s+/)[0].trim())}
-function locPostits(){const ps=(typeof pilas!=="undefined"?pilas:[]).filter(p=>/locaci/.test(norm(p.titulo))||(G&&p.id===G.doc.pilaLoc));const enPila=new Set();for(const p of ps)for(const i of data.ideas)if(i.pila===p.id)enPila.add(i.id);
-  return data.ideas.filter(i=>/locaci/.test(norm(label(i.tipo)))||enPila.has(i.id)).map(i=>({id:i.id,nombre:(i.texto||"").split("\n")[0].trim(),i})).filter(x=>x.nombre)}
+function locPostits(){const ps=(typeof pilas!=="undefined"?pilas:[]).filter(p=>/locaci/.test(norm(p.titulo)));const enPila=new Set();for(const p of ps)for(const i of data.ideas)if(i.pila===p.id)enPila.add(i.id);const peli=G&&G.doc.postit;
+  return data.ideas.filter(i=>(i.dentro?i.dentro===peli:(/locaci/.test(norm(label(i.tipo)))||enPila.has(i.id)))).map(i=>({id:i.id,nombre:(i.texto||"").split("\n")[0].trim(),i})).filter(x=>x.nombre)}
 function postitDeLugar(lugar){const n=norm(lugar);if(!n)return null;const l=locPostits();return l.find(x=>norm(x.nombre)===n)||null}
 function personajesDe(){const m=new Map();for(const p of bloques())if(p.dataset.t==="personaje"){const n=may(p.textContent.replace(/\(.*$/,"").trim());if(n)m.set(n,(m.get(n)||0)+1)}return m}
 function sugerir(){const p=actual();if(!p||document.activeElement!==ed){cerrarAC();return}const t=p.dataset.t,txt=p.textContent,o=offCaret(p);
@@ -4869,7 +4890,7 @@ function sugerir(){const p=actual();if(!p||document.activeElement!==ed){cerrarAC
   if(!items.length){cerrarAC();return}
   acItems=items.slice(0,10);/* Enter solo completa si ya escribiste algo que coincide (o si elegiste con las flechas); en personajes, solo con flechas */
   const escrito=t==="escena"?(txt.match(RX_PREF)?txt.slice(txt.match(RX_PREF)[0].length).split(/\s+[-–—]\s+/).pop().trim():txt.trim()):txt.trim();
-  acSel=(t!=="personaje"||txt.includes("("))&&escrito?0:-1;acBox.dataset.p=p.dataset.id;acBox.replaceChildren(...acItems.map((it,n)=>{const b=mk("button",n===acSel?"on":"");b.type="button";b.append(it.txt);if(it.tag)b.append(mk("small",null,it.tag));b.onpointerdown=ev=>{ev.preventDefault();aceptarAC(n)};return b}),mk("div","pie",acSel>=0?"Enter para usar · ↑↓ elegir otra · Esc cerrar":"↓ para elegir · Esc cerrar"));
+  acSel=(t!=="personaje"||txt.includes("("))&&escrito?0:-1;acBox.dataset.p=p.dataset.id;acBox.replaceChildren(...acItems.map((it,n)=>{const b=mk("button",n===acSel?"on":"");b.type="button";b.append(it.txt);if(it.tag)b.append(mk("small",null,it.tag));b.onpointerdown=ev=>{ev.preventDefault();aceptarAC(n)};return b}),mk("div","gu-acpie",acSel>=0?"Enter para usar · ↑↓ elegir otra · Esc cerrar":"↓ para elegir · Esc cerrar"));
   acBox.hidden=false;const rr=rango(),rc=(rr&&rr.getClientRects()[0])||p.getBoundingClientRect();let x=rc.left,y=rc.bottom+6;const w=acBox.offsetWidth,h=acBox.offsetHeight;if(x+w>innerWidth-8)x=innerWidth-w-8;if(y+h>innerHeight-8)y=rc.top-h-6;acBox.style.left=Math.max(8,x)+"px";acBox.style.top=Math.max(8,y)+"px"}
 function moverAC(d){acSel=(acSel+d+acItems.length)%acItems.length;[...acBox.querySelectorAll("button")].forEach((b,n)=>b.classList.toggle("on",n===acSel));acBox.querySelectorAll("button")[acSel]?.scrollIntoView({block:"nearest"})}
 function aceptarAC(n){const it=acItems[n];if(!it)return;marcar();cerrarAC();it.aplicar();cambio();setTimeout(sugerir,0)}
@@ -4896,13 +4917,21 @@ function abrirPop(v,ancla,pid){const i=v.i;pop.replaceChildren();
   pop.hidden=false;const r=ancla.getBoundingClientRect();let x=r.left,y=r.bottom+8;if(x+300>innerWidth)x=innerWidth-306;if(y+pop.offsetHeight>innerHeight-8)y=Math.max(8,r.top-pop.offsetHeight-8);pop.style.left=Math.max(6,x)+"px";pop.style.top=y+"px"}
 function cerrarPop(){pop.hidden=true}
 document.addEventListener("pointerdown",e=>{if(!pop.hidden&&!pop.contains(e.target)&&!e.target.closest(".gu-chip"))cerrarPop();const m=Q("gu-m-archivo");if(!m.hidden&&!e.target.closest(".gu-mw"))m.hidden=true},true);
-function irAPostit(k,id){if(!itemDe(k,id)){toast("Ya no existe.");return}guardarYa();vuelveGuion={gid:G.id,scroll:scroller.scrollTop};ocultar();abrir(k,id);pintarVolverG()}
-function pintarVolverG(){if(vuelveGuion&&!navRef.length&&abierto)$("volver").textContent="← Guion"}
-{const c0=cerrar;cerrar=function(){const r=c0.apply(this,arguments);if(vuelveGuion)setTimeout(()=>{if(!abierto&&vuelveGuion){const v=vuelveGuion;vuelveGuion=null;entrar(v.gid,v.scroll)}},0);return r};
+let mitad=false,mitadCambia=false,ladoMitad="guion";
+function abrirEnMitad(k,id){mitadCambia=true;try{if(abierto)cerrar();abrir(k,id)}finally{mitadCambia=false}if(!mitad){ladoAntes=Q("gu-side").hidden;Q("gu-side").hidden=true}document.body.classList.add("gu-mitad");mitad=true;Q("gu-ed").querySelector('[data-a="mitad"]').setAttribute("aria-pressed","true");zoomAuto=true;pedirLayout();pintarVolverG()}
+let ladoAntes=false;
+function salirMitad(cerrarHoja){if(!mitad)return;mitad=false;Q("gu-side").hidden=ladoAntes&&innerWidth>=760?true:innerWidth<760;document.body.classList.remove("gu-mitad");Q("gu-ed").querySelector('[data-a="mitad"]').setAttribute("aria-pressed","false");if(cerrarHoja&&abierto){mitadCambia=true;try{cerrar()}finally{mitadCambia=false}}zoomAuto=true;pedirLayout()}
+function alternarMitad(){if(mitad){salirMitad(true);return}if(!G)return;const pid=G.doc.postit;if(pid&&itemDe("ideas",pid)){guardarYa();abrirEnMitad("ideas",pid);return}
+  elegirPeli();esperandoMitad=true}
+let esperandoMitad=false;
+addEventListener("pointerdown",e=>{if(mitad)ladoMitad=e.clientX<innerWidth/2?"guion":"plancha"},true);
+function irAPostit(k,id){if(!itemDe(k,id)){toast("Ya no existe.");return}if(mitad){abrirEnMitad(k,id);return}guardarYa();vuelveGuion={gid:G.id,scroll:scroller.scrollTop};ocultar();abrir(k,id);pintarVolverG()}
+function pintarVolverG(){if(!abierto||navRef.length)return;if(mitad)$("volver").textContent="✕ Cerrar plancha";else if(vuelveGuion)$("volver").textContent="← Guion"}
+{const c0=cerrar;cerrar=function(){const r=c0.apply(this,arguments);if(mitad&&!mitadCambia)setTimeout(()=>{if(!abierto&&mitad)salirMitad(false)},0);if(vuelveGuion)setTimeout(()=>{if(!abierto&&vuelveGuion){const v=vuelveGuion;vuelveGuion=null;entrar(v.gid,v.scroll)}},0);return r};
  const v0=pintarVolver;pintarVolver=function(){const r=v0.apply(this,arguments);pintarVolverG();return r}}
 /* adentro de un post-it: «En el guion: …» */
 {const a0=pintarAparece;pintarAparece=function(){const r=a0.apply(this,arguments);try{pintarEnGuion()}catch(e){console.error(e)}return r}}
-function apariciones(k,id){const out=[];const it=itemDe(k,id);const nombre=it&&k==="ideas"?norm((it.texto||"").split("\n")[0]):"";const esLoc=it&&k==="ideas"&&locPostits().some(l=>l.id===id);
+function apariciones(k,id){const out=[];const it=itemDe(k,id);const nombre=it&&k==="ideas"?norm((it.texto||"").split("\n")[0]):"";const esLoc=it&&k==="ideas"&&(!!it.dentro||locPostits().some(l=>l.id===id));
   for(const g of guiones){let n=0;for(const b of (g.bloques||[])){if(b.t!=="escena")continue;n++;
     const tmp=mk("div");tmp.innerHTML=b.h||"";const lug=norm(lugarDe(tmp.textContent));
     if((b.refs||[]).some(r=>r.k===k&&r.id===id)||(esLoc&&nombre&&lug===nombre))out.push({g,n,bid:b.id})}}
@@ -4944,9 +4973,9 @@ function maquetar(){if(!G)return;const pg=PAGINAS[opc.pagina]||PAGINAS.a4,H=Math
   while(hojas.children.length<N)hojas.append(mk("div","gu-hoja"));while(hojas.children.length>N)hojas.lastChild.remove();
   [...hojas.children].forEach((h,n)=>{h.style.top=n*PASO+"px";h.style.width=pg.w+"px";h.style.height=pg.h+"px";let np=h.querySelector(".np");if(opc.numPaginas&&n>0){if(!np){np=mk("span","np");h.append(np)}np.textContent=(n+1)+".";np.style.right=MR+"px"}else if(np)np.remove()});
   const alto=N*PASO-GAP;escala.style.height=alto+"px";escala.style.width=pg.w+"px";
-  const anchoChips=scroller.clientWidth>pg.w+260?230:0;
-  if(zoomAuto){zoom=Math.max(.35,Math.min(1,(scroller.clientWidth-(anchoChips?40+anchoChips:16))/pg.w))}
-  escala.style.transform=`scale(${zoom})`;spacer.style.width=(pg.w+anchoChips)*zoom+"px";spacer.style.height=alto*zoom+"px";Q("gu-zv").textContent=Math.round(zoom*100)+"%";
+  const hayChips=ps.some(p=>p.dataset.t==="escena"&&vinculosEscena(p).length),W=scroller.clientWidth,anchoChips=hayChips&&W>pg.w*.6+260?230:0;
+  if(zoomAuto){zoom=Math.max(.35,Math.min(1,(W-(anchoChips?48+anchoChips*2:24))/pg.w))}
+  escala.style.transform=`scale(${zoom})`;const pw=pg.w*zoom;spacer.style.width=pw+"px";spacer.style.marginLeft=Math.max(12,Math.min((W-pw)/2,W-pw-anchoChips-12))+"px";spacer.style.marginRight="0";spacer.style.height=alto*zoom+"px";Q("gu-zv").textContent=Math.round(zoom*100)+"%";
   lay={ps,res,N,H,PASO};pintarChips();pintarPie();marcarEscenaActual();if(seguir){seguir=false;verCaret()}}
 function verCaret(){if(document.activeElement!==ed)return;const r=rango();if(!r)return;const rc=r.getClientRects()[0]||(actual()&&actual().getBoundingClientRect());if(!rc)return;const s=scroller.getBoundingClientRect();
   if(rc.bottom>s.bottom-40)scroller.scrollTop+=rc.bottom-s.bottom+s.height*0.35;else if(rc.top<s.top+20)scroller.scrollTop+=rc.top-s.top-s.height*0.3}
@@ -4967,60 +4996,87 @@ function pintarSide(){const sc=Q("gu-sc");if(!G)return;raiz.querySelectorAll("[d
    const lbl={escenas:["Escenas",ne],personajes:["Personajes",np],locaciones:["Locaciones",nl]};raiz.querySelectorAll("[data-lado]").forEach(b=>{const [t,n]=lbl[b.dataset.lado];b.replaceChildren(mk("span",null,t),mk("b",null,String(n)))})}
   if(document.activeElement&&sc.contains(document.activeElement)&&document.activeElement.tagName==="INPUT")return;
   const ps=bloques();sc.replaceChildren();
+  const qv=(Q("gu-sq")&&Q("gu-sq").value)||"",qn=norm(qv);const pasa=t=>!qn||norm(t).includes(qn);
+  {const sq=Q("gu-sq");sq.placeholder=ladoTab==="escenas"?"Buscar escena…":ladoTab==="personajes"?"Buscar personaje…":"Buscar locación…"}
   if(ladoTab==="escenas"){const esc=ps.filter(p=>p.dataset.t==="escena");if(!esc.length){sc.append(mk("div","gu-snota","Todavía no hay escenas. Empezá una con «INT.» o «EXT.» (o Tab hasta «Escena»)."));return}
-    esc.forEach((p,n)=>{const b=btn("gu-it",null,()=>irABloque(p));b.dataset.id=p.dataset.id;b.append(mk("span","n",String(n+1)),mk("span","x",p.textContent.trim()||"(escena sin título)"));
-      const nv=vinculosEscena(p).length;if(nv)b.append(mk("span","ch","↗"+nv));const i=lay?lay.ps.indexOf(p):-1;if(i>=0&&lay.res[i])b.append(mk("span","p","p."+(lay.res[i].pag+1)));sc.append(b)});marcarEscenaActual()}
+    let vis=0;esc.forEach((p,n)=>{if(!pasa(p.textContent))return;vis++;const b=btn("gu-it",null,()=>irABloque(p));b.dataset.id=p.dataset.id;b.append(mk("span","gu-n",String(n+1)),mk("span","x",p.textContent.trim()||"(escena sin título)"));
+      const nv=vinculosEscena(p).length;if(nv)b.append(mk("span","ch","↗"+nv));const i=lay?lay.ps.indexOf(p):-1;if(i>=0&&lay.res[i])b.append(mk("span","p","p."+(lay.res[i].pag+1)));sc.append(b)});if(!vis)sc.append(mk("div","gu-snota","Ninguna escena con «"+qv+"»."));marcarEscenaActual()}
   else if(ladoTab==="personajes"){const m=personajesDe();const cnt=new Map();let cur=null;for(const p of ps){if(p.dataset.t==="personaje")cur=may(p.textContent.replace(/\(.*$/,"").trim());else if(p.dataset.t==="dialogo"&&cur)cnt.set(cur,(cnt.get(cur)||0)+1);else if(p.dataset.t!=="parentesis")cur=null}
     if(!m.size){sc.append(mk("div","gu-snota","Acá aparecen los personajes a medida que escribís."));return}
     sc.append(mk("div","gu-snota","Tocá un nombre para ir a donde habla. «Renombrar» lo cambia en todo el guion."));
-    [...m.keys()].sort((a,b)=>(cnt.get(b)||0)-(cnt.get(a)||0)).forEach(n=>{const f=mk("div","gu-per");const x=mk("span","x",n);let k=0;x.onclick=()=>{const l=ps.filter(p=>p.dataset.t==="personaje"&&may(p.textContent.replace(/\(.*$/,"").trim())===n);if(l.length){irABloque(l[k%l.length]);k++}};
-      f.append(x,mk("small",null,(cnt.get(n)||0)+" líneas"),btn("mini","Renombrar",()=>{const inp=mk("input");inp.value=n;f.replaceChildren(inp);inp.focus();inp.select();const ok=()=>{const v=may(inp.value.trim());if(v&&v!==n)renombrar(n,v);pintarSide()};inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();ok()}if(e.key==="Escape"){e.preventDefault();pintarSide()}};inp.onblur=ok}));sc.append(f)})}
+    [...m.keys()].sort((a,b)=>(cnt.get(b)||0)-(cnt.get(a)||0)).filter(pasa).forEach(n=>{const f=mk("div","gu-per");const x=mk("span","x",n);let k=0;x.onclick=()=>{const l=ps.filter(p=>p.dataset.t==="personaje"&&may(p.textContent.replace(/\(.*$/,"").trim())===n);if(l.length){irABloque(l[k%l.length]);k++}};
+      const av=mk("span","gu-av",n.charAt(0));av.title="Acá va a ir la foto del personaje";f.append(av,x,mk("small",null,(cnt.get(n)||0)+((cnt.get(n)||0)===1?" línea":" líneas")),btn("gu-ren","Renombrar",()=>{const inp=mk("input");inp.value=n;f.replaceChildren(inp);inp.focus();inp.select();const ok=()=>{const v=may(inp.value.trim());if(v&&v!==n)renombrar(n,v);pintarSide()};inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();ok()}if(e.key==="Escape"){e.preventDefault();pintarSide()}};inp.onblur=ok}));sc.append(f)})}
   else{const lugares=new Map();ps.filter(p=>p.dataset.t==="escena").forEach((p,n)=>{const l=lugarDe(p.textContent);if(!l)return;if(!lugares.has(l))lugares.set(l,[]);lugares.get(l).push({p,n:n+1})});
-    const pl0=pilaLoc();const cab=mk("div","gu-pilaloc");
-    if(pl0){cab.append(mk("b",null,pl0.titulo||"Locaciones"),mk("small",null,"Cada locación nueva que escribís en un encabezado se suma sola a esta pila de la plancha. Ahí le podés poner fotos, links de Maps y notas."));cab.append(btn(null,"Ver la pila en la plancha ↗",()=>verPilaLoc()))}
-    else{cab.append(mk("b",null,"Pila de locaciones"),mk("small",null,G.doc.pilaLoc?"La pila de este guion se borró de la plancha.":"Se arma sola cuando escribís el primer encabezado completo (por ejemplo INT. BAR - NOCHE)."));cab.append(btn(null,G.doc.pilaLoc?"Armarla de nuevo":"Armarla ahora",()=>{G.doc.pilaLoc=null;G.doc.pilaLocOff=false;sincLocaciones(true)}))}
+    const pe=peli();const cab=mk("div","gu-pilaloc");
+    if(pe){cab.append(mk("small",null,"Película"),mk("b",null,(pe.texto||"").split("\n")[0]||"(sin título)"),mk("small",null,"Las locaciones se guardan solas en la pila «Locaciones» adentro de este post-it. Ahí les ponés fotos, el link de Maps y notas."));
+      const f=mk("div","acc");f.append(btn(null,"Abrir la película ↗",()=>{if(innerWidth>900){if(!mitad)alternarMitad()}else irAPostit("ideas",pe.id)}),btn("gu-sec","Cambiar",()=>elegirPeli()));cab.append(f)}
+    else{cab.append(mk("b",null,"¿De qué película es este guion?"),mk("small",null,"Elegí su post-it (o creá uno). Adentro se arma la pila de locaciones y queda un acceso directo a este guion."));cab.append(btn(null,"Elegir la película",()=>elegirPeli()))}
     sc.append(cab);
     if(!lugares.size){sc.append(mk("div","gu-snota","Todavía no hay locaciones."));return}
-    for(const [l,arr] of lugares){const c=mk("div","gu-loc");c.append(mk("b",null,l),mk("small",null,`${arr.length} ${arr.length===1?"escena":"escenas"}: `+arr.map(x=>x.n).join(", ")));const pl=postitDeLugar(l);
+    let vl=0;for(const [l,arr] of lugares){if(!pasa(l))continue;vl++;const c=mk("div","gu-loc");c.append(mk("b",null,l),mk("small",null,`${arr.length} ${arr.length===1?"escena":"escenas"}: `+arr.map(x=>x.n).join(", ")));const pl=postitDeLugar(l);
       if(pl){const im=primeraImg(pl.i);if(im){const img=mk("img");img.alt="";cargarImg(img,im.a);c.append(img)}}
       const acc=mk("div","acc");acc.append(btn(null,"Ir",()=>irABloque(arr[0].p)));
-      if(pl){acc.append(btn(null,"Abrir post-it ↗",()=>irAPostit("ideas",pl.id)));c.append(mk("small",null,pl.i.pila&&pl.i.pila===G.doc.pilaLoc?" · en la pila del guion":" · reconocida"))}else acc.append(btn(null,"+ Post-it de locación",()=>crearLocacion(l)));c.append(acc);sc.append(c)}}}
-/* ---------- la pila de locaciones del guion ---------- */
-function pilaLoc(){return G&&G.doc.pilaLoc?pilas.find(p=>p.id===G.doc.pilaLoc)||null:null}
-let vuelvePila=null;
-function verPilaLoc(){const p=pilaLoc();if(!p)return;const v={gid:G.id,scroll:scroller.scrollTop};salir();setTimeout(()=>{try{abrirPila(p.id);vuelvePila=v}catch(_){}},60)}
-{const c0=cerrarPila;cerrarPila=function(){const r=c0.apply(this,arguments);if(vuelvePila){const v=vuelvePila;vuelvePila=null;setTimeout(()=>entrar(v.gid,v.scroll),0)}return r}}
+      if(pl){acc.append(btn(null,"Abrir post-it ↗",()=>irAPostit("ideas",pl.id)));c.append(mk("small",null,pl.i.dentro?" · en la película":" · reconocida"))}else if(pe)acc.append(btn(null,"+ Guardarla en la película",()=>sincLocaciones([l])));c.append(acc);sc.append(c)}if(!vl)sc.append(mk("div","gu-snota","Ninguna locación con «"+qv+"»."))}}
+/* ---------- cada guion tiene el post-it de su película: adentro van la pila «Locaciones» y un acceso al guion ---------- */
+function peli(){return G&&G.doc.postit?itemDe("ideas",G.doc.postit):null}
+function urlGuion(gid){return location.origin+location.pathname+"#guion="+gid}
 function capitalizar(l){const x=l.toLocaleLowerCase("es");return x.charAt(0).toLocaleUpperCase("es")+x.slice(1)}
+function elegirPeli(){if(!G)return;const tit=Q("gu-titulo").value.trim();
+  elegirItem({peliPrimero:true,titulo:"¿De qué película es este guion?",sub:"Elegí el post-it de la película (por ejemplo, el de «Largo»). Adentro se arma la pila de locaciones y queda un acceso directo a este guion. Es la misma plancha que ves con «◧ Plancha al lado».",tipos:["todo"],
+    excluir:(k,id)=>k!=="ideas"||(data.ideas.find(i=>i.id===id)||{}).dentro,
+    crear:()=>[{txt:`Crear el post-it «${tit||"Sin título"}» para esta película`,fn:async()=>{cerrarModal();const id=await crearPostit(tit||"Sin título");if(id)ponerPeli(id,true)}}],
+    onElegir:(k,id)=>{cerrarModal();ponerPeli(id,false)}})}
+function ponerPeli(id,nuevo){if(!G)return;const viejo=G.doc.postit;G.doc.postit=id;if(nuevo)G.doc.peliNueva=id;sucio=true;guardarPronto(200);
+  /* si cambia de película, sus locaciones se mudan con el guion */
+  if(viejo&&viejo!==id)for(const i of data.ideas)if(i.dentro===viejo&&i.guionLoc===G.id)escribir(cols.ideas,i.id,{dentro:id},{silencioso:true});
+  setTimeout(()=>{sincLocaciones();pintarSide();pintarChips();if(esperandoMitad&&innerWidth>900){esperandoMitad=false;abrirEnMitad("ideas",id)}},400);toast("Listo: este guion es de esa película.")}
+/* cambiar los bloques del post-it de la película, esté abierto al lado o no */
+function editarPeli(fn){const pe=peli();if(!pe)return false;
+  if(abierto&&abierto.k==="ideas"&&abierto.id===pe.id){const bl=abierto.doc.bloques;if(!fn(bl))return true;guardarBloques();try{pintarHoja()}catch(_){}return true}
+  const bl=JSON.parse(JSON.stringify(pe.bloques||[]));if(fn(bl))escribir(cols.ideas,pe.id,{bloques:bl},{silencioso:true});return true}
+function lugarLibreEn(bl){const xs=bl.filter(b=>!b.en&&isFinite(b.x)),x=xs.length?Math.max(...xs.map(b=>b.x+(b.w||220)))+60:460;return {x:Math.round(x),y:0}}
 const creandoLoc=new Set();let sincEnCurso=false;
-async function sincLocaciones(forzar){if(!G||!cols.ideas||!colPilas||sincEnCurso||!pilasCargadas)return;
+async function sincLocaciones(extra){if(!G||!cols.ideas||sincEnCurso)return;const pe=peli();if(!pe)return;
   const actualP=document.activeElement===ed?actual():null;
-  const lugares=new Map();for(const p of bloques()){if(p.dataset.t!=="escena"||p===actualP)continue;const txt=p.textContent;if(!forzar&&!/\s[-–—]\s*\S/.test(txt))continue;const l=lugarDe(txt);if(l&&l.length>=2)lugares.set(norm(l),l)}
+  const lugares=new Map();for(const p of bloques()){if(p.dataset.t!=="escena"||p===actualP)continue;const txt=p.textContent;if(!/\s[-–—]\s*\S/.test(txt))continue;const l=lugarDe(txt);if(l&&l.length>=2)lugares.set(norm(l),l)}
+  for(const l of extra||[])lugares.set(norm(l),l);
   sincEnCurso=true;try{
-    let pid=G.doc.pilaLoc,pl=pilaLoc();const titulo="Locaciones · "+(Q("gu-titulo").value.trim()||"Sin título");
-    const faltan=[...lugares].filter(([k,l])=>!postitDeLugar(l)&&!creandoLoc.has(k));
-    if(!pl){if(!faltan.length||(pid&&!forzar))return;
-      const b=lzMain.aMundo(innerWidth/2,innerHeight/2),pos=lugarCerca(b.x,b.y);
-      const ref=await colPilas.add({tablero:"ideas",x:Math.round(pos.x),y:Math.round(pos.y),creado:Date.now(),titulo,guion:G.id});pid=ref.id;G.doc.pilaLoc=pid;sucio=true;guardarPronto(300);
-      pl={id:pid,x:Math.round(pos.x),y:Math.round(pos.y),titulo};toast(`Armé la pila «${titulo}» en la plancha.`)}
-    else if(pl.guion===G.id&&pl.titulo!==titulo&&/^Locaciones · /.test(pl.titulo||""))colPilas.doc(pid).update({titulo}).catch(()=>{});
-    const cat=cats.find(x=>/locaci/.test(norm(x.nombre)));let numero=data.ideas.reduce((m,i)=>Math.max(m,i.numero||0),0);const ahora=Date.now();let n=0;
-    for(const [k,l] of faltan){if(postitDeLugar(l)||creandoLoc.has(k))continue;creandoLoc.add(k);numero++;
-      const body={texto:capitalizar(l),tipo:cat?cat.id:"otro",creado:ahora+n,numero,pila:pid,pilaT:ahora+n,x:Math.round(pl.x),y:Math.round(pl.y),guionLoc:G.id,guionLocTxt:capitalizar(l)};n++;
-      cols.ideas.add(body).catch(()=>{}).finally(()=>setTimeout(()=>creandoLoc.delete(k),4000))}
+    /* lo del arreglo anterior (pila suelta en la plancha) se muda adentro de la película */
+    if(G.doc.pilaLoc){const viejaP=G.doc.pilaLoc;for(const i of data.ideas)if(i.pila===viejaP)escribir(cols.ideas,i.id,{pila:"",dentro:pe.id,guionLoc:i.guionLoc||G.id,guionLocTxt:i.guionLocTxt||i.texto},{silencioso:true});if(colPilas&&pilas.some(p=>p.id===viejaP))colPilas.doc(viejaP).delete().catch(()=>{});delete G.doc.pilaLoc;sucio=true}
+    const cat=cats.find(x=>/locaci/.test(norm(x.nombre)));let numero=data.ideas.reduce((m,i)=>Math.max(m,i.numero||0),0);const ahora=Date.now();const nuevos=[];
+    for(const [k,l] of lugares){if(postitDeLugar(l)||creandoLoc.has(k))continue;creandoLoc.add(k);numero++;
+      const body={texto:capitalizar(l),tipo:cat?cat.id:"otro",creado:ahora+nuevos.length,numero,dentro:pe.id,guionLoc:G.id,guionLocTxt:capitalizar(l)};
+      nuevos.push(cols.ideas.add(body).then(r=>r.id).catch(()=>null).finally(()=>setTimeout(()=>creandoLoc.delete(k),4000)))}
+    const idsNuevos=(await Promise.all(nuevos)).filter(Boolean);
     /* las que armó el guion y ya no se usan (y nadie tocó) se van */
-    for(const i of data.ideas){if(i.guionLoc!==G.id||i.pila!==pid)continue;if(lugares.has(norm(i.texto))||(i.bloques||[]).length||i.texto!==i.guionLocTxt)continue;
-      if(actualP&&norm(i.texto).startsWith(norm(lugarDe(actualP.textContent)))&&norm(lugarDe(actualP.textContent)))continue;
-      if(bloques().some(p=>p.dataset.t==="escena"&&norm(lugarDe(p.textContent))===norm(i.texto)))continue;
-      cols.ideas.doc(i.id).delete().catch(()=>{})}
-    setTimeout(()=>{pintarChips();pintarSide()},500)}
+    const borrar=new Set();
+    for(const i of data.ideas){if(i.guionLoc!==G.id||i.dentro!==pe.id)continue;if(lugares.has(norm(i.texto))||(i.bloques||[]).length||i.texto!==i.guionLocTxt)continue;
+      if(actualP&&norm(lugarDe(actualP.textContent))&&norm(i.texto).startsWith(norm(lugarDe(actualP.textContent))))continue;
+      if(bloques().some(p=>p.dataset.t==="escena"&&norm(lugarDe(p.textContent))===norm(i.texto)))continue;borrar.add(i.id)}
+    for(const id of borrar)cols.ideas.doc(id).delete().catch(()=>{});
+    /* adentro del post-it de la película: acceso al guion + pila «Locaciones» con todas */
+    const titulo=Q("gu-titulo").value.trim()||"Sin título",url=urlGuion(G.id);
+    const locs=[...new Set([...data.ideas.filter(i=>i.dentro===pe.id&&!borrar.has(i.id)).map(i=>i.id),...idsNuevos])];
+    editarPeli(bl=>{let cambio=false;
+      let lk=bl.find(b=>b.t==="link"&&(b.url||"").includes("#guion="+G.id));
+      if(!lk){const p0=lugarLibreEn(bl);lk={id:bid(),t:"link",url,titulo:"Guion · "+titulo,x:p0.x,y:p0.y,w:260};bl.push(lk);cambio=true}
+      else if(lk.titulo!=="Guion · "+titulo||lk.url!==url){lk.titulo="Guion · "+titulo;lk.url=url;cambio=true}
+      if(locs.length){let pb=bl.find(b=>b.t==="pila"&&b.id===G.doc.pilaHoja)||bl.find(b=>b.t==="pila"&&norm(b.titulo)==="locaciones");
+        if(!pb){pb={id:bid(),t:"pila",titulo:"Locaciones",x:lk.x,y:lk.y+150};bl.push(pb);cambio=true}
+        if(G.doc.pilaHoja!==pb.id){G.doc.pilaHoja=pb.id;sucio=true;guardarPronto(500)}
+        for(const id of locs)if(!bl.some(b=>b.t==="ref"&&b.ref===id)){bl.push({id:bid(),t:"ref",ref:id,en:pb.id,x:pb.x,y:pb.y});cambio=true}}
+      for(let n=bl.length-1;n>=0;n--){const b=bl[n];if(b.t==="ref"&&borrar.has(b.ref)){bl.splice(n,1);cambio=true}}
+      return cambio});
+    if(idsNuevos.length||borrar.size)setTimeout(()=>{pintarChips();pintarSide()},500)}
   finally{sincEnCurso=false}}
+/* las locaciones de una película no aparecen sueltas en la plancha principal */
+{const e0=enPilaId;enPilaId=function(i){if(i&&i.dentro&&!i.pila)return "dentro:"+i.dentro;return e0.apply(this,arguments)}}
+/* el acceso al guion que queda adentro del post-it */
+document.addEventListener("click",e=>{const a=e.target.closest&&e.target.closest('a[href*="#guion="]');if(!a)return;const id=(a.getAttribute("href").split("#guion=")[1]||"").trim();if(!id)return;e.preventDefault();e.stopPropagation();
+  if(!guiones.some(g=>g.id===id)){toast("Ese guion ya no existe.");return}if(abierto&&mitad&&G&&G.id===id)return;vuelveGuion=null;if(abierto){mitadCambia=true;try{cerrar()}finally{mitadCambia=false}}entrar(id)},true);
 function marcarEscenaActual(){const p=actual();const e=p?escenaDe(p):null;Q("gu-sc").querySelectorAll(".gu-it").forEach(b=>b.classList.toggle("act",!!e&&b.dataset.id===e.dataset.id))}
 function irABloque(p,foco=true){if(!p)return;if(innerWidth<760)Q("gu-side").hidden=true;const r=p.getBoundingClientRect(),s=scroller.getBoundingClientRect();scroller.scrollTop+=r.top-s.top-90;if(foco){ed.focus({preventScroll:true});caret(p,"fin")}}
 function renombrar(de,a){marcar();for(const p of bloques())if(p.dataset.t==="personaje"){const t=p.textContent,base=may(t.replace(/\(.*$/,"").trim());if(base===de){const ext=(t.match(/\(.*$/)||[""])[0];setTexto(p,a+(ext?" "+ext:""))}}cambio();toast(`${de} ahora es ${a} en todo el guion.`)}
-async function crearLocacion(nombre){if(!cols.ideas)return;const c=cats.find(x=>/locaci/.test(norm(x.nombre)));if(!c){toast("No tenés una categoría «Locaciones». Creala en Categorías y probá de nuevo.");return}
-  const ahora=Date.now(),numero=data.ideas.reduce((m,i)=>Math.max(m,i.numero||0),0)+1,body={texto:nombre.charAt(0)+nombre.slice(1).toLowerCase(),tipo:c.id,creado:ahora,numero},pl=pilaDeCat(c.id);
-  if(pl){const P=pilaXY(pl.id);Object.assign(body,{pila:pl.id,pilaT:ahora,x:Math.round(P.x),y:Math.round(P.y)})}else{const b=lzMain.aMundo(innerWidth/2,innerHeight/2),p=lugarCerca(b.x,b.y);body.x=Math.round(p.x);body.y=Math.round(p.y)}
-  fijarSinPosicion("ideas");try{await cols.ideas.add(body);toast(`Locación #${numero} creada${pl?` en la pila «${pl.titulo}»`:""}. Ya quedó vinculada.`);setTimeout(()=>{pintarChips();pintarSide()},400)}catch(_){toast("No se pudo crear. Probá de nuevo.")}}
 
 /* ---------- cambios y guardado ---------- */
 function cambio(sinMarca){seguir=true;normalizar();sucio=true;pintarEstado();guardarPronto(1500);if(ligero)pedirLigero();else pedirLayout();pedirSide()}
@@ -5034,7 +5090,9 @@ async function guardarYa(){clearTimeout(tGuardar);if(!G||!col||!sucio)return;try
   try{await col.doc(G.id).set(doc);ultGuardado=Date.now()}catch(_){sucio=true;toast("No se guardó el guion. Revisá la conexión; lo vuelvo a intentar.");guardarPronto(5000)}finally{guardando=false;pintarEstado()}}
 addEventListener("beforeunload",e=>{if(sucio&&G){guardarYa();e.preventDefault();e.returnValue=""}});
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")guardarYa()});
+Q("gu-sq").addEventListener("input",()=>pintarSide());
 Q("gu-titulo").addEventListener("input",()=>{sucio=true;pintarEstado();guardarPronto(1200)});
+Q("gu-titulo").addEventListener("change",()=>{const pe=peli(),t=Q("gu-titulo").value.trim();if(pe&&G.doc.peliNueva===pe.id&&t&&!(pe.bloques||[]).some(b=>b.t!=="link"&&b.t!=="pila"&&!b.en)){escribir(cols.ideas,pe.id,{texto:t},{silencioso:true})}sucio=true;guardarYa()});
 Q("gu-titulo").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();ed.focus();caret(ed.firstElementChild,0)}});
 
 /* ---------- abrir, cerrar, lista ---------- */
@@ -5049,18 +5107,18 @@ function entrar(gid,scroll,irA){if(!col){toast("Todavía se están cargando tus 
   raiz.hidden=false;document.body.classList.add("en-guion");tab.setAttribute("aria-selected","true");try{localStorage.setItem("pestana","guion")}catch(_){}
   let id=gid;if(id===undefined){try{id=localStorage.getItem("guion_ult")}catch(_){}}
   const g=id&&guiones.find(x=>x.id===id);if(g)abrirGuion(g,scroll,irA);else mostrarLista()}
-function ocultar(){cerrarAC();cerrarPop();raiz.hidden=true;document.body.classList.remove("en-guion");tab.setAttribute("aria-selected","false")}
+function ocultar(){cerrarAC();cerrarPop();salirMitad(true);raiz.hidden=true;document.body.classList.remove("en-guion");tab.setAttribute("aria-selected","false")}
 function salir(){guardarYa();vuelveGuion=null;ocultar();try{localStorage.setItem("pestana","")}catch(_){}}
 function abrirGuion(g,scroll,irA){guardarYa();G={id:g.id,doc:JSON.parse(JSON.stringify(g))};delete G.doc.id;try{localStorage.setItem("guion_ult",g.id)}catch(_){}
   Q("gu-lista").hidden=true;Q("gu-ed").hidden=false;if(innerWidth<760)Q("gu-side").hidden=true;zoomAuto=true;cargarEnEditor(G.doc,irA);
   requestAnimationFrame(()=>{if(scroll!=null)scroller.scrollTop=scroll;else if(!irA)scroller.scrollTop=0;ed.focus({preventScroll:true});if(!irA&&scroll==null){const p=ed.firstElementChild;caret(p,"fin")}})}
-function mostrarLista(){guardarYa();G=null;try{localStorage.removeItem("guion_ult")}catch(_){}Q("gu-ed").hidden=true;Q("gu-lista").hidden=false;pintarLista()}
+function mostrarLista(){guardarYa();salirMitad(true);G=null;try{localStorage.removeItem("guion_ult")}catch(_){}Q("gu-ed").hidden=true;Q("gu-lista").hidden=false;pintarLista()}
 function pintarLista(){const c=Q("gu-cards");c.replaceChildren();
   if(!guiones.length){c.append(mk("p","gu-vacio","Acá van tus guiones, con el formato de siempre: Courier, A4, márgenes de industria. Escribís y se acomoda solo. Tocá «+ Guion nuevo» o traé uno de Final Draft."));return}
   for(const g of guiones.slice().sort((a,b)=>(b.editado||0)-(a.editado||0))){const b=mk("button","gu-card");b.type="button";const pp=g.portada||{};
     b.append(mk("div","t",g.titulo||"Sin título"),mk("div","a",pp.autor?"Escrito por\n"+pp.autor:""),mk("div","m",`${(g.bloques||[]).filter(x=>x.t==="escena").length} escenas · ${g.editado?new Date(g.editado).toLocaleDateString("es-AR",{day:"numeric",month:"short"}):""}`));b.onclick=()=>abrirGuion(g);c.append(b)}}
 async function nuevo(doc){if(!col)return;const ahora=Date.now();const d=doc||{titulo:"",portada:{},opciones:{...OPC0},bloques:[{id:rid(),t:"escena",h:""}]};d.creado=ahora;d.editado=ahora;miEditado=ahora;
-  try{const r=await col.add(d);const g={id:r.id,...d};if(!guiones.some(x=>x.id===r.id))guiones.push(g);abrirGuion(g);if(!doc)setTimeout(()=>{Q("gu-titulo").focus()},80)}catch(_){toast("No se pudo crear el guion.")}}
+  try{const r=await col.add(d);const g={id:r.id,...d};if(!guiones.some(x=>x.id===r.id))guiones.push(g);abrirGuion(g);if(!doc)setTimeout(()=>{Q("gu-titulo").focus()},80);setTimeout(()=>{if(G&&G.id===r.id&&!G.doc.postit)elegirPeli()},doc?300:60)}catch(_){toast("No se pudo crear el guion.")}}
 async function borrarGuion(){if(!G)return;const g=G;const ok=await confirmar(`¿Borrar «${Q("gu-titulo").value||"Sin título"}»?`,"Se borra el guion entero. No se puede deshacer.","Borrar");if(!ok)return;sucio=false;clearTimeout(tGuardar);
   try{await col.doc(g.id).delete();guiones=guiones.filter(x=>x.id!==g.id);mostrarLista();toast("Guion borrado.")}catch(_){toast("No se pudo borrar.")}}
 
@@ -5072,6 +5130,7 @@ async function borrarGuion(){if(!G)return;const g=G;const ok=await confirmar(`¿
     if(G){const g=guiones.find(x=>x.id===G.id);if(!g){if(!raiz.hidden){toast("Este guion se borró en otro lado.");mostrarLista()}}
       else if((g.editado||0)>miEditado&&!sucio&&document.activeElement!==ed){const sc=scroller.scrollTop;G.doc=JSON.parse(JSON.stringify(g));delete G.doc.id;miEditado=g.editado;cargarEnEditor(G.doc);scroller.scrollTop=sc}}
     try{if(abierto)pintarEnGuion()}catch(_){}
+    if(!arrancado&&/^#guion=/.test(location.hash)){const id=location.hash.slice(7);history.replaceState(null,"",location.pathname+location.search);arrancado=true;if(guiones.some(g=>g.id===id))entrar(id)}
     try{if(localStorage.getItem("pestana")==="guion"&&raiz.hidden&&!abierto&&!arrancado){arrancado=true;entrar()}}catch(_){}
     arrancado=true},()=>{});})();
 
@@ -5079,7 +5138,7 @@ async function borrarGuion(){if(!G)return;const g=G;const ok=await confirmar(`¿
 function abrirModal(arm){mh.replaceChildren();arm(mh);modal.hidden=false;const f=mh.querySelector("input,select,textarea,button.si");if(f)setTimeout(()=>f.focus(),30)}
 function cerrarModal(){modal.hidden=true;mh.replaceChildren();if(G)ed.focus({preventScroll:true})}
 modal.addEventListener("pointerdown",e=>{if(e.target===modal)cerrarModal()});
-function confirmar(tit,txt,si){return new Promise(res=>abrirModal(m=>{m.append(mk("h3",null,tit),mk("p","nota",txt));const a=mk("div","acc");a.append(btn(null,"Cancelar",()=>{cerrarModal();res(false)}),btn("si",si,()=>{cerrarModal();res(true)}));m.append(a)}))}
+function confirmar(tit,txt,si){return new Promise(res=>abrirModal(m=>{m.append(mk("h3",null,tit),mk("p","gu-nota",txt));const a=mk("div","acc");a.append(btn(null,"Cancelar",()=>{cerrarModal();res(false)}),btn("si",si,()=>{cerrarModal();res(true)}));m.append(a)}))}
 function campo(m,lbl,val,area){m.append(mk("label",null,lbl));const i=mk(area?"textarea":"input");if(!area)i.type="text";i.value=val||"";m.append(i);return i}
 function portada(){abrirModal(m=>{const p=G.doc.portada||{};m.append(mk("h3",null,"Portada"));
   const t=campo(m,"Título",Q("gu-titulo").value),a=campo(m,"Escrito por",p.autor),ba=campo(m,"Basado en (opcional)",p.basado),bo=campo(m,"Versión o fecha (abajo a la derecha)",p.borrador),co=campo(m,"Contacto (abajo a la izquierda)",p.contacto,true);
@@ -5093,18 +5152,33 @@ function opciones(){abrirModal(m=>{m.append(mk("h3",null,"Formato y página"));
     td=sel("Después de un diálogo, Enter pasa a",opc.trasDialogo,[["accion","Acción"],["personaje","Personaje"]]);
   const ng=chk("Encabezados de escena en negrita",opc.negritaEscena),sb=chk("Encabezados de escena subrayados",opc.subrayarEscena),np=chk("Números de página (desde la página 2)",opc.numPaginas),ct=chk("Agregar (CONT.) cuando un personaje sigue hablando después de una acción",opc.contd);
   const cx=campo(m,"Cómo escribir (CONT.)",opc.contdTxt);
-  m.append(mk("p","nota","Márgenes de industria: 1,5\" a la izquierda, 1\" arriba, abajo y a la derecha. Courier 12 a 6 líneas por pulgada (≈ 1 página por minuto)."));
+  m.append(mk("p","gu-nota","Márgenes de industria: 1,5\" a la izquierda, 1\" arriba, abajo y a la derecha. Courier 12 a 6 líneas por pulgada (≈ 1 página por minuto)."));
   const acc=mk("div","acc");acc.append(btn(null,"Cancelar",cerrarModal),btn("si","Listo",()=>{marcar();Object.assign(opc,{pagina:pa.value,fuente:fu.value,lineasEscena:+le.value,numEscenas:ne.value,trasDialogo:td.value,negritaEscena:ng.checked,subrayarEscena:sb.checked,numPaginas:np.checked,contd:ct.checked,contdTxt:cx.value.trim()||"(CONT.)"});zoomAuto=true;cerrarModal();cambio()}));m.append(acc)})}
 function atajos(){abrirModal(m=>{m.append(mk("h3",null,"Atajos de teclado"));const t=mk("table","gu-atajos");
   for(const [a,b] of [["Tab","Cambia el tipo de la línea: Escena → Acción → Personaje → Paréntesis → Diálogo → Transición → Plano → Texto"],["Shift+Tab","Lo mismo, para atrás"],["Enter","Línea nueva del tipo que sigue (Escena→Acción, Personaje→Diálogo, Diálogo→Acción, Transición→Escena)"],["Enter en línea vacía","La vuelve Acción"],["Shift+Enter","Línea nueva del mismo tipo"],[`${CTRL}+Shift+1…8`,"Escena, Acción, Personaje, Paréntesis, Diálogo, Transición, Plano, Texto"],["(","En una línea vacía de diálogo o personaje, empieza un paréntesis"],["↑ ↓ y Enter","Elegir una sugerencia (lugares, momentos del día, personajes, transiciones)"],[`${CTRL}+B / I / U`,"Negrita, itálica, subrayado"],[`${CTRL}+Z / ${CTRL}+Shift+Z`,"Deshacer / rehacer"],[`${CTRL}+F`,"Buscar y reemplazar"],[`${CTRL}+K`,"Vincular un post-it o frase a la escena"],[`${CTRL}+S`,"Guardar ya (igual se guarda solo)"],[`${CTRL}+P`,"Exportar PDF"],["Esc","Cerrar sugerencias y ventanas"]]){const tr=mk("tr");tr.append(mk("td",null,a),mk("td",null,b));t.append(tr)}
-  m.append(t,mk("p","nota","Escribir «int.» o «ext.» al principio de una acción y apretar Enter la convierte en escena."));const acc=mk("div","acc");acc.append(btn("si","Listo",cerrarModal));m.append(acc)})}
+  m.append(t,mk("p","gu-nota","Escribir «int.» o «ext.» al principio de una acción y apretar Enter la convierte en escena."));const acc=mk("div","acc");acc.append(btn("si","Listo",cerrarModal));m.append(acc)})}
+function elegirItem({titulo,sub,crear,tipos,onElegir,excluir,peliPrimero}){abrirModal(m=>{m.append(mk("h3",null,titulo));if(sub)m.append(mk("p","gu-nota",sub));
+    const fil=mk("div","gu-fil");let filtro="todo";const ops=[["todo","Todo"],["ideas","Post-its"],["frases","Frases"],["loc","Locaciones"]].filter(([v])=>!tipos||tipos.includes(v));
+    if(ops.length>1)for(const [v,t] of ops){const b=btn(null,t,()=>{filtro=v;fil.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));pintar()});b.setAttribute("aria-pressed",String(v==="todo"));fil.append(b)}
+    const q=mk("input");q.type="text";q.placeholder="Buscá por texto, número o categoría…";m.append(q);if(ops.length>1)m.append(fil);const lista=mk("div","gu-pick");m.append(lista);
+    const locs=new Set(locPostits().map(l=>l.id));
+    const pintar=()=>{const t=norm(q.value);lista.replaceChildren();
+      const creados=crear?crear(q.value.trim()).map(c=>{const b=btn("gu-crear",null,c.fn);b.append(mk("span","gu-mas","+"),mk("span",null,c.txt));return b}):[];if(!q.value.trim())lista.append(...creados);
+      const todo=[...(filtro==="frases"?[]:data.ideas.map(i=>({k:"ideas",i}))),...(filtro==="ideas"||filtro==="loc"?[]:data.frases.map(i=>({k:"frases",i})))]
+        .filter(({k,i})=>!(excluir&&excluir(k,i.id))&&(filtro!=="loc"||locs.has(i.id))&&(!t||norm(i.texto).includes(t)||String(i.numero)===t.replace("#","")||(k==="ideas"&&norm(label(i.tipo)).includes(t))));
+      if(peliPrimero){const pri=i=>/largo|corto|peli|serie|doc|obra|guion|video/.test(norm(label(i.tipo)))?0:1;todo.sort((a,b)=>pri(a.i)-pri(b.i))}
+      todo.slice(0,60).forEach(({k,i})=>{const b=btn("gu-op",null,()=>onElegir(k,i.id));const c=mk("span","gu-pc");c.style.setProperty("--c",colorDe(k,i));
+        const tx=mk("span","gu-pt");tx.append(mk("b",null,((i.texto||"").replace(/\s+/g," ").trim().slice(0,90))||"(sin texto)"),mk("small",null,k==="frases"?"Frase"+(i.autor?" · "+i.autor:""):`#${i.numero||"?"} · ${label(i.tipo)}${locs.has(i.id)?" · locación":""}`));b.append(c,tx);lista.append(b)});
+      if(!todo.length&&!(q.value.trim()&&creados.length))lista.append(mk("p","gu-nota",q.value?"No encontré nada con eso.":"No hay nada para mostrar acá."));if(q.value.trim())lista.append(...creados)};
+    q.oninput=pintar;pintar();const acc=mk("div","acc");acc.append(btn(null,"Cancelar",cerrarModal));m.append(acc)})}
 function vincular(){const p=actual()||ultP;const e=p?escenaDe(p):null;if(!e){toast("Poné el cursor adentro de una escena (debajo de un encabezado).");return}
-  abrirModal(m=>{m.append(mk("h3",null,"Vincular a esta escena"),mk("p","nota",e.textContent.trim()||"(escena sin título)"));const q=mk("input");q.type="text";q.placeholder="Buscá un post-it o una frase por texto, número o categoría…";m.append(q);const lista=mk("div","gu-pick");m.append(lista);
-    const pintar=()=>{const t=norm(q.value);lista.replaceChildren();const ya=new Set(refsDe(e.dataset.id).map(r=>r.k+":"+r.id));
-      const todo=[...data.ideas.map(i=>({k:"ideas",i})),...data.frases.map(i=>({k:"frases",i}))].filter(({k,i})=>!ya.has(k+":"+i.id)&&(!t||norm(i.texto).includes(t)||String(i.numero)===t.replace("#","")||(k==="ideas"&&norm(label(i.tipo)).includes(t))||(k==="frases"&&"frase".includes(t))));
-      todo.slice(0,40).forEach(({k,i})=>{const b=btn(null,null,()=>{marcar();agregarRef(e,{k,id:i.id});cerrarModal();toast("Vinculado. Lo ves al costado de la escena.")});const c=mk("span","c");c.style.setProperty("--c",colorDe(k,i));b.append(c,mk("span","n",(k==="frases"?"F":"#")+(i.numero||"?")),mk("span",null,((i.texto||"").replace(/\s+/g," ").trim().slice(0,80))||"(sin texto)"));lista.append(b)});
-      if(!lista.children.length)lista.append(mk("p","nota","No encontré nada con eso."))};
-    q.oninput=pintar;pintar();const acc=mk("div","acc");acc.append(btn(null,"Cerrar",cerrarModal));m.append(acc)})}
+  const n=bloques().filter(x=>x.dataset.t==="escena").indexOf(e)+1,marcado=String(getSelection()).replace(/\s+/g," ").trim().slice(0,300);
+  elegirItem({titulo:`Vincular a la escena ${n}`,sub:`${e.textContent.trim()||"(escena sin título)"} — Elegí un post-it o una frase: queda pegado al costado de la escena, y adentro de ese post-it vas a ver que aparece en el guion. El texto del guion no cambia.`,
+    excluir:(k,id)=>refsDe(e.dataset.id).some(r=>r.k===k&&r.id===id),
+    crear:q=>{const out=[];const txt=q||marcado;if(txt)out.push({txt:`Crear un post-it nuevo «${txt.slice(0,60)}${txt.length>60?"…":""}» y vincularlo`,fn:async()=>{cerrarModal();const id=await crearPostit(txt);if(id){marcar();agregarRef(e,{k:"ideas",id});toast("Post-it creado en la plancha y vinculado a la escena.")}}});return out},
+    onElegir:(k,id)=>{marcar();agregarRef(e,{k,id});cerrarModal();toast("Vinculado. Lo ves al costado de la escena.")}})}
+async function crearPostit(texto){if(!cols.ideas)return null;const ahora=Date.now(),numero=data.ideas.reduce((m,i)=>Math.max(m,i.numero||0),0)+1,b=lzMain.aMundo(innerWidth/2,innerHeight/2),p=lugarCerca(b.x,b.y);
+  fijarSinPosicion("ideas");try{const r=await cols.ideas.add({texto,tipo:tipoNueva,creado:ahora,numero,x:Math.round(p.x),y:Math.round(p.y)});return r.id}catch(_){toast("No se pudo crear el post-it.");return null}}
 
 /* ---------- buscar y reemplazar ---------- */
 let hall=[],hallI=-1;
@@ -5195,10 +5269,10 @@ async function pdf(){if(!G)return;await guardarYa();maquetar();const pg=PAGINAS[
 
 /* ---------- botones ---------- */
 raiz.addEventListener("click",e=>{const b=e.target.closest("[data-a],[data-lado]");if(!b||!raiz.contains(b))return;
-  if(b.dataset.lado){ladoTab=b.dataset.lado;pintarSide();return}
+  if(b.dataset.lado){if(ladoTab!==b.dataset.lado)Q("gu-sq").value="";ladoTab=b.dataset.lado;pintarSide();return}
   const a=b.dataset.a,m=Q("gu-m-archivo");if(a!=="archivo")m.hidden=true;
   ({salir,mis:mostrarLista,nuevo:()=>nuevo(),importar:()=>Q("gu-file").click(),lado:()=>{const s=Q("gu-side");s.hidden=!s.hidden;zoomAuto=true;pedirLayout()},
-    b:()=>formato("b"),i:()=>formato("i"),u:()=>formato("u"),vincular,buscar:abrirBuscar,archivo:()=>{m.hidden=!m.hidden},
+    mitad:alternarMitad,b:()=>formato("b"),i:()=>formato("i"),u:()=>formato("u"),vincular,buscar:abrirBuscar,archivo:()=>{m.hidden=!m.hidden},
     portada,opciones,pdf,fdx:()=>{bajar(nombreArchivo("fdx"),aFDX(),"application/xml");toast("Exportado para Final Draft.")},fountain:()=>bajar(nombreArchivo("fountain"),aFountain(),"text/plain"),atajos,borrar:borrarGuion,
     zm:()=>{zoomAuto=false;zoom=Math.max(.4,Math.round((zoom-.1)*10)/10);maquetar()},zp:()=>{zoomAuto=false;zoom=Math.min(2,Math.round((zoom+.1)*10)/10);maquetar()},
     "f-ant":()=>irHall(-1),"f-sig":()=>irHall(1),"f-cerrar":cerrarBuscar,"f-uno":()=>reemplazar(false),"f-todo":()=>reemplazar(true)}[a]||(()=>{}))()});
@@ -5207,6 +5281,7 @@ Q("gu-spacer").addEventListener("mousedown",e=>{if(e.target.closest(".gu-chip")|
 addEventListener("resize",()=>{if(!raiz.hidden&&G){zoomAuto=zoomAuto||innerWidth<760;pedirLayout()}});
 /* todas las teclas mientras el guion está abierto: primero acá, y no le llegan a la plancha de atrás */
 addEventListener("keydown",e=>{if(raiz.hidden)return;const tg=e.target;if(tg&&tg.closest&&tg.closest("#novedades,#ayuda,#gcal"))return;
+  if(mitad&&modal.hidden&&(tg&&tg!==document.body?!raiz.contains(tg):ladoMitad==="plancha"))return;
   const c=e.ctrlKey||e.metaKey,l=(e.key||"").toLowerCase(),esInput=!!tg&&/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName);
   if(e.key==="Escape"&&esInput&&tg.closest(".gu-per"))return;
   if(esInput&&!(e.key==="Escape"||(c&&!e.altKey&&"fksp".includes(l)&&l.length===1&&!(!modal.hidden&&modal.contains(tg)))))return;
