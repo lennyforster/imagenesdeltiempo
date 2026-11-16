@@ -732,7 +732,9 @@ body.en-diario .dia-herr{display:flex}
 .pv-img{width:100%;height:100%;min-height:200px;object-fit:cover;display:block;background:rgba(43,37,32,.1)}
 .pv-pie{display:flex;align-items:center;justify-content:space-between;gap:6px}
 .pv-pie span{font:500 9.5px var(--mono);text-transform:uppercase;color:var(--soft)}
-.pv-sacar{border:0;border-radius:999px;background:var(--ink);color:var(--paper);font:600 11px var(--ui);padding:5px 10px;cursor:pointer}
+.pv-sacar{border:0;border-radius:999px;background:rgba(43,37,32,.07);color:rgba(43,37,32,.55);font:600 10.5px var(--ui);padding:3px 8px;cursor:pointer;opacity:0;transition:opacity .15s,background .15s}
+.pv-nota:hover .pv-sacar,.pv-sacar:focus-visible{opacity:1}.pv-sacar:hover{background:var(--ink);color:var(--paper)}
+@media (hover:none){.pv-sacar{opacity:.75}}
 .pv-vacio{color:var(--paper);font:600 .95rem var(--ui)}
 .pv-titulo{flex:0 1 340px;min-width:0;font:700 1.05rem var(--hand);color:var(--ink);background:var(--paper);border:0;border-radius:999px;padding:9px 16px;box-shadow:0 2px 8px rgba(0,0,0,.28)}
 .pv-titulo:focus{outline:2px solid var(--ink);outline-offset:2px}
@@ -1294,6 +1296,24 @@ body.gu-mitad .gu-pie span:not(:first-child):not(:nth-child(2)){display:none}
 .gu-chip.gu-chip-mini{width:26px;height:26px;padding:0;justify-content:center;font:800 12px var(--ui);border-radius:50%}
 .gu-chip.gu-chip-mini::before{display:none}
 body.gu-mitad #detalle{border-left:4px solid #ffe76a}
+/* en vivo */
+.gu-gente{display:flex;align-items:center;gap:4px;background:rgba(255,253,246,.92);border-radius:999px;padding:3px 8px 3px 6px}
+.gu-gente[hidden]{display:none}
+.gu-gente .gu-av{width:22px;height:22px;font-size:11px;box-shadow:0 0 0 2px #fff}
+.gu-vivo-dot{width:8px;height:8px;border-radius:50%;background:#e0457b;animation:guLate 1.6s infinite}
+@keyframes guLate{50%{opacity:.35}}
+.gu-vivo-t{font:700 11.5px var(--ui);color:var(--ink);margin-right:2px}
+.gu-carets{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none}
+.gu-caret{position:absolute;width:2px;background:var(--c);pointer-events:none}
+.gu-caret span{position:absolute;left:0;top:-15px;background:var(--c);color:#fff;font:700 10px var(--ui);padding:1px 5px;border-radius:4px 4px 4px 0;white-space:nowrap}
+.gu-link{display:grid;gap:4px;margin-top:14px}.gu-link b{font:700 15px var(--ui)}.gu-link small{font:500 12.5px var(--ui);color:#777}
+.gu-link-f{display:flex;gap:6px}.gu-link-f input{flex:1;min-width:0;border:1px solid rgba(43,37,32,.2);border-radius:9px;padding:9px 10px;font:13px var(--mono);background:#fff}
+.gu-link-f .si{border:0;border-radius:999px;padding:8px 14px;font:600 13px var(--ui);background:var(--ink);color:var(--paper);cursor:pointer;white-space:nowrap}
+body.gu-inv .gu-top [data-a="mis"],body.gu-inv .gu-top [data-a="vincular"],body.gu-inv .gu-top [data-a="mitad"],body.gu-inv .solo-duenio,body.gu-inv .gu-pilaloc{display:none!important}
+body.gu-lectura .gu-top .gu-sel,body.gu-lectura .gu-top [data-a="b"],body.gu-lectura .gu-top [data-a="i"],body.gu-lectura .gu-top [data-a="u"],body.gu-lectura .solo-edita,body.gu-lectura .gu-find .f:last-child,body.gu-lectura .gu-per .gu-ren,body.gu-lectura .gu-port-hint{display:none!important}
+body.gu-lectura .gu-texto{caret-color:transparent}
+.gu-texto p.gu-flash{animation:guFlash 1.6s ease-out}@keyframes guFlash{0%,40%{background:#ffe76a}100%{background:transparent}}
+body.gu-lectura .gu-pie span:last-child{display:none}
 </style>
 <div class="cargando" id="cargando" hidden role="status"><span class="cg-punto"></span>Cargando tu plancha…</div>
 <div class="conectar" id="conectar" hidden>
@@ -1318,7 +1338,7 @@ body.gu-mitad #detalle{border-left:4px solid #ffe76a}
 <script>
 /* ===== Datos en GitHub: reemplaza al runtime de claude.ai con la misma forma (db, assets, downloads) ===== */
 (function(){
-if(location.hash==="#recorrido")return; /* plancha de prueba: no se conecta a nada */
+if(location.hash==="#recorrido"||/^#guion(vivo|ver)=[a-z0-9]{20,}/.test(location.hash))return; /* plancha de prueba o guion compartido: no se conecta a nada */
 const GH={owner:"lennyforster",branch:"main",repos:["banco-de-ideas-datos","banco-de-ideas-datos-2","banco-de-ideas-datos-3","banco-de-ideas-datos-4","banco-de-ideas-datos-5","banco-de-ideas-datos-6","banco-de-ideas-datos-7","banco-de-ideas-datos-8"]};
 const API="https://api.github.com";let RB=null;
 /* traspaso desde la dirección vieja (lennyforster.github.io/banco-de-ideas): la página vieja manda la clave y las preferencias en el #, que nunca viaja a ningún servidor */
@@ -1844,9 +1864,10 @@ window.claude={use:async n=>{if(INVITADO&&n==="db"){if(!listo)listo=conectar();r
 
 <script>
 /* ===== Recorrido guiado: con #recorrido en la dirección, la web arranca sobre una plancha de prueba en memoria. Nada se guarda ni toca los datos reales ===== */
-(function(){if(location.hash!=="#recorrido")return;window.__demo=true;
+(function(){const GV=/^#guion(vivo|ver)=([a-z0-9]{20,})/.exec(location.hash);if(location.hash!=="#recorrido"&&!GV)return;
+  if(GV){window.__guionInv={modo:GV[1]==="vivo"?"e":"l",id:GV[2]}}else window.__demo=true;
   /* lo que se toque en la prueba (orden, fondo, etc.) no cambia tus preferencias reales */
-  try{const m=new Map();for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);m.set(k,localStorage.getItem(k))}
+  if(!GV)try{const m=new Map();for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);m.set(k,localStorage.getItem(k))}
     const falso={getItem:k=>m.has(k)?m.get(k):null,setItem:(k,v)=>{m.set(k,String(v))},removeItem:k=>{m.delete(k)},clear:()=>m.clear(),key:i=>[...m.keys()][i]??null,get length(){return m.size}};
     Object.defineProperty(window,"localStorage",{value:falso,configurable:true})}catch(_){}
   const hoy=Date.now(),ID=n=>"demo"+String(n).padStart(16,"0");
@@ -1859,7 +1880,7 @@ window.claude={use:async n=>{if(INVITADO&&n==="db"){if(!listo)listo=conectar();r
     ["ideas/"+ID(5)]:{texto:"Palomas mensajeras",tipo:"otro",creado:hoy-864e5*2,numero:5,x:280,y:300,bloques:[]},
     ["frases/"+ID(6)]:{texto:"El arte no se puede explicar, sucede o no sucede",autor:"",creado:hoy-864e5*3,numero:1,x:0,y:0},
     ["frases/"+ID(7)]:{texto:"Sinergia significa cuando el todo excede la suma de las partes",autor:"Buckminster Fuller",creado:hoy-864e5*2,numero:2,x:280,y:0}};
-  const docs=new Map(Object.entries(JSON.parse(JSON.stringify(SEED))));window.__docs=docs;
+  const docs=new Map(GV?[]:Object.entries(JSON.parse(JSON.stringify(SEED))));window.__docs=docs;
   const colL=new Map(),docL=new Map(),colDe=k=>k.slice(0,k.lastIndexOf("/"));
   function snapCol(col,orden){let arr=[...docs].filter(([k])=>colDe(k)===col).map(([k,v])=>({id:k.slice(col.length+1),_d:v}));
     if(orden){const {f,dir}=orden,sg=dir==="desc"?-1:1;arr.sort((a,b)=>{const x=a._d[f],y=b._d[f];if(x===y)return 0;if(x===undefined)return 1;if(y===undefined)return -1;return x<y?-sg:sg})}
@@ -3380,12 +3401,13 @@ const AYUDA=[
  {t:"Pilas",it:[
   [{h:'<span class="ay-apilar"><span class="ay-post"></span><span class="ay-flechita">→</span><span class="ay-pila"><i></i><i></i><span class="ay-post"></span><em>2</em></span></span>'},"Arrastrá un post-it y soltalo arriba de otro: se arma una pila. Soltá más encima para sumarlos."],
   [{chip:"✎"},"Pasá por arriba de una pila y tocá el lápiz: le cambiás el título sin entrar. (Adentro de un post-it también, o con doble clic en el título.)"],
-  [{h:'<span class="ay-pila"><i></i><i></i><span class="ay-post"></span><em>5</em></span>'},"Tocala para ver todo lo que tiene. Ahí le ponés título, sacás una nota con «Sacar ↗», o usás «Deshacer pila» (las notas quedan sueltas) o «Borrar pila» (se borra con todo)."],
+  [{h:'<span class="ay-pila"><i></i><i></i><span class="ay-post"></span><em>5</em></span>'},"Tocala para ver todo lo que tiene. Ahí le ponés título, sacás una nota con «Sacar ↗» (aparece al pasar por arriba), o usás «Deshacer pila» (las notas quedan sueltas) o «Borrar pila» (se borra con todo)."],
   [{h:'<span class="ay-pila keep"><i></i><i></i><span class="ay-post"><small>De Keep</small></span></span>'},"Lo que importaste de Google Keep vive en esa pila hasta que lo vayas sacando."],
   [null,"Las pilas con título no se deshacen solas aunque queden con una nota o vacías: sirven de carpeta (por ejemplo, «Locaciones»)."],
   [{chip:"+ Nuevo acá"},"Adentro de una pila, crea un post-it nuevo ya guardado ahí, con la categoría de la pila."],
   [null,"Si un post-it tiene una imagen adentro, en la pila se ve grande y con la foto. Sirve, por ejemplo, para las locaciones. Y la pila muestra una de esas fotos en la tapa, en la plancha."],
   ["Doble clic adentro de una pila","Escribís un post-it nuevo ahí mismo, ya guardado en la pila. Enter lo pega, Esc lo cancela."],
+  [{chip:"Ctrl+C · Ctrl+V"},"Elegí una pila (con Shift + arrastrar) y copiala: se pega con todo lo que tiene adentro. Anda en la plancha, adentro de un post-it, y de uno a otro. Ctrl+D la duplica."],
   [null,"Si creás un post-it desde «Referencia» con una categoría que se llama igual que una pila, va directo adentro de esa pila."],
   [{chip:"+ Referencia"},"Adentro de una pila: pone ahí un post-it que vive en otra pila (o en la plancha). Sigue en su lugar de siempre."],
   [{chip:"Tapa"},"Adentro de una pila con fotos: cambia qué foto se ve en la tapa, o la saca."],
@@ -3449,6 +3471,12 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:39,f:"16 de noviembre",it:[
+  ["Adentro de las pilas, el botón «Sacar» es más discreto: aparece cuando pasás por arriba.",null,3]]},
+ {n:40,f:"16 de noviembre",mio:true,it:[
+  ["*Guion compartido:* en Archivo → «Compartir» se arman dos links. Con el de *editar* escriben con vos al mismo tiempo (ves el cursor y el nombre de cada uno). El de *lectura* sirve para leerlo y bajarlo en PDF sin tocar nada. No hace falta cuenta.",null,1],
+  ["Adentro de una locación, «En el guion: … esc. 3» ahora abre esa escena en la mitad de la pantalla, sin cerrar el post-it.",null,2],
+  ["Si en «Vincular» creás un post-it nuevo, queda adentro del post-it de la película (no suelto en la plancha principal).",null,2]]},
  {n:37,f:"16 de noviembre",it:[
   ["Ya se pueden *copiar y pegar pilas* (Ctrl+C / Ctrl+V) y duplicarlas (Ctrl+D), con todo lo que tienen adentro. Anda en la plancha y adentro de los post-its, y también de uno a otro.",null,2]]},
  {n:38,f:"16 de noviembre",mio:true,it:[
@@ -3590,7 +3618,7 @@ const NOVEDADES=[
   AYUDA.splice(i<0?AYUDA.length:i,0,{t:"Historial de cambios",it:[],hist:dias})}
 /* texto del cartel escrito por Lenny: *así* va en negrita y _así_ en itálica */
 function fmtNov(tag,cls,txt){const n=el(tag,cls);for(const p of String(txt).split(/(\*[^*]+\*|_[^_]+_)/))if(p){if(/^\*[^*]+\*$/.test(p))n.append(el("b",null,p.slice(1,-1)));else if(/^_[^_]+_$/.test(p))n.append(el("i",null,p.slice(1,-1)));else n.append(p)}return n}
-function verNovedades(todas,comoAmigo){if(window.__invitado||window.__demo||$("novedades"))return;const ult=NOVEDADES[0].n;let v=null;try{v=localStorage.getItem("nov_vista")}catch(_){}
+function verNovedades(todas,comoAmigo){if(window.__invitado||window.__demo||window.__guionInv||$("novedades"))return;const ult=NOVEDADES[0].n;let v=null;try{v=localStorage.getItem("nov_vista")}catch(_){}
   const marcar=()=>{try{localStorage.setItem("nov_vista",String(ult))}catch(_){}};
   if(!todas&&window.__entraNuevo){marcar();return}/* quien recién entra ve la guía, no hace falta el cartel */
   let mio=false;try{mio=!comoAmigo&&localStorage.getItem("gh_repo")==="banco-de-ideas-datos"}catch(_){}
@@ -4664,7 +4692,7 @@ drawComposer();setVista(vista);try{if(localStorage.getItem("pestana")==="diario"
 /* ===== Guion: editor de guiones con formato profesional. Por ahora en prueba: solo aparece en la cuenta de Lenny ===== */
 (function(){
 let mio=false;try{mio=localStorage.getItem("gh_repo")==="banco-de-ideas-datos"}catch(_){}
-if(window.__invitado||!(mio||window.__guionPrueba))return;
+if(window.__invitado||!(mio||window.__guionPrueba||window.__guionInv))return;
 
 /* ---------- constantes de formato (en píxeles CSS: 96 por pulgada, Courier 12 pt = 16 px, 6 líneas por pulgada) ---------- */
 const LH=16,MT=96,MB=96,ML=144,MR=96,GAP=28;
@@ -4714,7 +4742,7 @@ raiz.innerHTML=`
     <button type="button" class="gu-b" data-a="mis" title="Todos tus guiones">← Guiones</button>
     <button type="button" class="gu-b gu-ic" data-a="lado" title="Escenas, personajes y locaciones">☰</button>
     <input class="gu-titulo" id="gu-titulo" placeholder="Sin título" maxlength="120" aria-label="Título del guion">
-    <span class="gu-estado" id="gu-estado"></span>
+    <span class="gu-estado" id="gu-estado"></span><span class="gu-gente" id="gu-gente" hidden></span>
     <span class="gu-esp"></span>
     <select class="gu-sel" id="gu-tipo" title="Tipo de texto. Tab y Shift+Tab lo cambian." aria-label="Tipo de texto"></select>
     <button type="button" class="gu-b gu-ic solo-ancho" data-a="b" title="Negrita (${CTRL}+B)"><b>B</b></button>
@@ -4724,17 +4752,19 @@ raiz.innerHTML=`
     <button type="button" class="gu-b solo-ancho gu-bmitad" data-a="mitad" title="Guion y plancha de la película, mitad y mitad">◧ <span class="gu-lbl">Plancha al lado</span></button>
     <button type="button" class="gu-b solo-ancho" data-a="buscar" title="Buscar y reemplazar (${CTRL}+F)">Buscar</button>
     <div class="gu-mw"><button type="button" class="gu-b" data-a="archivo">Archivo ▾</button><div class="gu-menu" id="gu-m-archivo" hidden>
-      <button type="button" data-a="portada">Portada…</button>
-      <button type="button" data-a="opciones">Formato y página…</button>
+      <button type="button" data-a="compartir" class="solo-duenio">Compartir (links para editar y leer)…</button>
+      <hr class="solo-duenio">
+      <button type="button" data-a="portada" class="solo-edita">Portada…</button>
+      <button type="button" data-a="opciones" class="solo-edita">Formato y página…</button>
       <hr>
       <button type="button" data-a="pdf">Exportar PDF <small>${CTRL}+P</small></button>
       <button type="button" data-a="fdx">Exportar Final Draft (.fdx)</button>
       <button type="button" data-a="fountain">Exportar Fountain (.fountain)</button>
-      <button type="button" data-a="importar">Importar Final Draft o Fountain…</button>
+      <button type="button" data-a="importar" class="solo-duenio">Importar Final Draft o Fountain…</button>
       <hr>
       <button type="button" data-a="atajos">Atajos de teclado</button>
       <hr>
-      <button type="button" class="peligro" data-a="borrar">Borrar este guion</button>
+      <button type="button" class="peligro solo-duenio" data-a="borrar">Borrar este guion</button>
     </div></div>
     <div class="gu-zoom solo-ancho"><button type="button" data-a="zm" aria-label="Alejar">−</button><span id="gu-zv">100%</span><button type="button" data-a="zp" aria-label="Acercar">+</button></div>
   </div>
@@ -4824,7 +4854,7 @@ function pintarTipoUI(){const p=actual();if(p&&selTipo.value!==p.dataset.t)selTi
   if(p&&vacio(p)&&p.dataset.t!=="parentesis")p.dataset.ph=PH[p.dataset.t]}
 selTipo.onchange=()=>{const p=ultP&&ultP.isConnected?ultP:actual();if(!p)return;marcar();setTipo(p,selTipo.value);ed.focus();if(ultR)try{const s=getSelection();s.removeAllRanges();s.addRange(ultR)}catch(_){}if(selTipo.value==="parentesis")caret(p,Math.max(1,p.textContent.length-1));pintarTipoUI()};
 let ultP=null,ultR=null;
-document.addEventListener("selectionchange",()=>{if(raiz.hidden||Q("gu-ed").hidden)return;const r=rango();if(!r)return;ultR=r.cloneRange();ultP=actual();pintarTipoUI();marcarEscenaActual();pintarPie();if(acBox.dataset.p&&(!ultP||ultP.dataset.id!==acBox.dataset.p))cerrarAC()});
+document.addEventListener("selectionchange",()=>{if(raiz.hidden||Q("gu-ed").hidden)return;const r=rango();if(!r)return;if(V&&V.listo&&!V.aplicando)guardarRel();ultR=r.cloneRange();ultP=actual();pintarTipoUI();marcarEscenaActual();pintarPie();if(acBox.dataset.p&&(!ultP||ultP.dataset.id!==acBox.dataset.p))cerrarAC()});
 
 /* ---------- teclas ---------- */
 function partir(p){const r=rango();if(!r.collapsed)r.deleteContents();
@@ -4959,7 +4989,7 @@ function abrirPop(v,ancla,pid){const i=v.i;pop.replaceChildren();
 function cerrarPop(){pop.hidden=true}
 document.addEventListener("pointerdown",e=>{if(!pop.hidden&&!pop.contains(e.target)&&!e.target.closest(".gu-chip"))cerrarPop();const m=Q("gu-m-archivo");if(!m.hidden&&!e.target.closest(".gu-mw"))m.hidden=true},true);
 let mitad=false,mitadCambia=false,ladoMitad="guion";
-function abrirEnMitad(k,id){mitadCambia=true;try{if(abierto)cerrar();abrir(k,id)}finally{mitadCambia=false}if(!mitad){ladoAntes=Q("gu-side").hidden;Q("gu-side").hidden=true}document.body.classList.add("gu-mitad");mitad=true;Q("gu-ed").querySelector('[data-a="mitad"]').setAttribute("aria-pressed","true");zoomAuto=true;pedirLayout();pintarVolverG()}
+function abrirEnMitad(k,id){mitadCambia=true;try{if(abierto)cerrar();abrir(k,id)}finally{mitadCambia=false}if(!mitad){ladoAntes=Q("gu-side").hidden;Q("gu-side").hidden=true;try{lzHoja.tx-=innerWidth/4;lzHoja.apply()}catch(_){}}document.body.classList.add("gu-mitad");mitad=true;Q("gu-ed").querySelector('[data-a="mitad"]').setAttribute("aria-pressed","true");zoomAuto=true;pedirLayout();pintarVolverG()}
 let ladoAntes=false;
 function salirMitad(cerrarHoja){if(!mitad)return;mitad=false;Q("gu-side").hidden=ladoAntes&&innerWidth>=760?true:innerWidth<760;document.body.classList.remove("gu-mitad");Q("gu-ed").querySelector('[data-a="mitad"]').setAttribute("aria-pressed","false");if(cerrarHoja&&abierto){mitadCambia=true;try{cerrar()}finally{mitadCambia=false}}zoomAuto=true;pedirLayout()}
 function alternarMitad(){if(mitad){salirMitad(true);return}if(!G)return;const pid=G.doc.postit;if(pid&&itemDe("ideas",pid)){guardarYa();abrirEnMitad("ideas",pid);return}
@@ -4971,16 +5001,25 @@ function pintarVolverG(){if(!abierto||navRef.length)return;if(mitad)$("volver").
 {const c0=cerrar;cerrar=function(){const r=c0.apply(this,arguments);if(mitad&&!mitadCambia)setTimeout(()=>{if(!abierto&&mitad)salirMitad(false)},0);if(vuelveGuion)setTimeout(()=>{if(!abierto&&vuelveGuion){const v=vuelveGuion;vuelveGuion=null;entrar(v.gid,v.scroll)}},0);return r};
  const v0=pintarVolver;pintarVolver=function(){const r=v0.apply(this,arguments);pintarVolverG();return r}}
 /* adentro de un post-it: «En el guion: …» */
+{const r0=refrescarRefs;refrescarRefs=function(){const r=r0.apply(this,arguments);if(!raiz.hidden&&G&&lay){clearTimeout(tChipsR);tChipsR=setTimeout(()=>{pintarChips();pedirSide()},120)}return r}}
+let tChipsR=0;
 {const a0=pintarAparece;pintarAparece=function(){const r=a0.apply(this,arguments);try{pintarEnGuion()}catch(e){console.error(e)}return r}}
 function apariciones(k,id){const out=[];const it=itemDe(k,id);const nombre=it&&k==="ideas"?norm((it.texto||"").split("\n")[0]):"";const esLoc=it&&k==="ideas"&&(!!it.dentro||locPostits().some(l=>l.id===id));
   for(const g of guiones){let n=0;for(const b of (g.bloques||[])){if(b.t!=="escena")continue;n++;
     const tmp=mk("div");tmp.innerHTML=b.h||"";const lug=norm(lugarDe(tmp.textContent));
     if((b.refs||[]).some(r=>r.k===k&&r.id===id)||(esLoc&&nombre&&lug===nombre))out.push({g,n,bid:b.id})}}
   return out}
+/* desde un post-it: la escena se abre en la mitad izquierda, sin cerrar el post-it */
+function escenaAlLado(gid,bid){const g=guiones.find(x=>x.id===gid);if(!g){toast("Ese guion ya no existe.");return}
+  if(innerWidth<=900||!abierto){vuelveGuion=null;if(abierto)cerrar();entrar(gid,null,bid);return}
+  raiz.hidden=false;document.body.classList.add("en-guion");tab.setAttribute("aria-selected","true");
+  if(!G||G.id!==gid)abrirGuion(g,null,bid);else{const p=ed.querySelector(`p[data-id="${CSS.escape(bid)}"]`);if(p)setTimeout(()=>irABloque(p),60)}
+  if(!mitad){ladoAntes=Q("gu-side").hidden;Q("gu-side").hidden=true;try{lzHoja.tx-=innerWidth/4;lzHoja.apply()}catch(_){}}document.body.classList.add("gu-mitad");mitad=true;Q("gu-ed").querySelector('[data-a="mitad"]').setAttribute("aria-pressed","true");zoomAuto=true;pedirLayout();pintarVolverG();
+  setTimeout(()=>{const p=ed.querySelector(`p[data-id="${CSS.escape(bid)}"]`);if(p){p.classList.add("gu-flash");setTimeout(()=>p.classList.remove("gu-flash"),1600)}},250)}
 function pintarEnGuion(){if(!abierto||abierto.k==="diario")return;const p=$("capa-hoja").querySelector(".principal");if(!p)return;let a=p.querySelector(".aparece.ap-guion");
   const l=apariciones(abierto.k,abierto.id);if(!l.length){if(a)a.remove();return}
   if(!a){a=mk("div","aparece ap-guion");p.append(a)}
-  a.replaceChildren(mk("span",null,"En el guion:"),...l.slice(0,12).map(x=>{const b=btn(null,`${x.g.titulo||"Sin título"} · esc. ${x.n}`,()=>{vuelveGuion=null;cerrar();entrar(x.g.id,null,x.bid)});b.style.setProperty("--c","#e9e4d8");b.title="Ir a esa escena";return b}))}
+  a.replaceChildren(mk("span",null,"En el guion:"),...l.slice(0,12).map(x=>{const b=btn(null,`${x.g.titulo||"Sin título"} · esc. ${x.n}`,()=>escenaAlLado(x.g.id,x.bid));b.style.setProperty("--c","#e9e4d8");b.title="Ir a esa escena";return b}))}
 
 /* ---------- maquetado: páginas, márgenes, (CONT.), números ---------- */
 function clasesTexto(){return ["gu-texto",opc.negritaEscena?"neg-esc":"",opc.subrayarEscena?"sub-esc":"",opc.numEscenas==="izq"?"num-izq":opc.numEscenas==="der"?"num-der":opc.numEscenas==="ambos"?"num-ambos":""].filter(Boolean).join(" ")}
@@ -5088,42 +5127,42 @@ function ponerPeli(id,nuevo){if(!G)return;const viejo=G.doc.postit;G.doc.postit=
   if(viejo&&viejo!==id)for(const i of data.ideas)if(i.dentro===viejo&&i.guionLoc===G.id)escribir(cols.ideas,i.id,{dentro:id},{silencioso:true});
   setTimeout(()=>{sincLocaciones();pintarSide();pintarChips();if(esperandoMitad&&innerWidth>900){esperandoMitad=false;abrirEnMitad("ideas",id)}},400);toast("Listo: este guion es de esa película.")}
 /* cambiar los bloques del post-it de la película, esté abierto al lado o no */
-function editarPeli(fn){const pe=peli();if(!pe)return false;
+function editarPeli(fn,pe0){const pe=pe0?itemDe("ideas",pe0.id)||pe0:peli();if(!pe)return false;
   if(abierto&&abierto.k==="ideas"&&abierto.id===pe.id){const bl=abierto.doc.bloques;if(!fn(bl))return true;guardarBloques();try{pintarHoja()}catch(_){}return true}
   const bl=JSON.parse(JSON.stringify(pe.bloques||[]));if(fn(bl))escribir(cols.ideas,pe.id,{bloques:bl},{silencioso:true});return true}
 function lugarLibreEn(bl){const xs=bl.filter(b=>!b.en&&isFinite(b.x)),x=xs.length?Math.max(...xs.map(b=>b.x+(b.w||220)))+60:460;return {x:Math.round(x),y:0}}
 const creandoLoc=new Set();let sincEnCurso=false;
-async function sincLocaciones(extra){if(!G||!cols.ideas||sincEnCurso)return;const pe=peli();if(!pe)return;
+async function sincLocaciones(extra){if(!G||!cols.ideas||sincEnCurso)return;const pe=peli();if(!pe)return;const GG=G,tituloG=Q("gu-titulo").value.trim()||"Sin título";
   const actualP=document.activeElement===ed?actual():null;
   const lugares=new Map();for(const p of bloques()){if(p.dataset.t!=="escena"||p===actualP)continue;const txt=p.textContent;if(!/\s[-–—]\s*\S/.test(txt))continue;const l=lugarDe(txt);if(l&&l.length>=2)lugares.set(norm(l),l)}
   for(const l of extra||[])lugares.set(norm(l),l);
   sincEnCurso=true;try{
     /* lo del arreglo anterior (pila suelta en la plancha) se muda adentro de la película */
-    const migrados=[];if(G.doc.pilaLoc){const viejaP=G.doc.pilaLoc;for(const i of data.ideas)if(i.pila===viejaP&&migrados.push(i.id))escribir(cols.ideas,i.id,{pila:"",dentro:pe.id,guionLoc:i.guionLoc||G.id,guionLocTxt:i.guionLocTxt||i.texto},{silencioso:true});if(colPilas&&pilas.some(p=>p.id===viejaP))colPilas.doc(viejaP).delete().catch(()=>{});delete G.doc.pilaLoc;sucio=true}
+    const migrados=[];if(GG.doc.pilaLoc){const viejaP=GG.doc.pilaLoc;for(const i of data.ideas)if(i.pila===viejaP&&migrados.push(i.id))escribir(cols.ideas,i.id,{pila:"",dentro:pe.id,guionLoc:i.guionLoc||GG.id,guionLocTxt:i.guionLocTxt||i.texto},{silencioso:true});if(colPilas&&pilas.some(p=>p.id===viejaP))colPilas.doc(viejaP).delete().catch(()=>{});delete GG.doc.pilaLoc;sucio=true}
     const cat=cats.find(x=>/locaci/.test(norm(x.nombre)));let numero=data.ideas.reduce((m,i)=>Math.max(m,i.numero||0),0);const ahora=Date.now();const nuevos=[];
     for(const [k,l] of lugares){if(postitDeLugar(l)||creandoLoc.has(k))continue;creandoLoc.add(k);numero++;
-      const body={texto:capitalizar(l),tipo:cat?cat.id:"otro",creado:ahora+nuevos.length,numero,dentro:pe.id,guionLoc:G.id,guionLocTxt:capitalizar(l)};
+      const body={texto:capitalizar(l),tipo:cat?cat.id:"otro",creado:ahora+nuevos.length,numero,dentro:pe.id,guionLoc:GG.id,guionLocTxt:capitalizar(l)};
       nuevos.push(cols.ideas.add(body).then(r=>r.id).catch(()=>null).finally(()=>setTimeout(()=>creandoLoc.delete(k),4000)))}
     const idsNuevos=(await Promise.all(nuevos)).filter(Boolean);
     /* las que armó el guion y ya no se usan (y nadie tocó) se van */
     const borrar=new Set();
-    for(const i of data.ideas){if(i.guionLoc!==G.id||i.dentro!==pe.id)continue;if(lugares.has(norm(i.texto))||(i.bloques||[]).length||i.texto!==i.guionLocTxt)continue;
+    for(const i of data.ideas){if(i.guionLoc!==GG.id||i.dentro!==pe.id)continue;if(lugares.has(norm(i.texto))||(i.bloques||[]).length||i.texto!==i.guionLocTxt)continue;
       if(actualP&&norm(lugarDe(actualP.textContent))&&norm(i.texto).startsWith(norm(lugarDe(actualP.textContent))))continue;
       if(bloques().some(p=>p.dataset.t==="escena"&&norm(lugarDe(p.textContent))===norm(i.texto)))continue;borrar.add(i.id)}
     for(const id of borrar)cols.ideas.doc(id).delete().catch(()=>{});
     /* adentro del post-it de la película: acceso al guion + pila «Locaciones» con todas */
-    const titulo=Q("gu-titulo").value.trim()||"Sin título",url=urlGuion(G.id);
+    const titulo=tituloG,url=urlGuion(GG.id);
     const locs=[...new Set([...data.ideas.filter(i=>i.dentro===pe.id&&!borrar.has(i.id)).map(i=>i.id),...idsNuevos,...migrados])];
     editarPeli(bl=>{let cambio=false;
-      let lk=bl.find(b=>b.t==="link"&&(b.url||"").includes("#guion="+G.id));
+      let lk=bl.find(b=>b.t==="link"&&(b.url||"").includes("#guion="+GG.id));
       if(!lk){const p0=lugarLibreEn(bl);lk={id:bid(),t:"link",url,titulo:"Guion · "+titulo,x:p0.x,y:p0.y,w:260};bl.push(lk);cambio=true}
       else if(lk.titulo!=="Guion · "+titulo||lk.url!==url){lk.titulo="Guion · "+titulo;lk.url=url;cambio=true}
-      if(locs.length){let pb=bl.find(b=>b.t==="pila"&&b.id===G.doc.pilaHoja)||bl.find(b=>b.t==="pila"&&norm(b.titulo)==="locaciones");
+      if(locs.length){let pb=bl.find(b=>b.t==="pila"&&b.id===GG.doc.pilaHoja)||bl.find(b=>b.t==="pila"&&norm(b.titulo)==="locaciones");
         if(!pb){pb={id:bid(),t:"pila",titulo:"Locaciones",x:lk.x,y:lk.y+150};bl.push(pb);cambio=true}
-        if(G.doc.pilaHoja!==pb.id){G.doc.pilaHoja=pb.id;sucio=true;guardarPronto(500)}
+        if(GG.doc.pilaHoja!==pb.id){GG.doc.pilaHoja=pb.id;sucio=true;guardarPronto(500)}
         for(const id of locs)if(!bl.some(b=>b.t==="ref"&&b.ref===id)){bl.push({id:bid(),t:"ref",ref:id,en:pb.id,x:pb.x,y:pb.y});cambio=true}}
       for(let n=bl.length-1;n>=0;n--){const b=bl[n];if(b.t==="ref"&&borrar.has(b.ref)){bl.splice(n,1);cambio=true}}
-      return cambio});
+      return cambio},pe);
     if(idsNuevos.length||borrar.size)setTimeout(()=>{pintarChips();pintarSide()},500)}
   finally{sincEnCurso=false}}
 /* las locaciones de una película no aparecen sueltas en la plancha principal */
@@ -5136,7 +5175,7 @@ function irABloque(p,foco=true){if(!p)return;if(innerWidth<760)Q("gu-side").hidd
 function renombrar(de,a){marcar();for(const p of bloques())if(p.dataset.t==="personaje"){const t=p.textContent,base=may(t.replace(/\(.*$/,"").trim());if(base===de){const ext=(t.match(/\(.*$/)||[""])[0];setTexto(p,a+(ext?" "+ext:""))}}cambio();toast(`${de} ahora es ${a} en todo el guion.`)}
 
 /* ---------- cambios y guardado ---------- */
-function cambio(sinMarca){seguir=true;normalizar();sucio=true;pintarEstado();guardarPronto(1500);if(ligero)pedirLigero();else pedirLayout();pedirSide()}
+function cambio(sinMarca){seguir=true;normalizar();if(V&&!V.aplicando)empujar();sucio=true;pintarEstado();guardarPronto(1500);if(ligero)pedirLigero();else pedirLayout();pedirSide()}
 /* al escribir dentro de un renglón que no cambia de alto, no hace falta rearmar las páginas */
 function pedirLigero(){cancelAnimationFrame(tLay);tLay=requestAnimationFrame(()=>{const p=actual();if(lay&&p&&p._h===p.offsetHeight&&ed.children.length===lay.ps.length&&lay.ps.includes(p)&&p.dataset.t!=="personaje"&&p.dataset.t!=="escena"){pintarPie();if(seguir){seguir=false;verCaret()}return}maquetar()})}
 function pintarEstado(){const e=Q("gu-estado");e.textContent=guardando?"Guardando…":sucio?"Sin guardar":ultGuardado?"Guardado ✓":""}
@@ -5148,7 +5187,7 @@ async function guardarYa(){clearTimeout(tGuardar);if(!G||!col||!sucio)return;try
 addEventListener("beforeunload",e=>{if(sucio&&G){guardarYa();e.preventDefault();e.returnValue=""}});
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")guardarYa()});
 Q("gu-sq").addEventListener("input",()=>pintarSide());
-Q("gu-titulo").addEventListener("input",()=>{sucio=true;pintarEstado();guardarPronto(1200);pedirLayout()});
+Q("gu-titulo").addEventListener("input",()=>{sucio=true;pintarEstado();guardarPronto(1200);pedirLayout();if(V)empujar()});
 Q("gu-titulo").addEventListener("change",()=>{const pe=peli(),t=Q("gu-titulo").value.trim();if(pe&&G.doc.peliNueva===pe.id&&t&&!(pe.bloques||[]).some(b=>b.t!=="link"&&b.t!=="pila"&&!b.en)){escribir(cols.ideas,pe.id,{texto:t},{silencioso:true})}sucio=true;guardarYa()});
 Q("gu-titulo").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();ed.focus();caret(ed.firstElementChild,0)}});
 
@@ -5165,13 +5204,14 @@ function entrar(gid,scroll,irA){if(!col){toast("Todavía se están cargando tus 
   let id=gid;if(id===undefined){try{id=localStorage.getItem("guion_ult")}catch(_){}}
   const g=id&&guiones.find(x=>x.id===id);if(g)abrirGuion(g,scroll,irA);else mostrarLista()}
 function ocultar(){cerrarAC();cerrarPop();salirMitad(true);raiz.hidden=true;document.body.classList.remove("en-guion");tab.setAttribute("aria-selected","false")}
-function salir(){guardarYa();vuelveGuion=null;ocultar();try{localStorage.setItem("pestana","")}catch(_){}}
+function salir(){guardarYa();vuelveGuion=null;ocultar();desconectarVivo();try{localStorage.setItem("pestana","")}catch(_){}}
 function abrirGuion(g,scroll,irA){guardarYa();G={id:g.id,doc:JSON.parse(JSON.stringify(g))};delete G.doc.id;try{localStorage.setItem("guion_ult",g.id)}catch(_){}
   Q("gu-lista").hidden=true;Q("gu-ed").hidden=false;
+  if(V&&(!g.vivo||V.id!==g.vivo.e))desconectarVivo();if(g.vivo&&g.vivo.e&&(!V||V.id!==g.vivo.e))setTimeout(()=>{if(G&&G.id===g.id)conectarVivo(g.vivo.e,"e",miNombreVivo()).catch(e=>{console.error(e);toast("No pude conectar el guion en vivo. Lo que escribas igual se guarda.")})},50);
   setTimeout(()=>{if(!G||G.id!==g.id)return;const vieja=pilas.find(p=>p.id===G.doc.pilaLoc||(p.guion===G.id&&/^Locaciones · /.test(p.titulo||"")));if(vieja&&!G.doc.pilaLoc){G.doc.pilaLoc=vieja.id;sucio=true}
     if(vieja){if(peli())sincLocaciones();else{ladoTab="locaciones";pintarSide();elegirPeli()}}},500);if(innerWidth<760)Q("gu-side").hidden=true;zoomAuto=true;cargarEnEditor(G.doc,irA);
   requestAnimationFrame(()=>{if(scroll!=null)scroller.scrollTop=scroll;else if(!irA)scroller.scrollTop=opc.portada!==false&&lay?Math.max(0,lay.PASO*zoom-20):0;ed.focus({preventScroll:true});if(!irA&&scroll==null){const p=ed.firstElementChild;caret(p,"fin")}})}
-function mostrarLista(){guardarYa();salirMitad(true);G=null;try{localStorage.removeItem("guion_ult")}catch(_){}Q("gu-ed").hidden=true;Q("gu-lista").hidden=false;pintarLista()}
+function mostrarLista(){guardarYa();salirMitad(true);desconectarVivo();G=null;try{localStorage.removeItem("guion_ult")}catch(_){}Q("gu-ed").hidden=true;Q("gu-lista").hidden=false;pintarLista()}
 function pintarLista(){const c=Q("gu-cards");c.replaceChildren();
   if(!guiones.length){c.append(mk("p","gu-vacio","Acá van tus guiones, con el formato de siempre: Courier, A4, márgenes de industria. Escribís y se acomoda solo. Tocá «+ Guion nuevo» o traé uno de Final Draft."));return}
   for(const g of guiones.slice().sort((a,b)=>(b.editado||0)-(a.editado||0))){const b=mk("button","gu-card");b.type="button";const pp=g.portada||{};
@@ -5188,7 +5228,7 @@ async function borrarGuion(){if(!G)return;const g=G;const ok=await confirmar(`¿
 /* datos */
 (function esperar(){if(typeof dbRef==="undefined"||!dbRef){setTimeout(esperar,300);return}
   col=dbRef.collection("guiones");
-  col.onSnapshot(s=>{guiones=s.docs.map(d=>({id:d.id,...d.data()}));cargados=true;
+  col.onSnapshot(s=>{if(INV)return;guiones=s.docs.map(d=>({id:d.id,...d.data()}));cargados=true;
     if(!raiz.hidden&&!G&&!Q("gu-lista").hidden)pintarLista();
     if(G){const g=guiones.find(x=>x.id===G.id);if(!g){if(!raiz.hidden){toast("Este guion se borró en otro lado.");mostrarLista()}}
       else if((g.editado||0)>miEditado&&!sucio&&document.activeElement!==ed){const sc=scroller.scrollTop;G.doc=JSON.parse(JSON.stringify(g));delete G.doc.id;miEditado=g.editado;cargarEnEditor(G.doc);scroller.scrollTop=sc}}
@@ -5238,9 +5278,12 @@ function vincular(){const p=actual()||ultP;const e=p?escenaDe(p):null;if(!e){toa
   const n=bloques().filter(x=>x.dataset.t==="escena").indexOf(e)+1,marcado=String(getSelection()).replace(/\s+/g," ").trim().slice(0,300);
   elegirItem({titulo:`Vincular a la escena ${n}`,sub:`${e.textContent.trim()||"(escena sin título)"} — Elegí un post-it o una frase: queda pegado al costado de la escena, y adentro de ese post-it vas a ver que aparece en el guion. El texto del guion no cambia.`,
     excluir:(k,id)=>refsDe(e.dataset.id).some(r=>r.k===k&&r.id===id),
-    crear:q=>{const out=[];const txt=q||marcado;if(txt)out.push({txt:`Crear un post-it nuevo «${txt.slice(0,60)}${txt.length>60?"…":""}» y vincularlo`,fn:async()=>{cerrarModal();const id=await crearPostit(txt);if(id){marcar();agregarRef(e,{k:"ideas",id});toast("Post-it creado en la plancha y vinculado a la escena.")}}});return out},
+    crear:q=>{const out=[];const txt=q||marcado;if(txt)out.push({txt:`Crear un post-it nuevo «${txt.slice(0,60)}${txt.length>60?"…":""}» y vincularlo`,fn:async()=>{cerrarModal();const pe=peli();const id=await crearPostit(txt,pe);if(id){marcar();agregarRef(e,{k:"ideas",id});toast(pe?`Post-it creado adentro de «${(pe.texto||"").split("\n")[0].slice(0,40)}» y vinculado a la escena.`:"Post-it creado en la plancha y vinculado a la escena. (Si elegís la película del guion, los nuevos van adentro de ella.)")}}});return out},
     onElegir:(k,id)=>{marcar();agregarRef(e,{k,id});cerrarModal();toast("Vinculado. Lo ves al costado de la escena.")}})}
-async function crearPostit(texto){if(!cols.ideas)return null;const ahora=Date.now(),numero=data.ideas.reduce((m,i)=>Math.max(m,i.numero||0),0)+1,b=lzMain.aMundo(innerWidth/2,innerHeight/2),p=lugarCerca(b.x,b.y);
+async function crearPostit(texto,dentroDe){if(!cols.ideas)return null;const ahora=Date.now(),numero=data.ideas.reduce((m,i)=>Math.max(m,i.numero||0),0)+1;
+  /* adentro del post-it de la película: no aparece suelto en la plancha principal, queda como referencia adentro */
+  if(dentroDe){try{const r=await cols.ideas.add({texto,tipo:tipoNueva,creado:ahora,numero,dentro:dentroDe.id});editarPeli(bl=>{const p0=lugarLibreEn(bl);bl.push({id:bid(),t:"ref",ref:r.id,x:p0.x,y:p0.y});return true});return r.id}catch(_){toast("No se pudo crear el post-it.");return null}}
+  const b=lzMain.aMundo(innerWidth/2,innerHeight/2),p=lugarCerca(b.x,b.y);
   fijarSinPosicion("ideas");try{const r=await cols.ideas.add({texto,tipo:tipoNueva,creado:ahora,numero,x:Math.round(p.x),y:Math.round(p.y)});return r.id}catch(_){toast("No se pudo crear el post-it.");return null}}
 
 /* ---------- buscar y reemplazar ---------- */
@@ -5336,7 +5379,7 @@ raiz.addEventListener("click",e=>{const b=e.target.closest("[data-a],[data-lado]
   const a=b.dataset.a,m=Q("gu-m-archivo");if(a!=="archivo")m.hidden=true;
   ({salir,mis:mostrarLista,nuevo:()=>nuevo(),importar:()=>Q("gu-file").click(),lado:()=>{const s=Q("gu-side");s.hidden=!s.hidden;zoomAuto=true;pedirLayout()},
     mitad:alternarMitad,b:()=>formato("b"),i:()=>formato("i"),u:()=>formato("u"),vincular,buscar:abrirBuscar,archivo:()=>{m.hidden=!m.hidden},
-    portada,opciones,pdf,fdx:()=>{bajar(nombreArchivo("fdx"),aFDX(),"application/xml");toast("Exportado para Final Draft.")},fountain:()=>bajar(nombreArchivo("fountain"),aFountain(),"text/plain"),atajos,borrar:borrarGuion,
+    compartir:compartirUI,portada,opciones,pdf,fdx:()=>{bajar(nombreArchivo("fdx"),aFDX(),"application/xml");toast("Exportado para Final Draft.")},fountain:()=>bajar(nombreArchivo("fountain"),aFountain(),"text/plain"),atajos,borrar:borrarGuion,
     zm:()=>{zoomAuto=false;zoom=Math.max(.4,Math.round((zoom-.1)*10)/10);maquetar()},zp:()=>{zoomAuto=false;zoom=Math.min(2,Math.round((zoom+.1)*10)/10);maquetar()},
     "f-ant":()=>irHall(-1),"f-sig":()=>irHall(1),"f-cerrar":cerrarBuscar,"f-uno":()=>reemplazar(false),"f-todo":()=>reemplazar(true)}[a]||(()=>{}))()});
 /* clic en el papel debajo del texto: el cursor va al final */
@@ -5357,17 +5400,149 @@ addEventListener("keydown",e=>{if(raiz.hidden)return;const tg=e.target;if(tg&&tg
     if(l==="k"){e.preventDefault();vincular();e.stopPropagation();return}
     if(l==="s"){e.preventDefault();sucio=true;guardarYa();e.stopPropagation();return}
     if(l==="p"){e.preventDefault();pdf();e.stopPropagation();return}}
-  if(tg===ed||ed.contains(tg))tecla(e);
+  if((tg===ed||ed.contains(tg))&&!soloLectura())tecla(e);
   e.stopPropagation()},true);
 
+
+/* ---------- guion compartido en vivo: link para editar y link de solo lectura (Yjs + Supabase, como los post-its en vivo) ---------- */
+const SB_URL="https://nzgljqcgygzjxpqmvrsh.supabase.co",SB_KEY="sb_publishable_1MftcxSIE0_Rb5tT57ikhA_z-FSRkHj";
+const INV=window.__guionInv||null;
+let V=null;const cacheH=new Map();
+async function deps(){if(window.__guionVivoDeps)return await window.__guionVivoDeps;
+  const [Y,sbm]=await Promise.all([import("https://cdn.jsdelivr.net/npm/yjs@13.6.18/+esm"),import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/+esm")]);let c=null;
+  return window.__guionVivoDeps={Y,cliente:()=>c||(c=sbm.createClient(SB_URL,SB_KEY,{auth:{persistSession:false},realtime:{params:{eventsPerSecond:40}}}))}}
+const aB64=u=>{let s="";for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s)};
+const deB64=b=>{const s=atob(b),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u};
+const idVivo=()=>{const a="abcdefghijkmnopqrstuvwxyz23456789",r=crypto.getRandomValues(new Uint8Array(24));return [...r].map(x=>a[x%a.length]).join("")};
+const COL_V=["#e0457b","#2a7de1","#1f9d6b","#e8890c","#8a4fbf","#d64545","#0f9fa8","#b8860b"];
+const colorV=n=>{let h=0;for(const c of String(n||""))h=(h*31+c.charCodeAt(0))|0;return COL_V[Math.abs(h)%COL_V.length]};
+const linkE=id=>location.origin+location.pathname+"#guionvivo="+id,linkL=id=>location.origin+location.pathname+"#guionver="+id;
+function runsDe(p){const out=[];const rec=(n,st)=>{for(const c of n.childNodes){if(c.nodeType===3){if(c.data)out.push({t:c.data,a:st})}else if(c.nodeType===1){const s2={...st};if(c.tagName==="B")s2.b=true;if(c.tagName==="I")s2.i=true;if(c.tagName==="U")s2.u=true;rec(c,s2)}}};rec(p,{});return out}
+const fmt=a=>({b:a&&a.b?true:null,i:a&&a.i?true:null,u:a&&a.u?true:null});
+const igualA=(x,y)=>!!(x&&x.b)===!!(y&&y.b)&&!!(x&&x.i)===!!(y&&y.i)&&!!(x&&x.u)===!!(y&&y.u);
+function htmlDeDelta(d){return d.map(op=>{if(typeof op.insert!=="string")return "";let h=esc(op.insert);const a=op.attributes||{};if(a.u)h=`<u>${h}</u>`;if(a.i)h=`<i>${h}</i>`;if(a.b)h=`<b>${h}</b>`;return h}).join("")}
+function sincTexto(yt,p){const runs=runsDe(p);let nuevo="";const at=[];for(const r of runs){nuevo+=r.t;for(let i=0;i<r.t.length;i++)at.push(r.a)}
+  const viejo=yt.toString();
+  if(viejo!==nuevo){let a=0;while(a<viejo.length&&a<nuevo.length&&viejo[a]===nuevo[a])a++;let z=0;while(z<viejo.length-a&&z<nuevo.length-a&&viejo[viejo.length-1-z]===nuevo[nuevo.length-1-z])z++;
+    const del=viejo.length-a-z;if(del>0)yt.delete(a,del);let k=a;const fin=nuevo.length-z;while(k<fin){let j=k+1;while(j<fin&&igualA(at[j],at[k]))j++;yt.insert(k,nuevo.slice(k,j),fmt(at[k]));k=j}}
+  /* negrita, itálica y subrayado */
+  const cur=[];for(const op of yt.toDelta()){if(typeof op.insert!=="string")continue;for(let i=0;i<op.insert.length;i++)cur.push(op.attributes||{})}
+  let i=0;while(i<at.length){if(igualA(cur[i],at[i])){i++;continue}let j=i+1;while(j<at.length&&!igualA(cur[j],at[j])&&igualA(at[j],at[i]))j++;yt.format(i,j-i,fmt(at[i]));i=j}}
+function volcar(doc,Y){/* pasa lo que hay en pantalla al documento compartido (solo las diferencias) */
+  const orden=doc.getArray("orden"),pars=doc.getMap("pars"),mt=doc.getMap("meta");
+  const ps=bloques(),ids=ps.map(p=>p.dataset.id),cur=orden.toArray();
+  if(cur.join("|")!==ids.join("|")){let a=0;while(a<cur.length&&a<ids.length&&cur[a]===ids[a])a++;let z=0;while(z<cur.length-a&&z<ids.length-a&&cur[cur.length-1-z]===ids[ids.length-1-z])z++;
+    const del=cur.length-a-z;if(del>0)orden.delete(a,del);const ins=ids.slice(a,ids.length-z);if(ins.length)orden.insert(a,ins)}
+  const vivos=new Set(ids);
+  for(const p of ps){const id=p.dataset.id;let ym=pars.get(id);
+    if(!ym){ym=new Y.Map();pars.set(id,ym);ym.set("t",p.dataset.t);ym.set("x",new Y.Text());cacheH.delete(id)}
+    if(ym.get("t")!==p.dataset.t)ym.set("t",p.dataset.t);
+    const r=JSON.stringify(refsDe(id));if((ym.get("r")||"[]")!==r)ym.set("r",r);
+    const h=p.innerHTML;if(cacheH.get(id)===h)continue;sincTexto(ym.get("x"),p);cacheH.set(id,h)}
+  for(const k of [...pars.keys()])if(!vivos.has(k))pars.delete(k);
+  const tit=Q("gu-titulo").value.trim();if(mt.get("titulo")!==tit)mt.set("titulo",tit);
+  const pp=JSON.stringify(G.doc.portada||{});if(mt.get("portada")!==pp)mt.set("portada",pp);
+  const oo=JSON.stringify(opc);if(mt.get("opciones")!==oo)mt.set("opciones",oo)}
+function empujar(){if(!V||V.modo!=="e"||V.aplicando||!V.listo)return;V.doc.transact(()=>volcar(V.doc,V.Y),"local");guardarRel()}
+function guardarRel(){if(!V||!V.listo)return;const p=document.activeElement===ed?actual():null;if(!p){V.rel=null;return}const ym=V.doc.getMap("pars").get(p.dataset.id);if(!ym){V.rel=null;return}
+  V.rel={id:p.dataset.id,rp:V.Y.createRelativePositionFromTypeIndex(ym.get("x"),Math.min(offCaret(p),ym.get("x").length))};avisarCursor()}
+function aplicarRemoto(){if(!V)return;const {doc,Y}=V,orden=doc.getArray("orden").toArray(),pars=doc.getMap("pars"),mt=doc.getMap("meta");
+  const cr=V.rel,enfocado=document.activeElement===ed;V.aplicando=true;
+  try{const exist=new Map(bloques().map(p=>[p.dataset.id,p])),vistos=new Set();let prev=null;
+    for(const id of orden){if(vistos.has(id))continue;const ym=pars.get(id);if(!ym||!ym.get("x"))continue;vistos.add(id);
+      const t=T[ym.get("t")]?ym.get("t"):"accion",html=htmlDeDelta(ym.get("x").toDelta());let p=exist.get(id);
+      if(!p){p=document.createElement("p");p.dataset.t=t;p.dataset.id=id;p.innerHTML=html||"<br>"}
+      else{if(p.dataset.t!==t)p.dataset.t=t;if(htmlDe(p)!==html)p.innerHTML=html||"<br>"}
+      cacheH.set(id,p.innerHTML);
+      let r=[];try{r=JSON.parse(ym.get("r")||"[]")}catch(_){}if(r.length)meta.set(id,{refs:r});else meta.delete(id);
+      const dest=prev?prev.nextSibling:ed.firstChild;if(dest!==p)ed.insertBefore(p,dest);prev=p}
+    for(const [id,p] of exist)if(!vistos.has(id))p.remove();
+    if(!ed.firstElementChild)ed.append(nuevoP("escena"));
+    if(mt.has("titulo")&&document.activeElement!==Q("gu-titulo"))Q("gu-titulo").value=mt.get("titulo")||"";
+    try{if(mt.has("portada"))G.doc.portada=JSON.parse(mt.get("portada"))}catch(_){}
+    try{if(mt.has("opciones"))opc={...OPC0,...JSON.parse(mt.get("opciones"))}}catch(_){}
+    if(cr&&enfocado){const p=ed.querySelector(`p[data-id="${CSS.escape(cr.id)}"]`);const abs=Y.createAbsolutePositionFromRelativePosition(cr.rp,doc);if(p&&abs)caret(p,Math.min(abs.index,p.textContent.length))}}
+  finally{V.aplicando=false}
+  if(V.modo==="e"&&G&&!INV){sucio=true;pintarEstado();guardarPronto(2500)}
+  if(portadaEl)portadaEl.dataset.f="";pedirLayout();pedirSide();pintarGente()}
+let tRem=0;function alRemoto(){cancelAnimationFrame(tRem);tRem=requestAnimationFrame(aplicarRemoto)}
+/* quién está y dónde escribe */
+let tCurV=null,ultCur="";
+function avisarCursor(){if(!V||V.modo!=="e"||!V.ch)return;clearTimeout(tCurV);tCurV=setTimeout(()=>{const est={n:V.nombre,c:V.color,id:V.rel&&document.activeElement===ed?V.rel.id:null,p:V.rel&&document.activeElement===ed?V.Y.relativePositionToJSON(V.rel.rp):null};const s=JSON.stringify(est);if(s===ultCur)return;ultCur=s;try{V.ch.track(est)}catch(_){}},150)}
+function otrosV(){if(!V||!V.ch)return [];const st=V.ch.presenceState(),yo=String(V.doc.clientID),out=[];for(const k in st){if(k===yo)continue;const v=st[k][st[k].length-1];if(v)out.push(v)}return out}
+let carets=null;
+function pintarGente(){const g=Q("gu-gente");if(!g)return;if(!V){g.replaceChildren();g.hidden=true;return}g.hidden=false;const os=otrosV();
+  g.replaceChildren(mk("span","gu-vivo-dot"),mk("span","gu-vivo-t",V.modo==="l"?"Solo lectura · en vivo":os.length?"En vivo con":"En vivo"));
+  for(const o of os){const c=mk("span","gu-av",(o.n||"?").charAt(0).toLocaleUpperCase("es"));c.style.background=o.c||"#ccc";c.style.color="#fff";c.title=o.n||"Alguien";g.append(c)}
+  if(!carets||!carets.isConnected){carets=mk("div","gu-carets");escala.append(carets)}carets.replaceChildren();const off=parseFloat(ed.style.top)||0;
+  for(const o of os){if(!o.id||!o.p)continue;const p=ed.querySelector(`p[data-id="${CSS.escape(o.id)}"]`);if(!p)continue;let abs=null;try{abs=V.Y.createAbsolutePositionFromRelativePosition(V.Y.createRelativePositionFromJSON(o.p),V.doc)}catch(_){}if(!abs)continue;
+    const r=rangoEn(p,Math.min(abs.index,p.textContent.length),Math.min(abs.index,p.textContent.length)),rc=r.getClientRects()[0]||p.getBoundingClientRect(),er=escala.getBoundingClientRect();
+    const k=mk("div","gu-caret");k.style.setProperty("--c",o.c||"#e0457b");k.style.left=((rc.left-er.left)/zoom)+"px";k.style.top=((rc.top-er.top)/zoom)+"px";k.style.height="16px";k.append(mk("span",null,o.n||"Alguien"));carets.append(k)}}
+async function conectarVivo(id,modo,nombre){const {Y,cliente}=await deps();const sb=cliente(),doc=new Y.Doc();
+  if(V)await desconectarVivo();
+  const v={Y,doc,modo,id,nombre,color:colorV(nombre),aplicando:false,listo:false,pend:[],tF:null,ch:null,chL:null,rel:null};V=v;cacheH.clear();
+  const canal=(cid,presencia)=>sb.channel("vivo:"+cid,{config:{broadcast:{self:false},presence:{key:String(doc.clientID)}}});
+  const suscribir=ch=>new Promise((ok,mal)=>{const t=setTimeout(()=>mal(new Error("sin conexión")),12000);ch.subscribe(s=>{if(s==="SUBSCRIBED"){clearTimeout(t);ok()}else if(s==="CHANNEL_ERROR"||s==="TIMED_OUT"){clearTimeout(t);mal(new Error(s))}})});
+  const ch=canal(id);v.ch=ch;
+  ch.on("broadcast",{event:"u"},({payload})=>{try{Y.applyUpdate(doc,deB64(payload.u),"remoto")}catch(e){console.error(e)}});
+  ch.on("broadcast",{event:"hola"},()=>ch.send({type:"broadcast",event:"u",payload:{u:aB64(Y.encodeStateAsUpdate(doc))}}));
+  ch.on("presence",{event:"sync"},()=>pintarGente());
+  await suscribir(ch);
+  const {data,error}=await sb.rpc("vivo_leer",{p_id:id});if(error)throw error;
+  if(!data||!data.length){const ex=await sb.rpc("vivo_existe",{p_id:id});if(!ex.data)throw new Error("no existe")}
+  for(const f of data||[]){try{Y.applyUpdate(doc,deB64(f.upd),"carga")}catch(e){console.error(e)}}
+  if(data&&data.length>150)sb.rpc("vivo_compactar",{p_id:id,p_estado:aB64(Y.encodeStateAsUpdate(doc)),p_hasta:data[data.length-1].seq});
+  /* quien edita también le pasa cada cambio a la copia de solo lectura */
+  const L=modo==="e"?doc.getMap("meta").get("lectura"):null;
+  if(L){const chL=canal(L);v.chL=chL;chL.on("broadcast",{event:"hola"},()=>chL.send({type:"broadcast",event:"u",payload:{u:aB64(Y.encodeStateAsUpdate(doc))}}));try{await suscribir(chL)}catch(_){v.chL=null}}
+  const flush=async()=>{v.tF=null;if(!v.pend.length)return;const u=Y.mergeUpdates(v.pend.splice(0)),b=aB64(u),tit=Q("gu-titulo").value.trim()||"Guion";
+    const r=await sb.rpc("vivo_cambio",{p_id:id,p_upd:b,p_texto:tit});if(r.error){v.pend.unshift(u);v.tF=setTimeout(flush,3000);return}
+    if(L)sb.rpc("vivo_cambio",{p_id:L,p_upd:b,p_texto:tit}).then(()=>{},()=>{})};
+  v.flush=flush;
+  doc.on("update",(u,origen)=>{if(origen==="remoto"||origen==="carga"||modo!=="e")return;ch.send({type:"broadcast",event:"u",payload:{u:aB64(u)}});if(v.chL)v.chL.send({type:"broadcast",event:"u",payload:{u:aB64(u)}});v.pend.push(u);clearTimeout(v.tF);v.tF=setTimeout(flush,500)});
+  /* sin hacer el cambio en la copia de lectura cuando otro editó: lo hace el que escribió */
+  for(const k of ["orden","pars","meta"])(k==="orden"?doc.getArray(k):doc.getMap(k)).observeDeep(evs=>{if(!evs.length)return;const o=evs[0].transaction.origin;if(o==="local")return;alRemoto()});
+  ch.send({type:"broadcast",event:"hola",payload:{}});
+  if(modo==="e")try{ch.track({n:nombre,c:v.color,id:null,p:null})}catch(_){}
+  v.listo=true;
+  if(doc.getArray("orden").length)aplicarRemoto();else if(modo==="e")empujar();
+  pintarGente();return v}
+async function desconectarVivo(){const v=V;if(!v)return;V=null;clearTimeout(v.tF);try{if(v.flush)await v.flush()}catch(_){}const {cliente}=await deps();const sb=cliente();try{await v.ch.untrack()}catch(_){}try{sb.removeChannel(v.ch)}catch(_){}if(v.chL)try{sb.removeChannel(v.chL)}catch(_){}if(carets)carets.replaceChildren();pintarGente()}
+addEventListener("pagehide",()=>{if(V&&V.flush)V.flush()});
+async function crearLinks(){if(!G)return;const {Y,cliente}=await deps();const sb=cliente(),E=idVivo(),L=idVivo(),doc=new Y.Doc();
+  doc.transact(()=>{volcar(doc,Y);doc.getMap("meta").set("lectura",L)});cacheH.clear();const u=aB64(Y.encodeStateAsUpdate(doc)),tit=Q("gu-titulo").value.trim()||"Guion";
+  for(const id of [E,L]){const r=await sb.rpc("vivo_crear",{p_id:id,p_titulo:tit,p_texto:"",p_upd:u});if(r.error)throw r.error}
+  G.doc.vivo={e:E,l:L};sucio=true;await guardarYa();await conectarVivo(E,"e",miNombreVivo());return G.doc.vivo}
+function compartirUI(){if(!G)return;abrirModal(m=>{m.append(mk("h3",null,"Compartir el guion"));const vv=G.doc.vivo;
+  const fila=(tit,txt,url)=>{const d=mk("div","gu-link");d.append(mk("b",null,tit),mk("small",null,txt));const f=mk("div","gu-link-f");const i=mk("input");i.type="text";i.readOnly=true;i.value=url;i.onfocus=()=>i.select();
+    const c=btn("si","Copiar",async()=>{try{await navigator.clipboard.writeText(url);c.textContent="¡Copiado!"}catch(_){i.select();document.execCommand("copy");c.textContent="¡Copiado!"}setTimeout(()=>c.textContent="Copiar",1800)});f.append(i,c);d.append(f);return d};
+  if(!vv){m.append(mk("p","gu-nota","Se arman dos links. Con el de editar escriben con vos al mismo tiempo: ven tu cursor y vos el de ellos, cada uno con su nombre. El de lectura sirve para que lo lean y lo bajen en PDF, sin poder tocar nada. No hace falta tener cuenta."));
+    const a=mk("div","acc");const b=btn("si","Crear los links",async()=>{b.disabled=true;b.textContent="Creando…";try{await crearLinks();cerrarModal();compartirUI()}catch(e){console.error(e);b.disabled=false;b.textContent="Crear los links";toast("No pude crear los links. Revisá la conexión y probá de nuevo.")}});a.append(btn(null,"Cancelar",cerrarModal),b);m.append(a);return}
+  m.append(fila("Pueden editar","Escriben con vos en vivo. Pasáselo solo a quien quieras que toque el guion.",linkE(vv.e)),fila("Solo lectura","Lo leen y lo bajan en PDF, sin poder cambiar nada.",linkL(vv.l)));
+  m.append(mk("p","gu-nota",(V&&V.id===vv.e?"Conectado en vivo. ":"")+"Lo que escriban los demás se guarda acá también. Si querés que un link deje de andar, «Cambiar los links» arma unos nuevos: los viejos quedan congelados en la versión de ese momento."));
+  const a=mk("div","acc");const r=btn(null,"Cambiar los links",async()=>{const ok=await confirmar("¿Cambiar los links?","Los links viejos dejan de recibir los cambios (quedan con la versión de ahora). Vas a tener que pasar los nuevos.","Cambiar");if(!ok){compartirUI();return}try{await desconectarVivo();G.doc.vivo=null;await crearLinks();compartirUI()}catch(_){toast("No pude cambiar los links.")}});
+  a.append(r,btn("si","Listo",cerrarModal));m.append(a)})}
+/* invitados: entran con el link y ven solo el guion */
+async function arrancarInvitado(){document.body.classList.add("gu-inv");if(INV.modo==="l")document.body.classList.add("gu-lectura");
+  raiz.hidden=false;Q("gu-lista").hidden=true;Q("gu-ed").hidden=false;G={id:"vivo:"+INV.id,doc:{titulo:"",portada:{},opciones:{...OPC0},bloques:[{id:rid(),t:"escena",h:""}]}};
+  if(innerWidth<760)Q("gu-side").hidden=true;cargarEnEditor(G.doc);ed.innerHTML="";ed.append(nuevoP("accion","Conectando…"));
+  if(INV.modo==="l"){ed.contentEditable="false";Q("gu-titulo").readOnly=true}
+  let nombre="Lector";if(INV.modo==="e"){nombre=await pedirNombreG()}
+  for(let intento=0;;intento++){try{await conectarVivo(INV.id,INV.modo,nombre);break}catch(e){if(String(e&&e.message).includes("no existe")){ed.innerHTML="";ed.append(nuevoP("accion","Este guion ya no está compartido (o el link está mal)."));maquetar();return}
+    toast("No pude conectar. Reintento en unos segundos…");await new Promise(r=>setTimeout(r,4000))}}
+  document.title=(Q("gu-titulo").value||"Guion")+" · Imágenes del tiempo";maquetar();pintarSide();if(INV.modo==="e"){ed.focus({preventScroll:true});caret(ed.firstElementChild,"fin")}}
+function pedirNombreG(){let n=null;try{n=localStorage.getItem("vivo_nombre")}catch(_){}if(n)return Promise.resolve(n);
+  return new Promise(ok=>abrirModal(m=>{m.append(mk("h3",null,"¿Cómo te llamás?"),mk("p","gu-nota","Vas a escribir este guion con otros, en vivo. Tu nombre aparece donde estás escribiendo."));const i=mk("input");i.type="text";i.maxLength=30;i.placeholder="Tu nombre";m.append(i);
+    const ir=()=>{const v=i.value.trim();if(!v){i.focus();return}try{localStorage.setItem("vivo_nombre",v)}catch(_){}cerrarModal();ok(v)};i.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();ir()}};const a=mk("div","acc");a.append(btn("si","Entrar",ir));m.append(a)}))}
 /* expuesto para pruebas */
-window.__guion={apariciones,locPostits,entrar,salir,get G(){return G},leerDoc,aFDX,aFountain,deFDX,deTexto,maquetar,get lay(){return lay},guardarYa,pdf};
+if(INV)setTimeout(()=>arrancarInvitado().catch(e=>console.error(e)),0);
+window.__guion={conectarVivo,crearLinks,get V(){return V},apariciones,locPostits,entrar,salir,get G(){return G},leerDoc,aFDX,aFountain,deFDX,deTexto,maquetar,get lay(){return lay},guardarYa,pdf};
 })();
 
 /* ===== Google Calendar adentro de la web (por ahora en prueba, solo cuenta de Lenny) ===== */
 (function(){
 let mio=false;try{mio=localStorage.getItem("gh_repo")==="banco-de-ideas-datos"}catch(_){}
-if(window.__invitado||!(mio||window.__guionPrueba))return;
+if(window.__invitado||!(mio||window.__guionPrueba||window.__guionInv))return;
 const mk=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
 const box=mk("div","gcal");box.id="gcal";box.hidden=true;box.setAttribute("role","dialog");box.setAttribute("aria-label","Google Calendar");document.body.append(box);
 let conf=null,modo="WEEK";
