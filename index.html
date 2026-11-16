@@ -1325,6 +1325,15 @@ body.gu-mitad .gu-corte{display:block}
 .gu-corte::after{content:"";position:absolute;left:3px;top:50%;width:8px;height:44px;margin-top:-22px;border-radius:999px;background:#fffdf6;box-shadow:0 2px 8px rgba(0,0,0,.35)}
 .gu-corte:hover::before,.gu-corte.on::before{background:#ffe76a;width:4px;left:5px}
 body.gu-arrastrando,body.gu-arrastrando *{cursor:col-resize!important;user-select:none!important}
+body.gu-lectura .gu-mw{display:none!important}
+body.gu-lectura .gu-texto{-webkit-user-select:none;user-select:none}
+.gu-comp-op{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.gu-comp-b{display:grid;gap:4px;text-align:left;border:2px solid rgba(43,37,32,.12);border-radius:14px;background:#fff;padding:16px;cursor:pointer;font:inherit;color:var(--ink)}
+.gu-comp-b:hover{border-color:var(--ink)}.gu-comp-b b{font:800 18px var(--ui)}.gu-comp-b small{font:500 13px/1.35 var(--ui);color:#777}
+.gu-comp-b:disabled{opacity:.6;cursor:wait}
+.gu-acc-sep{align-items:center}.gu-chico{background:none!important;color:#888!important;font:600 12.5px var(--ui)!important;padding:6px 4px!important}
+@media (max-width:480px){.gu-comp-op{grid-template-columns:1fr}}
+.gu-mh>.gu-link-f{margin-top:14px}
 </style>
 <div class="cargando" id="cargando" hidden role="status"><span class="cg-punto"></span>Cargando tu plancha…</div>
 <div class="conectar" id="conectar" hidden>
@@ -3494,6 +3503,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:47,f:"16 de noviembre",mio:true,it:[
+  ["Guion: «Compartir» ahora te pregunta si es *para leer* o *para editar* y te da ese link. El de lectura no deja bajar ni imprimir el guion.",null,2]]},
  {n:46,f:"16 de noviembre",it:[
   ["*Guardado más firme:* si GitHub falla o frena los guardados por un rato, la web espera y reintenta sola (antes reintentaba sin parar y lo empeoraba). Lo que no se llegó a subir queda guardado en tu navegador aunque recargues, y se sube apenas se puede.",null,2]]},
  {n:45,f:"16 de noviembre",mio:true,it:[
@@ -5467,7 +5478,7 @@ addEventListener("keydown",e=>{if(raiz.hidden)return;const tg=e.target;if(tg&&tg
     if(l==="f"){e.preventDefault();abrirBuscar();e.stopPropagation();return}
     if(l==="k"){e.preventDefault();vincular();e.stopPropagation();return}
     if(l==="s"){e.preventDefault();sucio=true;guardarYa();e.stopPropagation();return}
-    if(l==="p"){e.preventDefault();pdf();e.stopPropagation();return}}
+    if(l==="p"){e.preventDefault();if(!soloLectura())pdf();e.stopPropagation();return}}
   if((tg===ed||ed.contains(tg))&&!soloLectura())tecla(e);
   e.stopPropagation()},true);
 
@@ -5581,20 +5592,22 @@ async function crearLinks(){if(!G)return;const {Y,cliente}=await deps();const sb
   doc.transact(()=>{volcar(doc,Y);doc.getMap("meta").set("lectura",L)});cacheH.clear();const u=aB64(Y.encodeStateAsUpdate(doc)),tit=Q("gu-titulo").value.trim()||"Guion";
   for(const id of [E,L]){const r=await sb.rpc("vivo_crear",{p_id:id,p_titulo:tit,p_texto:"",p_upd:u});if(r.error)throw r.error}
   G.doc.vivo={e:E,l:L};sucio=true;await guardarYa();await conectarVivo(E,"e",miNombreVivo());return G.doc.vivo}
-function compartirUI(){if(!G)return;abrirModal(m=>{m.append(mk("h3",null,"Compartir el guion"));const vv=G.doc.vivo;
-  const fila=(tit,txt,url)=>{const d=mk("div","gu-link");d.append(mk("b",null,tit),mk("small",null,txt));const f=mk("div","gu-link-f");const i=mk("input");i.type="text";i.readOnly=true;i.value=url;i.onfocus=()=>i.select();
-    const c=btn("si","Copiar",async()=>{try{await navigator.clipboard.writeText(url);c.textContent="¡Copiado!"}catch(_){i.select();document.execCommand("copy");c.textContent="¡Copiado!"}setTimeout(()=>c.textContent="Copiar",1800)});f.append(i,c);d.append(f);return d};
-  if(!vv){m.append(mk("p","gu-nota","Se arman dos links. Con el de editar escriben con vos al mismo tiempo: ven tu cursor y vos el de ellos, cada uno con su nombre. El de lectura sirve para que lo lean y lo bajen en PDF, sin poder tocar nada. No hace falta tener cuenta."));
-    const a=mk("div","acc");const b=btn("si","Crear los links",async()=>{b.disabled=true;b.textContent="Creando…";try{await crearLinks();cerrarModal();compartirUI()}catch(e){console.error(e);b.disabled=false;b.textContent="Crear los links";toast("No pude crear los links. Revisá la conexión y probá de nuevo.")}});a.append(btn(null,"Cancelar",cerrarModal),b);m.append(a);return}
-  m.append(fila("Pueden editar","Escriben con vos en vivo. Pasáselo solo a quien quieras que toque el guion.",linkE(vv.e)),fila("Solo lectura","Lo leen y lo bajan en PDF, sin poder cambiar nada.",linkL(vv.l)));
-  m.append(mk("p","gu-nota",(V&&V.id===vv.e?"Conectado en vivo. ":"")+"Lo que escriban los demás se guarda acá también. Si querés que un link deje de andar, «Cambiar los links» arma unos nuevos: los viejos quedan congelados en la versión de ese momento."));
-  const a=mk("div","acc");const r=btn(null,"Cambiar los links",async()=>{const ok=await confirmar("¿Cambiar los links?","Los links viejos dejan de recibir los cambios (quedan con la versión de ahora). Vas a tener que pasar los nuevos.","Cambiar");if(!ok){compartirUI();return}try{await desconectarVivo();G.doc.vivo=null;await crearLinks();compartirUI()}catch(_){toast("No pude cambiar los links.")}});
-  a.append(r,btn("si","Listo",cerrarModal));m.append(a)})}
+function compartirUI(){if(!G)return;abrirModal(m=>{m.append(mk("h3",null,"¿Qué querés compartir?"));
+  const op=mk("div","gu-comp-op");
+  const elegir=async(modo,b)=>{let vv=G.doc.vivo;if(!vv){b.disabled=true;b.querySelector("small").textContent="Creando el link…";try{vv=await crearLinks()}catch(e){console.error(e);b.disabled=false;b.querySelector("small").textContent="No se pudo. Probá de nuevo.";return}}mostrarLink(modo)};
+  for(const [modo,tit,sub] of [["l","Para leer","Lo ven, pero no pueden tocar nada"],["e","Para editar","Escriben con vos al mismo tiempo"]]){const b=btn("gu-comp-b",null,()=>elegir(modo,b));b.append(mk("b",null,tit),mk("small",null,sub));op.append(b)}
+  m.append(op);const a=mk("div","acc");a.append(btn(null,"Cerrar",cerrarModal));m.append(a)})}
+function mostrarLink(modo){const vv=G&&G.doc.vivo;if(!vv)return;abrirModal(m=>{const url=modo==="e"?linkE(vv.e):linkL(vv.l);
+  m.append(mk("h3",null,modo==="e"?"Link para editar":"Link para leer"),mk("p","gu-nota",modo==="e"?"Pasáselo solo a quien quieras que escriba en el guion.":"Lo leen en vivo, sin poder cambiar nada."));
+  const f=mk("div","gu-link-f");const i=mk("input");i.type="text";i.readOnly=true;i.value=url;i.onfocus=()=>i.select();
+  const c=btn("si","Copiar",async()=>{try{await navigator.clipboard.writeText(url)}catch(_){i.select();document.execCommand("copy")}c.textContent="¡Copiado!";setTimeout(()=>c.textContent="Copiar",1800)});f.append(i,c);m.append(f);
+  const a=mk("div","acc gu-acc-sep");const nuevo=btn("gu-chico","Hacer links nuevos",async()=>{const ok=await confirmar("¿Hacer links nuevos?","Los que ya pasaste dejan de recibir los cambios.","Hacer nuevos");if(!ok){mostrarLink(modo);return}try{await desconectarVivo();G.doc.vivo=null;await crearLinks();mostrarLink(modo)}catch(_){toast("No se pudieron hacer los links nuevos.")}});
+  a.append(nuevo,mk("span","gu-esp"),btn(null,"← Volver",compartirUI),btn("si","Listo",cerrarModal));m.append(a);setTimeout(()=>{i.focus();i.select()},40)})}
 /* invitados: entran con el link y ven solo el guion */
 async function arrancarInvitado(){document.body.classList.add("gu-inv");if(INV.modo==="l")document.body.classList.add("gu-lectura");
   raiz.hidden=false;Q("gu-lista").hidden=true;Q("gu-ed").hidden=false;G={id:"vivo:"+INV.id,doc:{titulo:"",portada:{},opciones:{...OPC0},bloques:[{id:rid(),t:"escena",h:""}]}};
   if(innerWidth<760)Q("gu-side").hidden=true;cargarEnEditor(G.doc);ed.innerHTML="";ed.append(nuevoP("accion","Conectando…"));
-  if(INV.modo==="l"){ed.contentEditable="false";Q("gu-titulo").readOnly=true}
+  if(INV.modo==="l"){ed.contentEditable="false";Q("gu-titulo").readOnly=true;const st=document.createElement("style");st.textContent="@media print{body{display:none!important}}";document.head.append(st)}
   let nombre="Lector";if(INV.modo==="e"){nombre=await pedirNombreG()}
   for(let intento=0;;intento++){try{await conectarVivo(INV.id,INV.modo,nombre);break}catch(e){if(String(e&&e.message).includes("no existe")){ed.innerHTML="";ed.append(nuevoP("accion","Este guion ya no está compartido (o el link está mal)."));maquetar();return}
     toast("No pude conectar. Reintento en unos segundos…");await new Promise(r=>setTimeout(r,4000))}}
