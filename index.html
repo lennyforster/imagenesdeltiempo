@@ -1314,6 +1314,8 @@ body.gu-lectura .gu-top .gu-sel,body.gu-lectura .gu-top [data-a="b"],body.gu-lec
 body.gu-lectura .gu-texto{caret-color:transparent}
 .gu-texto p.gu-flash{animation:guFlash 1.6s ease-out}@keyframes guFlash{0%,40%{background:#ffe76a}100%{background:transparent}}
 body.gu-lectura .gu-pie span:last-child{display:none}
+.gu-b.gu-compartir{background:#e0457b;color:#fff}.gu-b.gu-compartir:hover{background:#c93469}
+.gu-titulo::placeholder{color:rgba(255,253,246,.55)}
 </style>
 <div class="cargando" id="cargando" hidden role="status"><span class="cg-punto"></span>Cargando tu plancha…</div>
 <div class="conectar" id="conectar" hidden>
@@ -3471,10 +3473,12 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:41,f:"16 de noviembre",mio:true,it:[
+  ["Guion: «Compartir» ahora es un botón propio arriba, al lado de «Archivo».",null,3]]},
  {n:39,f:"16 de noviembre",it:[
   ["Adentro de las pilas, el botón «Sacar» es más discreto: aparece cuando pasás por arriba.",null,3]]},
  {n:40,f:"16 de noviembre",mio:true,it:[
-  ["*Guion compartido:* en Archivo → «Compartir» se arman dos links. Con el de *editar* escriben con vos al mismo tiempo (ves el cursor y el nombre de cada uno). El de *lectura* sirve para leerlo y bajarlo en PDF sin tocar nada. No hace falta cuenta.",null,1],
+  ["*Guion compartido:* con el botón «Compartir» de arriba se arman dos links. Con el de *editar* escriben con vos al mismo tiempo (ves el cursor y el nombre de cada uno). El de *lectura* sirve para leerlo y bajarlo en PDF sin tocar nada. No hace falta cuenta.",null,1],
   ["Adentro de una locación, «En el guion: … esc. 3» ahora abre esa escena en la mitad de la pantalla, sin cerrar el post-it.",null,2],
   ["Si en «Vincular» creás un post-it nuevo, queda adentro del post-it de la película (no suelto en la plancha principal).",null,2]]},
  {n:37,f:"16 de noviembre",it:[
@@ -4751,9 +4755,8 @@ raiz.innerHTML=`
     <button type="button" class="gu-b" data-a="vincular" title="Vincular un post-it o una frase a esta escena (${CTRL}+K)">↗ <span class="gu-lbl">Vincular</span></button>
     <button type="button" class="gu-b solo-ancho gu-bmitad" data-a="mitad" title="Guion y plancha de la película, mitad y mitad">◧ <span class="gu-lbl">Plancha al lado</span></button>
     <button type="button" class="gu-b solo-ancho" data-a="buscar" title="Buscar y reemplazar (${CTRL}+F)">Buscar</button>
+    <button type="button" class="gu-b gu-compartir solo-duenio" data-a="compartir" title="Links para editar con otros o para que lo lean">Compartir</button>
     <div class="gu-mw"><button type="button" class="gu-b" data-a="archivo">Archivo ▾</button><div class="gu-menu" id="gu-m-archivo" hidden>
-      <button type="button" data-a="compartir" class="solo-duenio">Compartir (links para editar y leer)…</button>
-      <hr class="solo-duenio">
       <button type="button" data-a="portada" class="solo-edita">Portada…</button>
       <button type="button" data-a="opciones" class="solo-edita">Formato y página…</button>
       <hr>
