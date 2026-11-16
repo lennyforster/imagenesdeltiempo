@@ -1278,6 +1278,22 @@ body.gu-mitad .panel{left:75%!important;width:min(420px,calc(50vw - 24px))!impor
 @media (max-width:900px){.gu-top [data-a="mitad"]{display:none}}
 .gu-pilaloc .acc{display:flex;gap:6px;flex-wrap:wrap}.gu-pilaloc .gu-sec{background:rgba(43,37,32,.12);color:var(--ink)}
 .gu-mh>input{margin-top:12px}
+.gu-card-x{position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:600 18px var(--ui);color:#999;opacity:0;transition:opacity .15s}
+.gu-card:hover .gu-card-x,.gu-card:focus-within .gu-card-x{opacity:1}.gu-card-x:hover{background:#b3261e;color:#fff}
+@media (hover:none){.gu-card-x{opacity:.8}}
+.gu-portada{cursor:pointer}.gu-portada:hover{box-shadow:0 6px 24px rgba(0,0,0,.4),inset 0 0 0 3px #ffe76a}
+.gu-port-c{position:absolute;font:16px/16px var(--gu-font);color:#111}.gu-port-c .tt{text-align:center;text-transform:uppercase;font-weight:700}.gu-port-c .cc{text-align:center}
+.gu-port-hint{position:absolute;left:0;right:0;bottom:40px;text-align:center;font:600 13px var(--ui);color:#b8b2a6}
+.gu-card-ed{position:absolute;top:6px;right:38px;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:600 15px var(--ui);color:#999;opacity:0;transition:opacity .15s}
+.gu-card:hover .gu-card-ed{opacity:1}.gu-card-ed:hover{background:#ffe76a;color:var(--ink)}@media (hover:none){.gu-card-ed{opacity:.8}}
+/* mitad y mitad: barra compacta */
+body.gu-mitad .gu-top .solo-ancho:not(.gu-bmitad),body.gu-mitad .gu-estado,body.gu-mitad .gu-top .gu-lbl{display:none}
+body.gu-mitad .gu-titulo{width:150px;min-width:0;flex:1}
+body.gu-mitad .gu-top{flex-wrap:nowrap}
+body.gu-mitad .gu-pie span:not(:first-child):not(:nth-child(2)){display:none}
+.gu-chip.gu-chip-mini{width:26px;height:26px;padding:0;justify-content:center;font:800 12px var(--ui);border-radius:50%}
+.gu-chip.gu-chip-mini::before{display:none}
+body.gu-mitad #detalle{border-left:4px solid #ffe76a}
 </style>
 <div class="cargando" id="cargando" hidden role="status"><span class="cg-punto"></span>Cargando tu plancha…</div>
 <div class="conectar" id="conectar" hidden>
@@ -2986,6 +3002,9 @@ crearLateral(lzMain);crearLateral(lzHoja);pintarPaletas();
 async function duplicarEnPlancha(nodos,dx=40,dy=40){
   const k=vista;let numero=data[k].reduce((m,i)=>Math.max(m,i.numero||0),0)+1;const nuevos=[];fijarSinPosicion(k);
   for(const n of nodos){
+    if(n._pila&&n._pila!=="keep"&&colPilas&&k==="ideas"){const pl=pilas.find(z=>z.id===n._pila);if(!pl)continue;const o=JSON.parse(JSON.stringify(pl));delete o.id;delete o.orden;delete o.tapa;o.x=Math.round((parseFloat(n.style.left)||0)+dx);o.y=Math.round((parseFloat(n.style.top)||0)+dy);o.creado=Date.now();
+      try{const rp=await colPilas.add(o);const map=new Map();let n0=0;for(const i of ordenarPila(pl.id,itemsPila(pl.id))){const c=JSON.parse(JSON.stringify(i));delete c.id;delete c._pend;delete c.pilasExtra;Object.assign(c,{pila:rp.id,pilaT:Date.now()+n0++,x:o.x,y:o.y,numero:numero++,creado:Date.now()});const r=await cols.ideas.add(c);map.set(i.id,r.id)}
+        if(Array.isArray(pl.orden)){const ord=pl.orden.map(x=>map.get(x)).filter(Boolean);if(ord.length)escribir(colPilas,rp.id,{orden:ord},{silencioso:true})}nuevos.push(()=>nodosPila.get(rp.id))}catch(_){toast("No se pudo duplicar la pila.")}continue}
     if(n._k&&n._id){const it=data[n._k].find(x=>x.id===n._id);if(!it||!cols[n._k])continue;const c=JSON.parse(JSON.stringify(it));delete c.id;delete c._pend;
       c.x=Math.round((parseFloat(n.style.left)||0)+dx);c.y=Math.round((parseFloat(n.style.top)||0)+dy);c.numero=numero++;c.creado=Date.now();
       try{const r=await cols[n._k].add(c);nuevos.push(()=>nodosNota.get(n._k+":"+r.id))}catch(_){toast("No se pudo duplicar.")}}
@@ -2995,7 +3014,8 @@ async function duplicarEnPlancha(nodos,dx=40,dy=40){
   const ns=nuevos.map(f=>f()).filter(Boolean);if(ns.length){selPoner(lzMain,ns,false);toast(ns.length===1?"Duplicado.":`${ns.length} duplicados.`)}
 }
 function duplicarBloques(ids,dx=40,dy=40){if(!abierto||!ids.length)return;const d=abierto.doc,nuevos=[];
-  for(const id of ids){const b=d.bloques.find(x=>x.id===id);if(!b)continue;const c=JSON.parse(JSON.stringify(b));c.id=bid();c.x=Math.round((b.x||0)+dx);c.y=Math.round((b.y||0)+dy);d.bloques.push(c);nuevos.push(c.id)}
+  for(const id of ids){const b=d.bloques.find(x=>x.id===id);if(!b)continue;const c=JSON.parse(JSON.stringify(b));c.id=bid();c.x=Math.round((b.x||0)+dx);c.y=Math.round((b.y||0)+dy);d.bloques.push(c);nuevos.push(c.id);
+    if(b.t==="pila")for(const m of d.bloques.filter(x=>x.en===b.id)){const cm=JSON.parse(JSON.stringify(m));cm.id=bid();cm.en=c.id;cm.x=c.x;cm.y=c.y;d.bloques.push(cm)}}
   if(!nuevos.length)return;selB=null;guardarBloques();pintarHoja();
   requestAnimationFrame(()=>{document.querySelectorAll("#capa-hoja textarea").forEach(autosize);pintarHilos();selPoner(lzHoja,nuevos.map(nodoHoja).filter(Boolean),false)})}
 lzMain.onDuplicarSel=(ns,dx,dy)=>duplicarEnPlancha(ns,dx,dy);
@@ -3026,15 +3046,17 @@ window.addEventListener("pointermove",e=>{ultPtr={x:e.clientX,y:e.clientY}},{pas
 function nodosParaCopiar(){const lz=abierto?lzHoja:lzMain;let ns=selNodos(lz);
   if(!ns.length){if(abierto&&selB){const n=nodoHoja(selB);if(n)ns=[n]}else if(!abierto&&selDeco){const n=nodosDeco.get(selDeco);if(n)ns=[n]}}return ns}
 function copiarSel(){const ns=nodosParaCopiar();if(!ns.length)return null;
-  if(abierto){const ids=new Set(ns.map(n=>n.dataset.bid).filter(Boolean)),bl=abierto.doc.bloques.filter(b=>ids.has(b.id));if(!bl.length)return null;
+  if(abierto){const ids=new Set(ns.map(n=>n.dataset.bid).filter(Boolean));for(const b of abierto.doc.bloques)if(b.en&&ids.has(b.en))ids.add(b.id);const bl=abierto.doc.bloques.filter(b=>ids.has(b.id));if(!bl.length)return null;
     porta={de:"hoja",bloques:JSON.parse(JSON.stringify(bl)),hilos:JSON.parse(JSON.stringify((abierto.doc.hilos||[]).filter(h=>ids.has(h.a)&&ids.has(h.b))))}}
-  else{const ideas=[],ds=[],ids=new Set();
+  else{const ideas=[],ds=[],ids=new Set(),pls=[];
     for(const n of ns){
+      if(n._pila&&n._pila!=="keep"){const pl=pilas.find(z=>z.id===n._pila);if(!pl)continue;const o=JSON.parse(JSON.stringify(pl));o.x=parseFloat(n.style.left)||0;o.y=parseFloat(n.style.top)||0;o.w=230;
+        pls.push({o,miembros:ordenarPila(pl.id,itemsPila(pl.id)).map(i=>{const c=JSON.parse(JSON.stringify(i));delete c._pend;return c})});continue}
       if(n._k&&n._id){const it=data[n._k].find(x=>x.id===n._id);if(!it)continue;const c=JSON.parse(JSON.stringify(it));delete c._pend;c.x=parseFloat(n.style.left)||0;c.y=parseFloat(n.style.top)||0;ideas.push({k:n._k,o:c});ids.add(n._id)}
       else if(n.classList.contains("deco")&&n._id){const d=decos.find(z=>z.id===n._id);if(d){ds.push(JSON.parse(JSON.stringify(d)));ids.add(d.id)}}}
-    if(!ideas.length&&!ds.length)return null;
-    porta={de:"main",ideas,decos:ds,flechas:flechas.filter(f=>ids.has(f.a)&&ids.has(f.b)).map(f=>({a:f.a,b:f.b}))}}
-  porta.texto=porta.de==="hoja"?porta.bloques.map(b=>b.t==="link"?b.url:(b.v||"")).filter(Boolean).join("\n\n"):porta.ideas.map(x=>x.o.texto||"").filter(Boolean).join("\n\n");
+    if(!ideas.length&&!ds.length&&!pls.length)return null;
+    porta={de:"main",ideas,decos:ds,pilas:pls,flechas:flechas.filter(f=>ids.has(f.a)&&ids.has(f.b)).map(f=>({a:f.a,b:f.b}))}}
+  porta.texto=porta.de==="hoja"?porta.bloques.map(b=>b.t==="link"?b.url:(b.v||"")).filter(Boolean).join("\n\n"):[...porta.ideas.map(x=>x.o.texto||""),...(porta.pilas||[]).flatMap(p=>[p.o.titulo||"Pila",...p.miembros.map(m=>m.texto||"")])].filter(Boolean).join("\n\n");
   porta.veces=0;porta.ultK=null;const pp=porta;try{if(navigator.clipboard)navigator.clipboard.writeText(porta.texto).then(()=>{pp.enSistema=true},()=>{})}catch(_){}
   return ns}
 function puntoPegar(lz){const r=lz.rect(),u=ultPtr;
@@ -3048,20 +3070,32 @@ async function pegarInterno(){
   if(!porta)return;
   if(abierto){const d=abierto.doc,mapa={};let bl;
     if(porta.de==="hoja")bl=porta.bloques.map(b=>JSON.parse(JSON.stringify(b)));
-    else bl=[...porta.ideas.map(x=>({t:"post",v:x.o.texto||"",c:x.k==="ideas"?colorDe("ideas",x.o):PALETA[1],x:x.o.x,y:x.o.y})),...porta.decos.map(o=>({t:"img",a:o.a,alt:"Imagen",x:o.x,y:o.y,w:o.w||260}))];
-    if(!bl.length)return;ubicar(bl,puntoPegar(lzHoja));
-    for(const b of bl){const nid=bid();if(b.id)mapa[b.id]=nid;b.id=nid;d.bloques.push(b)}
+    else{bl=[...porta.ideas.map(x=>({t:"post",v:x.o.texto||"",c:x.k==="ideas"?colorDe("ideas",x.o):PALETA[1],x:x.o.x,y:x.o.y})),...porta.decos.map(o=>({t:"img",a:o.a,alt:"Imagen",x:o.x,y:o.y,w:o.w||260}))];
+      for(const p of porta.pilas||[]){const pid="p"+bid();bl.push({id:pid,t:"pila",titulo:p.o.titulo||"",x:p.o.x,y:p.o.y});for(const m of p.miembros)bl.push({t:"post",v:m.texto||"",c:colorDe("ideas",m),x:p.o.x,y:p.o.y,en:pid})}}
+    if(!bl.length)return;ubicar(bl.filter(b=>!b.en),puntoPegar(lzHoja));
+    for(const b of bl){const nid=bid();if(b.id)mapa[b.id]=nid;b.id=nid}
+    for(const b of bl){if(b.en){b.en=mapa[b.en]||b.en;const pb=bl.find(x=>x.id===b.en);if(pb){b.x=pb.x;b.y=pb.y}}d.bloques.push(b)}
     let hil=false;if(porta.de==="hoja")for(const h of porta.hilos)if(mapa[h.a]&&mapa[h.b]){d.hilos.push({...h,id:bid(),a:mapa[h.a],b:mapa[h.b]});hil=true}
     selB=null;guardarBloques();if(hil)guardarHoja("hilos",d.hilos);pintarHoja();
-    requestAnimationFrame(()=>{document.querySelectorAll("#capa-hoja textarea").forEach(autosize);pintarHilos();selPoner(lzHoja,bl.map(b=>nodoHoja(b.id)).filter(Boolean),false)});return}
+    requestAnimationFrame(()=>{document.querySelectorAll("#capa-hoja textarea").forEach(autosize);pintarHilos();selPoner(lzHoja,bl.filter(b=>!b.en).map(b=>nodoHoja(b.id)).filter(Boolean),false)});return}
   const k=vista;let numero=data[k].reduce((m,i)=>Math.max(m,i.numero||0),0)+1,items;
-  if(porta.de==="main")items=[...porta.ideas.map(x=>({tipo:"idea",o:JSON.parse(JSON.stringify(x.o))})),...porta.decos.map(o=>({tipo:"deco",o:JSON.parse(JSON.stringify(o))}))];
-  else items=porta.bloques.filter(b=>["post","txt","tx","img"].includes(b.t)).map(b=>b.t==="img"?{tipo:"deco",o:{a:b.a,x:b.x,y:b.y,w:b.w||260,arriba:false}}:{tipo:"idea",o:{texto:b.v||"",x:b.x,y:b.y}});
+  if(porta.de==="main")items=[...porta.ideas.map(x=>({tipo:"idea",o:JSON.parse(JSON.stringify(x.o))})),...porta.decos.map(o=>({tipo:"deco",o:JSON.parse(JSON.stringify(o))})),...(k==="ideas"?(porta.pilas||[]):[]).map(p=>({tipo:"pila",o:JSON.parse(JSON.stringify(p.o)),miembros:JSON.parse(JSON.stringify(p.miembros))}))];
+  else{const suelto=b=>!b.en||!porta.bloques.some(x=>x.id===b.en);
+    items=porta.bloques.filter(b=>suelto(b)&&["post","txt","tx","img"].includes(b.t)).map(b=>b.t==="img"?{tipo:"deco",o:{a:b.a,x:b.x,y:b.y,w:b.w||260,arriba:false}}:{tipo:"idea",o:{texto:b.v||"",x:b.x,y:b.y}});
+    if(k==="ideas")for(const pb of porta.bloques.filter(b=>b.t==="pila"&&suelto(b))){const ms=porta.bloques.filter(b=>b.en===pb.id&&["post","txt","tx"].includes(b.t)).map(b=>({texto:b.v||""}));
+      const refs=porta.bloques.filter(b=>b.en===pb.id&&b.t==="ref"&&kDe(b)==="ideas").map(b=>data.ideas.find(i=>i.id===b.ref)).filter(Boolean).map(i=>{const c=JSON.parse(JSON.stringify(i));delete c._pend;return c});
+      items.push({tipo:"pila",o:{titulo:pb.titulo||"",x:pb.x,y:pb.y,w:230},miembros:[...ms,...refs]})}}
   if(!items.length){toast("Eso no se puede pegar en la plancha.");return}
   items.forEach(it=>{it.oid=it.o.id;delete it.o.id;delete it.o._pend});ubicar(items.map(it=>it.o),puntoPegar(lzMain));fijarSinPosicion(k);
   const mapa={},nuevos=[];
   for(const it of items){const o=it.o;o.creado=Date.now();
-    try{if(it.tipo==="idea"){if(!cols[k])continue;if(k==="ideas"&&!o.tipo)o.tipo="otro";if(k==="frases"&&o.autor===undefined)o.autor="";o.numero=numero++;
+    try{if(it.tipo==="pila"){if(!colPilas||!cols.ideas)continue;const viejoOrden=Array.isArray(o.orden)?o.orden:null;delete o.orden;delete o.tapa;o.tablero="ideas";
+        const rp=await colPilas.add(o);const ids=[],idViejo=new Map();let n0=0;
+        for(const m of it.miembros){const vid=m.id;const c={...m};delete c.id;delete c._pend;delete c.pilasExtra;Object.assign(c,{pila:rp.id,pilaT:Date.now()+n0++,x:o.x,y:o.y,numero:numero++,creado:Date.now()});if(!c.tipo)c.tipo="otro";
+          try{const r=await cols.ideas.add(c);ids.push(r.id);if(vid)idViejo.set(vid,r.id)}catch(_){}}
+        if(viejoOrden){const ord=viejoOrden.map(x=>idViejo.get(x)).filter(Boolean);if(ord.length)escribir(colPilas,rp.id,{orden:ord},{silencioso:true})}
+        if(it.oid)mapa[it.oid]=rp.id;nuevos.push(()=>nodosPila.get(rp.id));continue}
+      if(it.tipo==="idea"){if(!cols[k])continue;if(k==="ideas"&&!o.tipo)o.tipo="otro";if(k==="frases"&&o.autor===undefined)o.autor="";o.numero=numero++;
         const r=await cols[k].add(o);if(it.oid)mapa[it.oid]=r.id;nuevos.push(()=>nodosNota.get(k+":"+r.id))}
       else{if(!colDeco)continue;o.tablero=k;const r=await colDeco.add(o);if(it.oid)mapa[it.oid]=r.id;nuevos.push(()=>nodosDeco.get(r.id))}}
     catch(_){toast("No se pudo pegar. Probá de nuevo.")}}
@@ -3415,6 +3449,13 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:37,f:"16 de noviembre",it:[
+  ["Ya se pueden *copiar y pegar pilas* (Ctrl+C / Ctrl+V) y duplicarlas (Ctrl+D), con todo lo que tienen adentro. Anda en la plancha y adentro de los post-its, y también de uno a otro.",null,2]]},
+ {n:38,f:"16 de noviembre",mio:true,it:[
+  ["Guion: la *portada* ahora es la primera hoja (tocala para poner autor, contacto y versión).",null,2],
+  ["En la lista de guiones: ✎ para cambiar el título y × para borrar.",null,2],
+  ["La pila «Locaciones · ActionGay» que había quedado en la plancha se muda sola adentro del post-it de la película (si el guion no tiene película, te la pide).",null,2],
+  ["La hoja del guion siempre queda centrada, y el mitad y mitad está más prolijo.",null,3]]},
  {n:36,f:"16 de noviembre",mio:true,it:[
   ["*Cada guion es de una película:* cuando creás uno te pregunta de qué post-it es (por ejemplo, el de ActionGay en Largo). Adentro de ese post-it quedan un acceso directo al guion y la pila «Locaciones», que se arma sola con cada lugar que escribís en los encabezados. Ya no aparecen sueltas en la plancha principal.",null,1],
   ["*◧ Plancha al lado:* guion a la izquierda y la plancha de la película a la derecha, mitad y mitad, para ir poniendo imágenes mientras escribís.",null,1],
@@ -4679,8 +4720,8 @@ raiz.innerHTML=`
     <button type="button" class="gu-b gu-ic solo-ancho" data-a="b" title="Negrita (${CTRL}+B)"><b>B</b></button>
     <button type="button" class="gu-b gu-ic solo-ancho" data-a="i" title="Itálica (${CTRL}+I)"><i>I</i></button>
     <button type="button" class="gu-b gu-ic solo-ancho" data-a="u" title="Subrayado (${CTRL}+U)"><u>U</u></button>
-    <button type="button" class="gu-b" data-a="vincular" title="Vincular un post-it o una frase a esta escena (${CTRL}+K)">↗ Vincular</button>
-    <button type="button" class="gu-b solo-ancho" data-a="mitad" title="Guion y plancha de la película, mitad y mitad">◧ Plancha al lado</button>
+    <button type="button" class="gu-b" data-a="vincular" title="Vincular un post-it o una frase a esta escena (${CTRL}+K)">↗ <span class="gu-lbl">Vincular</span></button>
+    <button type="button" class="gu-b solo-ancho gu-bmitad" data-a="mitad" title="Guion y plancha de la película, mitad y mitad">◧ <span class="gu-lbl">Plancha al lado</span></button>
     <button type="button" class="gu-b solo-ancho" data-a="buscar" title="Buscar y reemplazar (${CTRL}+F)">Buscar</button>
     <div class="gu-mw"><button type="button" class="gu-b" data-a="archivo">Archivo ▾</button><div class="gu-menu" id="gu-m-archivo" hidden>
       <button type="button" data-a="portada">Portada…</button>
@@ -4970,21 +5011,37 @@ function maquetar(){if(!G)return;const pg=PAGINAS[opc.pagina]||PAGINAS.a4,H=Math
   const ps=bloques(),hs=ps.map(p=>(p._h=p.offsetHeight));const {res,N}=paginar(ps,hs,H);
   let fin=MT;for(let i=0;i<ps.length;i++){const r=res[i];const top=r.pag*PASO+MT+r.y;r.top=top;const mt=Math.round((top-fin)*100)/100;const v=mt+"px";if(ps[i].style.marginTop!==v)ps[i].style.marginTop=v;fin=top+r.h}
   /* hojas */
+  const conPortada=opc.portada!==false,off=conPortada?PASO:0;ed.style.top=off+"px";chips.style.top=off+"px";
+  pintarPortadaHoja(pg,conPortada,PASO);
   while(hojas.children.length<N)hojas.append(mk("div","gu-hoja"));while(hojas.children.length>N)hojas.lastChild.remove();
-  [...hojas.children].forEach((h,n)=>{h.style.top=n*PASO+"px";h.style.width=pg.w+"px";h.style.height=pg.h+"px";let np=h.querySelector(".np");if(opc.numPaginas&&n>0){if(!np){np=mk("span","np");h.append(np)}np.textContent=(n+1)+".";np.style.right=MR+"px"}else if(np)np.remove()});
-  const alto=N*PASO-GAP;escala.style.height=alto+"px";escala.style.width=pg.w+"px";
-  const hayChips=ps.some(p=>p.dataset.t==="escena"&&vinculosEscena(p).length),W=scroller.clientWidth,anchoChips=hayChips&&W>pg.w*.6+260?230:0;
-  if(zoomAuto){zoom=Math.max(.35,Math.min(1,(W-(anchoChips?48+anchoChips*2:24))/pg.w))}
-  escala.style.transform=`scale(${zoom})`;const pw=pg.w*zoom;spacer.style.width=pw+"px";spacer.style.marginLeft=Math.max(12,Math.min((W-pw)/2,W-pw-anchoChips-12))+"px";spacer.style.marginRight="0";spacer.style.height=alto*zoom+"px";Q("gu-zv").textContent=Math.round(zoom*100)+"%";
+  [...hojas.children].forEach((h,n)=>{h.style.top=(off+n*PASO)+"px";h.style.width=pg.w+"px";h.style.height=pg.h+"px";let np=h.querySelector(".np");if(opc.numPaginas&&n>0){if(!np){np=mk("span","np");h.append(np)}np.textContent=(n+1)+".";np.style.right=MR+"px"}else if(np)np.remove()});
+  const alto=off+N*PASO-GAP;escala.style.height=alto+"px";escala.style.width=pg.w+"px";
+  const W=scroller.clientWidth;
+  if(zoomAuto){zoom=Math.max(.35,Math.min(1,(W-(mitad?24:48))/pg.w))}
+  /* la hoja siempre al medio; los carteles de vínculos van al costado (si no entran, se scrollea) */
+  escala.style.transform=`scale(${zoom})`;const pw=pg.w*zoom;spacer.style.width=pw+"px";spacer.style.marginLeft=Math.max(12,(W-pw)/2)+"px";spacer.style.marginRight="0";spacer.style.height=alto*zoom+"px";Q("gu-zv").textContent=Math.round(zoom*100)+"%";
   lay={ps,res,N,H,PASO};pintarChips();pintarPie();marcarEscenaActual();if(seguir){seguir=false;verCaret()}}
 function verCaret(){if(document.activeElement!==ed)return;const r=rango();if(!r)return;const rc=r.getClientRects()[0]||(actual()&&actual().getBoundingClientRect());if(!rc)return;const s=scroller.getBoundingClientRect();
   if(rc.bottom>s.bottom-40)scroller.scrollTop+=rc.bottom-s.bottom+s.height*0.35;else if(rc.top<s.top+20)scroller.scrollTop+=rc.top-s.top-s.height*0.3}
 function pedirLayout(){cancelAnimationFrame(tLay);tLay=requestAnimationFrame(maquetar)}
+/* la primera hoja: portada (tocala para editarla) */
+let portadaEl=null;
+function pintarPortadaHoja(pg,ver,PASO){if(!ver){if(portadaEl)portadaEl.hidden=true;return}
+  if(!portadaEl){portadaEl=mk("div","gu-hoja gu-portada");portadaEl.title="Tocá para editar la portada";portadaEl.addEventListener("mousedown",e=>{e.preventDefault();e.stopPropagation()});portadaEl.addEventListener("click",e=>{e.stopPropagation();if(!soloLectura())portada()});escala.prepend(portadaEl)}
+  portadaEl.hidden=false;const pp=(G&&G.doc.portada)||{};portadaEl.style.top="0px";portadaEl.style.width=pg.w+"px";portadaEl.style.height=pg.h+"px";
+  const firma=JSON.stringify([Q("gu-titulo").value,pp,pg.w,pg.h,opc.fuente]);if(portadaEl.dataset.f===firma)return;portadaEl.dataset.f=firma;portadaEl.replaceChildren();
+  const c=mk("div","gu-port-c");c.style.top=Math.round(pg.h*0.36)+"px";c.style.left=ML+"px";c.style.right=MR+"px";
+  c.append(mk("div","tt",may(Q("gu-titulo").value.trim()||"Sin título")));if(pp.autor)c.append(mk("div","cc","\u00a0"),mk("div","cc","Escrito por"),mk("div","cc","\u00a0"),mk("div","cc",pp.autor));if(pp.basado)c.append(mk("div","cc","\u00a0"),mk("div","cc",pp.basado));portadaEl.append(c);
+  if(pp.contacto){const k=mk("div","gu-port-c");k.style.left=ML+"px";k.style.bottom=MB+"px";k.style.whiteSpace="pre-wrap";k.textContent=pp.contacto;portadaEl.append(k)}
+  if(pp.borrador){const k=mk("div","gu-port-c");k.style.right=MR+"px";k.style.bottom=MB+"px";k.style.textAlign="right";k.textContent=pp.borrador;portadaEl.append(k)}
+  if(!pp.autor&&!pp.contacto)portadaEl.append(mk("div","gu-port-hint","Tocá acá para poner autor, contacto y versión"))}
+const soloLectura=()=>!!(window.__guionInv&&window.__guionInv.modo==="l");
 function pintarChips(){chips.replaceChildren();if(!lay)return;const pg=PAGINAS[opc.pagina]||PAGINAS.a4;
   lay.ps.forEach((p,i)=>{if(p.dataset.t!=="escena")return;const vs=vinculosEscena(p);vs.forEach((v,n)=>{
     const tx=(v.i.texto||"").split("\n")[0].trim();const c=btn("gu-chip"+(v.loc?" loc":"")+(v.k==="frases"?" fr":"")+(v.auto?" auto":""),null,ev=>{ev.stopPropagation();abrirPop(v,c,p.dataset.id)});
     c.append(mk("span",null,v.k==="frases"?"“"+tx.slice(0,40)+"”":(v.loc?"":"#"+(v.i.numero||"?")+" ")+tx.slice(0,40)));if(v.k==="ideas")c.style.setProperty("--c",colorDe("ideas",v.i));if(v.loc)c.style.setProperty("--c","#e7f3ec");
-    c.style.left=(pg.w+14)+"px";c.style.top=(lay.res[i].top-4+n*28)+"px";c.title=v.auto?"Locación que coincide con el nombre de la escena":"Vinculado a esta escena";chips.append(c)})})}
+    if(mitad){c.classList.add("gu-chip-mini");c.firstChild.textContent=(tx.charAt(0)||"·").toLocaleUpperCase("es");c.title=tx;c.style.left=(pg.w-40)+"px";c.style.top=(lay.res[i].top-4+n*30)+"px"}
+    else{c.style.left=(pg.w+14)+"px";c.style.top=(lay.res[i].top-4+n*28)+"px"}c.title=v.auto?"Locación que coincide con el nombre de la escena":"Vinculado a esta escena";chips.append(c)})})}
 function pintarPie(){const pie=Q("gu-pie");if(!lay||!G){pie.textContent="";return}const p=actual();const i=p?lay.ps.indexOf(p):-1;const pagAct=i>=0&&lay.res[i]?lay.res[i].pag+1:1;
   const esc=lay.ps.filter(q=>q.dataset.t==="escena");const e=p?escenaDe(p):null;const ne=e?esc.indexOf(e)+1:0;
   pie.innerHTML=`<span>Página <b>${pagAct}</b> de ${lay.N}</span><span>${ne?`Escena <b>${ne}</b> de ${esc.length}`:`${esc.length} escenas`}</span><span>≈ ${lay.N} min</span><span style="margin-left:auto">${T[p?p.dataset.t:"accion"]} · Tab cambia</span>`}
@@ -5042,7 +5099,7 @@ async function sincLocaciones(extra){if(!G||!cols.ideas||sincEnCurso)return;cons
   for(const l of extra||[])lugares.set(norm(l),l);
   sincEnCurso=true;try{
     /* lo del arreglo anterior (pila suelta en la plancha) se muda adentro de la película */
-    if(G.doc.pilaLoc){const viejaP=G.doc.pilaLoc;for(const i of data.ideas)if(i.pila===viejaP)escribir(cols.ideas,i.id,{pila:"",dentro:pe.id,guionLoc:i.guionLoc||G.id,guionLocTxt:i.guionLocTxt||i.texto},{silencioso:true});if(colPilas&&pilas.some(p=>p.id===viejaP))colPilas.doc(viejaP).delete().catch(()=>{});delete G.doc.pilaLoc;sucio=true}
+    const migrados=[];if(G.doc.pilaLoc){const viejaP=G.doc.pilaLoc;for(const i of data.ideas)if(i.pila===viejaP&&migrados.push(i.id))escribir(cols.ideas,i.id,{pila:"",dentro:pe.id,guionLoc:i.guionLoc||G.id,guionLocTxt:i.guionLocTxt||i.texto},{silencioso:true});if(colPilas&&pilas.some(p=>p.id===viejaP))colPilas.doc(viejaP).delete().catch(()=>{});delete G.doc.pilaLoc;sucio=true}
     const cat=cats.find(x=>/locaci/.test(norm(x.nombre)));let numero=data.ideas.reduce((m,i)=>Math.max(m,i.numero||0),0);const ahora=Date.now();const nuevos=[];
     for(const [k,l] of lugares){if(postitDeLugar(l)||creandoLoc.has(k))continue;creandoLoc.add(k);numero++;
       const body={texto:capitalizar(l),tipo:cat?cat.id:"otro",creado:ahora+nuevos.length,numero,dentro:pe.id,guionLoc:G.id,guionLocTxt:capitalizar(l)};
@@ -5056,7 +5113,7 @@ async function sincLocaciones(extra){if(!G||!cols.ideas||sincEnCurso)return;cons
     for(const id of borrar)cols.ideas.doc(id).delete().catch(()=>{});
     /* adentro del post-it de la película: acceso al guion + pila «Locaciones» con todas */
     const titulo=Q("gu-titulo").value.trim()||"Sin título",url=urlGuion(G.id);
-    const locs=[...new Set([...data.ideas.filter(i=>i.dentro===pe.id&&!borrar.has(i.id)).map(i=>i.id),...idsNuevos])];
+    const locs=[...new Set([...data.ideas.filter(i=>i.dentro===pe.id&&!borrar.has(i.id)).map(i=>i.id),...idsNuevos,...migrados])];
     editarPeli(bl=>{let cambio=false;
       let lk=bl.find(b=>b.t==="link"&&(b.url||"").includes("#guion="+G.id));
       if(!lk){const p0=lugarLibreEn(bl);lk={id:bid(),t:"link",url,titulo:"Guion · "+titulo,x:p0.x,y:p0.y,w:260};bl.push(lk);cambio=true}
@@ -5091,7 +5148,7 @@ async function guardarYa(){clearTimeout(tGuardar);if(!G||!col||!sucio)return;try
 addEventListener("beforeunload",e=>{if(sucio&&G){guardarYa();e.preventDefault();e.returnValue=""}});
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")guardarYa()});
 Q("gu-sq").addEventListener("input",()=>pintarSide());
-Q("gu-titulo").addEventListener("input",()=>{sucio=true;pintarEstado();guardarPronto(1200)});
+Q("gu-titulo").addEventListener("input",()=>{sucio=true;pintarEstado();guardarPronto(1200);pedirLayout()});
 Q("gu-titulo").addEventListener("change",()=>{const pe=peli(),t=Q("gu-titulo").value.trim();if(pe&&G.doc.peliNueva===pe.id&&t&&!(pe.bloques||[]).some(b=>b.t!=="link"&&b.t!=="pila"&&!b.en)){escribir(cols.ideas,pe.id,{texto:t},{silencioso:true})}sucio=true;guardarYa()});
 Q("gu-titulo").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();ed.focus();caret(ed.firstElementChild,0)}});
 
@@ -5110,13 +5167,19 @@ function entrar(gid,scroll,irA){if(!col){toast("Todavía se están cargando tus 
 function ocultar(){cerrarAC();cerrarPop();salirMitad(true);raiz.hidden=true;document.body.classList.remove("en-guion");tab.setAttribute("aria-selected","false")}
 function salir(){guardarYa();vuelveGuion=null;ocultar();try{localStorage.setItem("pestana","")}catch(_){}}
 function abrirGuion(g,scroll,irA){guardarYa();G={id:g.id,doc:JSON.parse(JSON.stringify(g))};delete G.doc.id;try{localStorage.setItem("guion_ult",g.id)}catch(_){}
-  Q("gu-lista").hidden=true;Q("gu-ed").hidden=false;if(innerWidth<760)Q("gu-side").hidden=true;zoomAuto=true;cargarEnEditor(G.doc,irA);
-  requestAnimationFrame(()=>{if(scroll!=null)scroller.scrollTop=scroll;else if(!irA)scroller.scrollTop=0;ed.focus({preventScroll:true});if(!irA&&scroll==null){const p=ed.firstElementChild;caret(p,"fin")}})}
+  Q("gu-lista").hidden=true;Q("gu-ed").hidden=false;
+  setTimeout(()=>{if(!G||G.id!==g.id)return;const vieja=pilas.find(p=>p.id===G.doc.pilaLoc||(p.guion===G.id&&/^Locaciones · /.test(p.titulo||"")));if(vieja&&!G.doc.pilaLoc){G.doc.pilaLoc=vieja.id;sucio=true}
+    if(vieja){if(peli())sincLocaciones();else{ladoTab="locaciones";pintarSide();elegirPeli()}}},500);if(innerWidth<760)Q("gu-side").hidden=true;zoomAuto=true;cargarEnEditor(G.doc,irA);
+  requestAnimationFrame(()=>{if(scroll!=null)scroller.scrollTop=scroll;else if(!irA)scroller.scrollTop=opc.portada!==false&&lay?Math.max(0,lay.PASO*zoom-20):0;ed.focus({preventScroll:true});if(!irA&&scroll==null){const p=ed.firstElementChild;caret(p,"fin")}})}
 function mostrarLista(){guardarYa();salirMitad(true);G=null;try{localStorage.removeItem("guion_ult")}catch(_){}Q("gu-ed").hidden=true;Q("gu-lista").hidden=false;pintarLista()}
 function pintarLista(){const c=Q("gu-cards");c.replaceChildren();
   if(!guiones.length){c.append(mk("p","gu-vacio","Acá van tus guiones, con el formato de siempre: Courier, A4, márgenes de industria. Escribís y se acomoda solo. Tocá «+ Guion nuevo» o traé uno de Final Draft."));return}
   for(const g of guiones.slice().sort((a,b)=>(b.editado||0)-(a.editado||0))){const b=mk("button","gu-card");b.type="button";const pp=g.portada||{};
-    b.append(mk("div","t",g.titulo||"Sin título"),mk("div","a",pp.autor?"Escrito por\n"+pp.autor:""),mk("div","m",`${(g.bloques||[]).filter(x=>x.t==="escena").length} escenas · ${g.editado?new Date(g.editado).toLocaleDateString("es-AR",{day:"numeric",month:"short"}):""}`));b.onclick=()=>abrirGuion(g);c.append(b)}}
+    b.append(mk("div","t",g.titulo||"Sin título"),mk("div","a",pp.autor?"Escrito por\n"+pp.autor:""),mk("div","m",`${(g.bloques||[]).filter(x=>x.t==="escena").length} escenas · ${g.editado?new Date(g.editado).toLocaleDateString("es-AR",{day:"numeric",month:"short"}):""}`));b.onclick=()=>abrirGuion(g);
+    const ed2=mk("span","gu-card-ed","✎");ed2.title="Cambiarle el título";ed2.setAttribute("role","button");ed2.setAttribute("aria-label","Cambiarle el título");
+    ed2.onclick=e=>{e.stopPropagation();abrirModal(m=>{m.append(mk("h3",null,"Título del guion"));const i=mk("input");i.type="text";i.value=g.titulo||"";m.append(i);const ok=async()=>{const t=i.value.trim();cerrarModal();if(t===(g.titulo||""))return;g.titulo=t;pintarLista();try{await col.doc(g.id).update({titulo:t})}catch(_){toast("No se pudo cambiar el título.")}};
+      i.onkeydown=ev=>{if(ev.key==="Enter"){ev.preventDefault();ok()}};const a=mk("div","acc");a.append(btn(null,"Cancelar",cerrarModal),btn("si","Listo",ok));m.append(a);setTimeout(()=>i.select(),40)})};b.append(ed2);
+    const x=mk("span","gu-card-x","×");x.title="Borrar este guion";x.setAttribute("role","button");x.setAttribute("aria-label","Borrar este guion");x.onclick=async e=>{e.stopPropagation();const ok=await confirmar(`¿Borrar «${g.titulo||"Sin título"}»?`,"Se borra el guion entero. No se puede deshacer.","Borrar");if(!ok)return;try{await col.doc(g.id).delete();guiones=guiones.filter(z=>z.id!==g.id);pintarLista();toast("Guion borrado.")}catch(_){toast("No se pudo borrar.")}};b.append(x);c.append(b)}}
 async function nuevo(doc){if(!col)return;const ahora=Date.now();const d=doc||{titulo:"",portada:{},opciones:{...OPC0},bloques:[{id:rid(),t:"escena",h:""}]};d.creado=ahora;d.editado=ahora;miEditado=ahora;
   try{const r=await col.add(d);const g={id:r.id,...d};if(!guiones.some(x=>x.id===r.id))guiones.push(g);abrirGuion(g);if(!doc)setTimeout(()=>{Q("gu-titulo").focus()},80);setTimeout(()=>{if(G&&G.id===r.id&&!G.doc.postit)elegirPeli()},doc?300:60)}catch(_){toast("No se pudo crear el guion.")}}
 async function borrarGuion(){if(!G)return;const g=G;const ok=await confirmar(`¿Borrar «${Q("gu-titulo").value||"Sin título"}»?`,"Se borra el guion entero. No se puede deshacer.","Borrar");if(!ok)return;sucio=false;clearTimeout(tGuardar);
