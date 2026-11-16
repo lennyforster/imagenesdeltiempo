@@ -1178,7 +1178,7 @@ body.barra-abierta .barra-extra.h-extra:not(.abierta){display:none}
 .gu-chip.loc::before{content:"";flex:none;width:8px;height:8px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#1f6b4a}
 .gu-chip.fr{background:#fff;font-style:italic}
 .gu-chip.auto{opacity:.85}
-.gu-pie{display:flex;gap:16px;align-items:center;padding:6px 14px;background:rgba(10,40,26,.35);color:rgba(255,253,246,.8);font:500 11.5px var(--mono)}
+.gu-pie{display:flex;gap:16px;align-items:center;padding:3px 12px;background:rgba(10,40,26,.35);color:rgba(255,253,246,.8);font:500 10.5px var(--mono)}
 .gu-pie b{color:var(--paper);font-weight:600}
 /* sugerencias */
 .gu-ac{position:fixed;z-index:60;background:#fffdf6;border-radius:10px;box-shadow:0 10px 26px rgba(0,0,0,.4);padding:4px;min-width:200px;max-width:340px;max-height:260px;overflow:auto}
@@ -1449,6 +1449,18 @@ body.gu-mitad .pila-vista{left:var(--gu-corte,50%);background-color:#1f6b4a;back
 .gu-cuerpo{position:relative}
 .gu-tl-pjn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;font:500 11px var(--ui);text-transform:uppercase}
 .gu-tl-hn{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
+
+.gu-selbar{position:absolute;z-index:9;display:flex;flex-direction:column;gap:4px;background:#fffdf6;border-radius:14px;padding:5px;box-shadow:0 6px 20px rgba(0,0,0,.3);transform-origin:left top}
+.gu-selbar[hidden]{display:none}
+.gu-selbar button{border:0;background:none;border-radius:10px;padding:7px 12px;font:600 13px var(--ui);color:var(--ink);cursor:pointer;text-align:left;white-space:nowrap}
+.gu-selbar button:hover{background:#ffe76a}
+@media print{.gu-selbar{display:none!important}}
+
+body.gu-foco .gu-top,body.gu-foco .gu-side,body.gu-foco .gu-pie,body.gu-foco .gu-chips,body.gu-foco .gu-tl{display:none!important}
+.gu-salirfoco{display:none}
+body.gu-foco .gu-salirfoco{display:block;position:fixed;top:10px;right:14px;z-index:40;border:0;border-radius:999px;background:rgba(255,253,246,.92);color:var(--ink);font:600 12px var(--ui);padding:7px 14px;cursor:pointer;opacity:.25;transition:opacity .2s;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+body.gu-foco .gu-salirfoco:hover{opacity:1}
+.gu-irpag{font-size:10.5px;padding:0 5px}
 </style>
 <div class="cargando" id="cargando" hidden role="status"><span class="cg-punto"></span>Cargando tu plancha…</div>
 <div class="conectar" id="conectar" hidden>
@@ -1864,7 +1876,7 @@ window.claude={use:async n=>{if(INVITADO&&n==="db"){if(!listo)listo=conectar();r
 </div>
 
 <div class="pila-vista" id="pila-vista" hidden role="dialog" aria-label="Pila de Keep">
-  <div class="pv-cab"><button type="button" class="btn oscuro" id="pv-cerrar">← Volver</button><input type="text" class="pv-titulo" id="pv-titulo" placeholder="Ponele un título a la pila…" aria-label="Título de la pila" maxlength="80"><span class="t-tit" id="pv-tit"></span><button type="button" class="btn" id="pv-nueva">+ Nuevo acá</button><button type="button" class="btn" id="pv-ref">+ Referencia</button><button type="button" class="btn" id="pv-tapa" hidden>Tapa</button><span class="sep"></span><input type="search" class="buscar" id="pv-buscar" placeholder="Buscar en la pila…" aria-label="Buscar en la pila"><button type="button" class="btn" id="pv-deshacer" hidden>Deshacer pila</button><button type="button" class="btn" id="pv-borrar">Borrar pila</button></div>
+  <div class="pv-cab"><button type="button" class="btn oscuro" id="pv-cerrar">← Volver</button><input type="text" class="pv-titulo" id="pv-titulo" placeholder="Ponele un título a la pila…" aria-label="Título de la pila" maxlength="80"><span class="t-tit" id="pv-tit"></span><button type="button" class="btn" id="pv-nueva">+ Nuevo acá</button><button type="button" class="btn" id="pv-ref">+ Vínculo</button><button type="button" class="btn" id="pv-tapa" hidden>Tapa</button><span class="sep"></span><input type="search" class="buscar" id="pv-buscar" placeholder="Buscar en la pila…" aria-label="Buscar en la pila"><button type="button" class="btn" id="pv-deshacer" hidden>Deshacer pila</button><button type="button" class="btn" id="pv-borrar">Borrar pila</button></div>
   <div class="pv-grilla" id="pv-grilla"></div>
 </div>
 
@@ -1905,7 +1917,7 @@ window.claude={use:async n=>{if(INVITADO&&n==="db"){if(!listo)listo=conectar();r
     <button class="tool" id="add-pila" type="button">Pila</button>
     <button class="tool" id="add-nidea" type="button">Post-it nuevo</button>
     <button class="tool" id="add-nfrase" type="button">Frase nueva</button>
-    <button class="tool" id="add-ref" type="button" title="Conectá este post-it con otro: aparece acá adentro y sigue viviendo en su lugar">Referencia</button>
+    <button class="tool" id="add-ref" type="button" title="Conectá este post-it con otro: aparece acá adentro y sigue viviendo en su lugar">Vínculo</button>
     <button class="tool" id="add-img" type="button">Imagen</button>
     <button class="tool" id="add-cal" type="button">Calendario</button>
     <button class="tool" id="add-esc" type="button">Escaleta</button>
@@ -1935,7 +1947,7 @@ window.claude={use:async n=>{if(INVITADO&&n==="db"){if(!listo)listo=conectar();r
     <div id="tar-hay"><span class="nota-panel">O poné una que ya existe. Es la misma lista: lo que tachás o borrás acá, cambia allá también.</span><div class="r-lista" id="tar-lista"></div></div>
   </div>
   <div class="panel" id="panel-ref" hidden>
-    <div class="meta"><span id="r-tit">Referencia a otro post-it</span><button type="button" class="cerrar" id="cerrar-ref" aria-label="Cerrar">×</button></div>
+    <div class="meta"><span id="r-tit">Vínculo a otro post-it</span><button type="button" class="cerrar" id="cerrar-ref" aria-label="Cerrar">×</button></div>
     <input type="search" id="r-buscar" placeholder="Buscalo por texto, número o categoría…" aria-label="Buscar post-it" autocomplete="off">
     <div class="r-lista" id="r-lista"></div>
     <div id="r-crear" hidden><span class="nota-panel">¿No existe? Crealo ya conectado:</span><div class="ed-barra" id="r-tipo"><button type="button" data-k="ideas">Post-it</button><button type="button" data-k="frases">Frase</button></div><div class="colores" id="r-cats" role="group" aria-label="Categoría del post-it nuevo"></div><button type="button" class="btn oscuro" id="r-crear-btn">+ Crear</button><span class="nota-panel" id="r-donde"></span></div>
@@ -2742,7 +2754,7 @@ function editarTituloLink(n,b,host){const tb=n.querySelector(":scope>b");if(!tb)
 /* ---------- Pilas adentro de un post-it: un bloque «pila» junta otros bloques (los de adentro quedan con en=<id de la pila>) ---------- */
 let hpPila=null,tHpTit=null;
 const miembrosHP=pid=>abierto?abierto.doc.bloques.filter(b=>b.en===pid):[];
-const NOMBRE_B={post:"Post-it",txt:"Nota",tx:"Texto",img:"Imagen",link:"Link",ref:"Referencia",tar:"Tareas",cal:"Calendario",esc:"Escaleta",pila:"Pila"};
+const NOMBRE_B={post:"Post-it",txt:"Nota",tx:"Texto",img:"Imagen",link:"Link",ref:"Vínculo",tar:"Tareas",cal:"Calendario",esc:"Escaleta",pila:"Pila"};
 const fotoDeB=x=>x.t==="img"?x.a:x.t==="ref"&&kDe(x)==="ideas"?(((data.ideas.find(i=>i.id===x.ref)||{}).bloques||[]).find(y=>y.t==="img"&&y.a)||{}).a:null;
 const textoDeB=x=>{if(x.t==="ref"){const i=data[kDe(x)].find(z=>z.id===x.ref);return i?(i.texto||""):""}if(x.t==="link"){let h=x.url;try{h=new URL(x.url).hostname.replace(/^www\./,"")}catch(_){}return x.titulo||h}if(x.t==="tar"){const L=listas.find(z=>z.id===x.ref);return L?((L.titulo||"Tareas")+": "+(L.lista||[]).map(t=>t.v).slice(0,4).join(", ")):""}return x.v||""};
 function editarTituloPilaHoja(n,b){const tt=n.querySelector(".pila-titulo");if(!tt||n._editTit)return;n._editTit=true;const i=el("input","pila-tit-ed");i.type="text";i.value=b.titulo||"";i.placeholder="Pila";i.maxLength=80;i.setAttribute("aria-label","Título de la pila");tt.replaceWith(i);
@@ -2783,7 +2795,7 @@ function pintarVistaHP(){const g=$("hp-grilla"),ms=miembrosHP(hpPila);$("hp-n").
   for(const b of ms){const c=el("div","pv-nota");c.dataset.id=b.id;let col="#fffdf6";if(b.t==="post")col=b.c||PALETA[1];else if(b.t==="ref"){const i=data[kDe(b)].find(z=>z.id===b.ref);if(i)col=colorDe(kDe(b),i)}c.style.setProperty("--c",col);c.style.setProperty("--r",giro(b.id)*.5+"deg");
     const m=el("div","meta");m.append(el("span",null,NOMBRE_B[b.t]||"Cosa"),el("span"));c.append(m,el("div","pv-txt",textoDeB(b)));
     const im=fotoDeB(b);if(im){c.classList.add("con-img");const i=el("img","pv-img");i.alt="";i.draggable=false;i.dataset.ref=im;i.onerror=()=>i.remove();cargarImg(i,im);c.append(i)}
-    const pie=el("div","pv-pie"),sac=el("button","pv-sacar","Sacar ↗");sac.type="button";sac.title="Volverlo a la hoja";sac.onclick=e=>{e.stopPropagation();sacarDePilaHoja(b)};const bo=el("button","pv-sacar pv-borrar","Borrar");bo.type="button";bo.title=b.t==="ref"?"Sacar esta referencia (el original sigue en su lugar)":"Borrarlo";bo.onclick=e=>{e.stopPropagation();borrarDePilaHoja(b)};const bt=el("span","pv-bts");bt.append(bo,sac);pie.append(el("span"),bt);c.append(pie);
+    const pie=el("div","pv-pie"),sac=el("button","pv-sacar","Sacar ↗");sac.type="button";sac.title="Volverlo a la hoja";sac.onclick=e=>{e.stopPropagation();sacarDePilaHoja(b)};const bo=el("button","pv-sacar pv-borrar","Borrar");bo.type="button";bo.title=b.t==="ref"?"Sacar este vínculo (el original sigue en su lugar)":"Borrarlo";bo.onclick=e=>{e.stopPropagation();borrarDePilaHoja(b)};const bt=el("span","pv-bts");bt.append(bo,sac);pie.append(el("span"),bt);c.append(pie);
     c.onclick=()=>{if(c._sinClick)return;if(b.t==="img")verImagen(b.a);else if(b.t==="ref"){cerrarPilaHoja();irARef(b.ref,kDe(b))}else if(b.t==="link")window.open(b.url,"_blank","noopener")};g.append(c)}}
 $("hp-cerrar").onclick=cerrarPilaHoja;
 ordenable($("hp-grilla"),{activo:()=>!!hpPila,guardar:ids=>{if(!abierto)return;const bl=abierto.doc.bloques,ms=ids.map(id=>bl.find(x=>x.id===id)).filter(Boolean),fuera=bl.filter(x=>!ms.includes(x));abierto.doc.bloques=[...fuera,...ms];guardarBloques();refrescarPilaHoja(hpPila)}});
@@ -2803,12 +2815,12 @@ const refsA=id=>data.ideas.filter(i=>i.id!==id&&(i.bloques||[]).some(b=>b.t==="r
 const quitarComillas=t=>(t||"").replace(/^[«“"]|[»”"]$/g,"");
 function pintarRef(n,b){const k=kDe(b),i=data[k].find(x=>x.id===b.ref);const imV=n.querySelector(":scope>.ref-img");n.querySelectorAll(":scope>.grip,:scope>.ref-tag,:scope>.meta,:scope>.ref-txt,:scope>.ref-extra,:scope>.ref-abrir,:scope>.ref-img").forEach(x=>x.remove());n.classList.toggle("roto",!i);n.classList.toggle("ref-frase",k==="frases");
   const fr=[el("div","grip")];
-  if(i){n.style.setProperty("--c",colorDe(k,i));const m=el("div","meta"),ic=el("span","ref-ic","↗");ic.title=k==="frases"?"Referencia a una frase (vive en Frases)":"Referencia a un post-it (vive en su lugar)";ic.setAttribute("aria-label",ic.title);m.append(el("span",null,k==="frases"?"Frase #"+(i.numero||"?"):"#"+(i.numero||"?")+" · "+label(i.tipo)),ic);
+  if(i){n.style.setProperty("--c",colorDe(k,i));const m=el("div","meta"),ic=el("span","ref-ic","↗");ic.title=k==="frases"?"Vínculo a una frase (vive en Frases)":"Vínculo a un post-it (vive en su lugar)";ic.setAttribute("aria-label",ic.title);m.append(el("span",null,k==="frases"?"Frase #"+(i.numero||"?"):"#"+(i.numero||"?")+" · "+label(i.tipo)),ic);
     fr.push(m,el("p","ref-txt",k==="frases"?"“"+quitarComillas(i.texto)+"”":(i.texto||"(sin texto)")));
     const ib=k==="ideas"&&(i.bloques||[]).find(x=>x.t==="img"&&x.a);if(ib){let im=imV&&imV.dataset.ref===ib.a?imV:null;if(!im){im=el("img","ref-img");im.alt="";im.draggable=false;im.dataset.ref=ib.a;im.onload=()=>pintarHilos();im.onerror=()=>im.remove();cargarImg(im,ib.a)}fr.push(im)}
     if(k==="frases"){if(i.autor)fr.push(el("span","ref-extra","— "+i.autor))}else{const ex=resumenExtra(i);if(ex)fr.push(el("span","ref-extra",ex.replace(/^\+ /,"")))}
     const ab=el("button","ref-abrir","Abrir ↗");ab.type="button";ab.onclick=e=>{e.stopPropagation();irARef(b.ref,k)};fr.push(ab);n.title="Tocalo dos veces para abrirlo"}
-  else{n.style.removeProperty("--c");fr.push(el("p","ref-txt",refNuevos.has(b.ref)?"…":window.__invitado?"Algo de otra parte de la plancha.":(k==="frases"?"Esta frase se borró.":"Este post-it se borró.")+" Podés quitar la referencia."))}
+  else{n.style.removeProperty("--c");fr.push(el("p","ref-txt",refNuevos.has(b.ref)?"…":window.__invitado?"Algo de otra parte de la plancha.":(k==="frases"?"Esta frase se borró.":"Este post-it se borró.")+" Podés quitar el vínculo."))}
   n.prepend(...fr)}
 function refrescarRefs(){for(const id of [...refNuevos])if(data.ideas.some(x=>x.id===id)||data.frases.some(x=>x.id===id))refNuevos.delete(id);
   if(!abierto||abierto.k==="diario")return;document.querySelectorAll("#capa-hoja .pieza.bref").forEach(n=>{const b=abierto.doc.bloques.find(x=>x.id===n.dataset.bid);if(b)pintarRef(n,b)});pintarAparece();if(!$("panel-ref").hidden&&document.activeElement!==$("r-buscar"))pintarPanelRef()}
@@ -2823,7 +2835,7 @@ function irARef(id,k){k=k||"ideas";if(!abierto||id===abierto.id)return;if(!data[
   const st=[...navRef,{k:abierto.k,id:abierto.id}];cerrar();navRef=st;abrir(k,id);pintarVolver()}
 let crearRefModo=false;
 function abrirPanelRef(modo){if(!abierto||abierto.k!=="ideas")return;crearRefModo=modo==="ideas"||modo==="frases";if(crearRefModo)kRef=modo;$("panel-ref").classList.toggle("crear",crearRefModo);
-  $("r-tit").textContent=!crearRefModo?"Referencia a otro post-it":modo==="frases"?"Frase nueva":"Post-it nuevo";$("r-buscar").placeholder=!crearRefModo?"Buscalo por texto, número o categoría…":modo==="frases"?"Escribí la frase…":"Escribí el post-it…";$("r-buscar").type=crearRefModo?"text":"search";$("linkform").hidden=true;$("panel-tar").hidden=true;$("panel-ref").hidden=false;$("r-buscar").value="";if(!catRef||!cats.some(c=>c.id===catRef))catRef=tipoNueva;pintarPanelRef();requestAnimationFrame(()=>$("r-buscar").focus())}
+  $("r-tit").textContent=!crearRefModo?"Vínculo a otro post-it":modo==="frases"?"Frase nueva":"Post-it nuevo";$("r-buscar").placeholder=!crearRefModo?"Buscalo por texto, número o categoría…":modo==="frases"?"Escribí la frase…":"Escribí el post-it…";$("r-buscar").type=crearRefModo?"text":"search";$("linkform").hidden=true;$("panel-tar").hidden=true;$("panel-ref").hidden=false;$("r-buscar").value="";if(!catRef||!cats.some(c=>c.id===catRef))catRef=tipoNueva;pintarPanelRef();requestAnimationFrame(()=>$("r-buscar").focus())}
 function pilaDeCat(tipo){const n=(label(tipo)||"").trim().toLowerCase();return n?pilas.find(p=>(p.titulo||"").trim().toLowerCase()===n)||null:null}
 function pintarPanelRef(){if(!abierto)return;const qq=$("r-buscar").value.trim(),ql=qq.toLowerCase(),ya=new Set(abierto.doc.bloques.filter(b=>b.t==="ref").map(b=>b.ref));
   const txt=(i,k)=>(k==="frases"?[i.texto,i.autor,"frase","#"+(i.numero||"")]:[i.texto,"#"+(i.numero||""),label(i.tipo),textoBloques(i)]).join(" ").toLowerCase();
@@ -2831,8 +2843,8 @@ function pintarPanelRef(){if(!abierto)return;const qq=$("r-buscar").value.trim()
   const cand=todos.filter(({i,k})=>i.id!==abierto.id&&!ya.has(i.id)&&(!ql||txt(i,k).includes(ql))).sort((a,b)=>ql?((b.i.texto||"").toLowerCase().includes(ql)-(a.i.texto||"").toLowerCase().includes(ql))||(b.i.creado||0)-(a.i.creado||0):(b.i.creado||0)-(a.i.creado||0)).slice(0,40);
   const L=$("r-lista");L.replaceChildren();L.hidden=crearRefModo;
   if(crearRefModo){$("r-crear").hidden=false;$("r-tipo").hidden=true;$("r-crear-btn").disabled=!qq;$("r-crear-btn").textContent=kRef==="frases"?"+ Crear frase":"+ Crear post-it";$("r-cats").hidden=kRef==="frases";
-    if(kRef==="frases"){$("r-donde").textContent="Queda en Frases y acá adentro, como una referencia.";return}coloresUI($("r-cats"),catRef,v=>{catRef=v;pintarPanelRef()});const pl=pilaDeCat(catRef);
-    $("r-donde").textContent=pl?`Queda adentro de la pila «${pl.titulo}» y acá adentro, como una referencia.`:`Queda en la plancha como ${label(catRef)} y acá adentro, como una referencia.`;return}
+    if(kRef==="frases"){$("r-donde").textContent="Queda en Frases y acá adentro, como un vínculo.";return}coloresUI($("r-cats"),catRef,v=>{catRef=v;pintarPanelRef()});const pl=pilaDeCat(catRef);
+    $("r-donde").textContent=pl?`Queda adentro de la pila «${pl.titulo}» y acá adentro, como un vínculo.`:`Queda en la plancha como ${label(catRef)} y acá adentro, como un vínculo.`;return}
   $("r-tipo").hidden=false;
   for(const {i,k} of cand){const b=el("button","r-fila");b.type="button";const d=el("i");d.style.setProperty("--c",colorDe(k,i));
     b.append(d,el("span","r-n",(k==="frases"?"F":"")+"#"+(i.numero||"?")),el("span","r-t",k==="frases"?"“"+quitarComillas(i.texto).replace(/\s+/g," ")+"”":(i.texto||"(sin texto)").replace(/\s+/g," ")),el("span","r-c",k==="frases"?(i.autor||"frase"):label(i.tipo)));b.onclick=()=>ponerRef(i.id,k);L.append(b)}
@@ -3151,7 +3163,7 @@ crearLateral(lzMain);crearLateral(lzHoja);pintarPaletas();
 /* adentro de un post-it: el + de la barra izquierda tiene todo lo que se puede agregar */
 {const bar=lzHoja.vp.parentElement.querySelector(".lateral"),mas=el("button","lat mas","+");mas.type="button";mas.title="Agregar";mas.setAttribute("aria-label","Agregar");mas.setAttribute("aria-expanded","false");
   bar.prepend(mas,el("span","lat-sep"));const menu=el("div","agregar-menu");menu.hidden=true;menu.setAttribute("role","menu");$("detalle").append(menu);
-  const OPC=[["add-post","Post-it","am"],["add-txt","Nota"],["add-tx","Texto"],["add-link","Link"],["add-ref","Referencia"],["add-nidea","Post-it nuevo"],["add-nfrase","Frase nueva"],["add-tar","Tareas"],["add-pila","Pila"],["add-img","Imagen"],["add-cal","Calendario"],["add-esc","Escaleta"],["add-guion","Guion"]];
+  const OPC=[["add-post","Post-it","am"],["add-txt","Nota"],["add-tx","Texto"],["add-link","Link"],["add-ref","Vínculo"],["add-nidea","Post-it nuevo"],["add-nfrase","Frase nueva"],["add-tar","Tareas"],["add-pila","Pila"],["add-img","Imagen"],["add-cal","Calendario"],["add-esc","Escaleta"],["add-guion","Guion"]];
   const cerrarM=()=>{menu.hidden=true;mas.setAttribute("aria-expanded","false");document.removeEventListener("pointerdown",fuera,true)};
   const fuera=e=>{if(!menu.contains(e.target)&&e.target!==mas)cerrarM()};
   /* el mismo menú sale con el +, o donde hagas doble clic (ahí sin «Hilo rojo», y lo que crees aparece en ese lugar) */
@@ -3492,7 +3504,7 @@ const AYUDA=[
   [{h:'<span class="ay-chip"><span class="ic-cuad"></span></span>'},"Al lado de la «A»: cambia el fondo de la plancha por uno de cuadritos, como el de adentro de las pilas. Lo volvés a tocar para el original."],
   [null,"Abajo, en «+ Nueva idea», están «Editar categorías» e «Importar de Google Keep»."]]},
  {t:"Adentro de un post-it",it:[
-  [{chip:"+"},"El + de la barra de la izquierda (o doble clic en el fondo): sumás post-its, notas, texto, links, referencias, listas de tareas, pilas, imágenes, calendarios y escaletas."],
+  [{chip:"+"},"El + de la barra de la izquierda (o doble clic en el fondo): sumás post-its, notas, texto, links, vínculos, listas de tareas, pilas, imágenes, calendarios y escaletas."],
   [{chip:"Escaleta"},"Lista de escenas, con bifurcaciones para probar caminos distintos."],
   [{chip:"Aa"},"Tocá un post-it, una nota o un texto y aparece «Aa»: le cambiás la tipografía, el tamaño, la negrita, la itálica y el color a todo ese bloque."],
   ["Imágenes","Pegalas con "+CMD+"+V o arrastralas desde la compu. Tocá una y se ve en grande, en pantalla completa; tocá afuera o «Cerrar» para volver."],
@@ -3501,11 +3513,11 @@ const AYUDA=[
   [{chip:"Exportar"},"Copia el texto o lo descarga como .txt para seguir en Docs o Word."],
   [{chip:"Compartir"},"Te da un link directo a esa nota, que abre solo en tus dispositivos."],
   [{h:'<span class="ay-chip" style="background:#1f9d6b;color:#fff">● En vivo</span>'},"Para trabajar un post-it con otra gente al mismo tiempo. Mirá la pestaña «En vivo»."],
-  [{chip:"Referencia"},"Pone adentro un post-it o una frase que vive en otro lado. Está explicado bien en la pestaña «Referencias»."],
-  [{chip:"Post-it nuevo"},"En el «+»: creás un post-it de verdad, de la categoría que elijas, desde adentro de este. Queda en la plancha (o en la pila de esa categoría) y acá adentro como referencia."],
-  [{chip:"Frase nueva"},"En el «+»: creás una frase desde acá. Queda en Frases y acá adentro como referencia."],
+  [{chip:"Vínculo"},"Pone adentro un post-it o una frase que vive en otro lado. Está explicado bien en la pestaña «Vínculos»."],
+  [{chip:"Post-it nuevo"},"En el «+»: creás un post-it de verdad, de la categoría que elijas, desde adentro de este. Queda en la plancha (o en la pila de esa categoría) y acá adentro como vínculo."],
+  [{chip:"Frase nueva"},"En el «+»: creás una frase desde acá. Queda en Frases y acá adentro como vínculo."],
   [null,"Lo último que tocás o movés queda arriba de todo, así podés acomodar las cosas unas encima de otras como quieras."],
-  [{chip:"Doble clic"},"En el fondo abre el menú para crear (post-it, nota, link, referencia, tareas, pila, imagen…) justo en ese lugar. En la plancha de ideas: post-it, lista de tareas o pila."],
+  [{chip:"Doble clic"},"En el fondo abre el menú para crear (post-it, nota, link, vínculo, tareas, pila, imagen…) justo en ese lugar. En la plancha de ideas: post-it, lista de tareas o pila."],
   [{chip:"Link"},"Tocá dos veces el título (o «Título» arriba) para cambiarlo, así no queda «youtube.com». Con la manija del costado lo achicás o agrandás."],
   [null,"— Pilas adentro de un post-it —"],
   [null,"La forma más fácil: arrastrá una cosa y soltala encima de otra, igual que en la plancha. Se arma la pila."],
@@ -3515,14 +3527,14 @@ const AYUDA=[
   [{chip:"Sacar ↗"},"Adentro de la pila, vuelve esa cosa a la hoja. «Deshacer pila» saca todo. Si borrás la pila, lo de adentro no se borra: vuelve a la hoja."],
   [null,"La tapa muestra la primera foto que haya adentro (o el primer texto). Adentro también podés reordenar arrastrando."],
   [null,"Si algo de adentro tenía una flecha, mientras está en la pila queda enganchada a la pila."]]},
- {t:"Referencias",it:[
-  [null,"Una referencia es poner algo que ya existe adentro de otro lado, sin copiarlo. Ejemplo: tenés una locación guardada en la pila «Locaciones» y la querés ver también adentro del post-it de tu película."],
-  [{chip:"+ → Referencia"},"Adentro del post-it, tocá el «+» de la izquierda y elegí «Referencia». Buscá por texto, número o categoría y tocá el que querés."],
+ {t:"Vínculos",it:[
+  [null,"Un vínculo es poner algo que ya existe adentro de otro lado, sin copiarlo. Ejemplo: tenés una locación guardada en la pila «Locaciones» y la querés ver también adentro del post-it de tu película."],
+  [{chip:"+ → Vínculo"},"Adentro del post-it, tocá el «+» de la izquierda y elegí «Vínculo». Buscá por texto, número o categoría y tocá el que querés."],
   [null,"Si todavía no existe, escribilo en el buscador y crealo ahí mismo: elegís «Post-it» (con su categoría) o «Frase». Si la categoría se llama igual que una pila, va directo a esa pila."],
   [{chip:"Abrir ↗"},"Aparece como un post-it chiquito, con su foto si tiene. Tocalo dos veces (o «Abrir ↗») para entrar. El botón «← #» de arriba te devuelve a donde estabas."],
   [null,"No es una copia: es el mismo post-it. Si lo cambiás en un lado, cambia en el otro. En el original, abajo del texto, dice «También aparece en:» y podés saltar ahí."],
-  [{chip:"↗ en #9"},"En la plancha (de ideas o de frases), lo que está referenciado en otro post-it lo dice abajo. Tocalo para ir ahí. Adentro, la tarjeta tiene una flechita ↗ arriba a la derecha que indica que es una referencia."],
-  [{chip:"+ Referencia"},"Adentro de una pila también: pone en esa pila un post-it que vive en otra (por ejemplo, una nota de Keep en «Locaciones»). Sigue estando en su pila de siempre; «Quitar de acá» lo saca solo de esta."],
+  [{chip:"↗ en #9"},"En la plancha (de ideas o de frases), lo que está vinculado en otro post-it lo dice abajo. Tocalo para ir ahí. Adentro, la tarjeta tiene una flechita ↗ arriba a la derecha que indica que es un vínculo."],
+  [{chip:"+ Vínculo"},"Adentro de una pila también: pone en esa pila un post-it que vive en otra (por ejemplo, una nota de Keep en «Locaciones»). Sigue estando en su pila de siempre; «Quitar de acá» lo saca solo de esta."],
   [null,"Las listas de tareas funcionan igual: la misma lista puede estar en la plancha y adentro de un post-it."]]},
  {t:"Diario",it:[
   ["Scroll infinito","Arriba lo que escribiste antes, abajo el día de hoy. Entrás y ya podés escribir."],
@@ -3543,7 +3555,8 @@ const AYUDA=[
   [{chip:"Colores"},"En la lista de escenas, el circulito le pone color a cada escena."],
   [{chip:"▤ Línea de tiempo"},"La peli entera en el tiempo, con hilos narrativos y personajes. Al lado está la Escaleta, que se arma sola. Las podés ver abajo del guion, al costado (la escaleta) o en pantalla completa. Arrastrando escenas reordenás el guion. Con la × al lado de un personaje lo sacás de la línea."],
   [{chip:"↗ Vincular"},"Marcás un pedazo y se crea un post-it con eso adentro de la película. Sin marcar nada, lo atás a un post-it que ya existe."],
-  [{chip:"💬 Comentar"},"Deja un comentario al costado del renglón. Tocalo para editarlo o resolverlo."],
+  [{chip:"💬 Comentar"},"Deja un comentario al costado del renglón. Tocalo para editarlo o resolverlo. Si marcás más de una palabra, Comentar y Vincular te aparecen al costado de la hoja."],
+  [{chip:"⤢"},"Modo foco: solo la hoja, sin nada alrededor. También con Ctrl+Shift+Enter. Esc para salir."],
   [null,"Ortografía: las palabras mal escritas quedan subrayadas en rojo (diccionario rioplatense, con voseo). Clic derecho para ver sugerencias o agregarla a tu diccionario. Se apaga en Archivo → Formato."],
   [{chip:"Página 3"},"Abajo a la izquierda: tocá el número de página para saltar a otra."],
   [{chip:"Compartir"},"Link para leer o para editar juntos en vivo. Archivo: PDF, Final Draft, Fountain y todos tus guiones."]]},
@@ -3568,8 +3581,8 @@ const AYUDA=[
   ["Doble clic adentro de una pila","Escribís un post-it nuevo ahí mismo, ya guardado en la pila. Enter lo pega, Esc lo cancela."],
   [{chip:"Borrar"},"Abrí la pila y pasá el mouse por un post-it: al lado de «Sacar» está «Borrar»."],
   [{chip:"Ctrl+C · Ctrl+V"},"Elegí una pila (con Shift + arrastrar) y copiala: se pega con todo lo que tiene adentro. Anda en la plancha, adentro de un post-it, y de uno a otro. Ctrl+D la duplica."],
-  [null,"Si creás un post-it desde «Referencia» con una categoría que se llama igual que una pila, va directo adentro de esa pila."],
-  [{chip:"+ Referencia"},"Adentro de una pila: pone ahí un post-it que vive en otra pila (o en la plancha). Sigue en su lugar de siempre."],
+  [null,"Si creás un post-it desde «Vínculo» con una categoría que se llama igual que una pila, va directo adentro de esa pila."],
+  [{chip:"+ Vínculo"},"Adentro de una pila: pone ahí un post-it que vive en otra pila (o en la plancha). Sigue en su lugar de siempre."],
   [{chip:"Tapa"},"Adentro de una pila con fotos: cambia qué foto se ve en la tapa, o la saca."],
   [null,"Para cambiar el orden, arrastrá un post-it adentro de la pila y los demás se corren (con el dedo: mantené apretado y arrastrá). Queda guardado así. Anda en todas, también en la de Keep."]]},
  {t:"Barra izquierda",it:[
@@ -3583,7 +3596,7 @@ const AYUDA=[
   [{chip:"☐"},"Cuando hacés una tarea, tocá el cuadradito: se tacha y queda anotada sola en el diario de hoy, con la hora («Terminé: …»). Si la destachás, se borra del diario."],
   [{chip:"×"},"Arriba a la derecha de la lista: la saca de la plancha. Si está adentro de algún post-it, sigue ahí; si no, se borra (te pregunta antes)."],
   [{chip:"Tareas"},"Adentro de un post-it, en el «+»: armás una lista nueva ahí o ponés una que ya existe. Es la misma lista en los dos lados: si tachás o borrás algo adentro, cambia afuera también."],
-  [{chip:"En la plancha"},"Para que una lista de adentro de un post-it se vea en la plancha principal, poné una referencia a ese post-it en la plancha."]]},
+  [{chip:"En la plancha"},"Para que una lista de adentro de un post-it se vea en la plancha principal, poné un vínculo a ese post-it en la plancha."]]},
  {t:"Atajos",it:[
   [["Shift","arrastrar"],"Sobre el fondo: dibujás un marco y elegís todo lo que queda adentro."],
   [["Shift","clic"],"Sobre un post-it o una pila: lo sumás o lo sacás de la selección."],
@@ -3631,6 +3644,11 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:58,f:"16 de noviembre",it:[
+  ["Las *referencias ahora se llaman vínculos*, en toda la web: «+ Vínculo» adentro de los post-its y de las pilas. Funcionan igual que antes.",null,1],
+  ["Guion: si marcás más de una palabra, al costado de la hoja te aparece *Comentar* o *Vincular*, como en Google Docs.",null,2],
+  ["Guion: *modo foco* con el botón ⤢ (o Ctrl+Shift+Enter). Queda solo la hoja; Esc para salir.",null,2],
+  ["Guion: abajo ahora queda solo el número de página, más chiquito.",null,3]]},
  {n:57,f:"16 de noviembre",it:[
   ["Guion: en la línea de tiempo ahora podés sacar personajes. Con la × al lado del nombre sacás uno, y con «Sacar de la línea» sacás todos.",null,3]]},
  {n:56,f:"16 de noviembre",intro:"¡Llegó el *guion*! Ahora todos pueden escribir guiones adentro de la web 🎬",it:[
@@ -4959,6 +4977,7 @@ raiz.innerHTML=`
     <button type="button" class="gu-b" data-a="vincular" title="Vincular un post-it o una frase a esta escena (${CTRL}+K)">↗ <span class="gu-lbl">Vincular</span></button>
     <button type="button" class="gu-b solo-ancho gu-bmitad" data-a="mitad" title="Guion y plancha de la película, mitad y mitad">◧ <span class="gu-lbl">Plancha al lado</span></button>
     <button type="button" class="gu-b solo-ancho solo-edita" data-a="comentar" title="Comentar este renglón (Ctrl+Alt+M)">💬 <span class="gu-lbl">Comentar</span></button>
+    <button type="button" class="gu-b solo-ancho" data-a="foco" title="Modo foco: solo la hoja (Ctrl+Shift+Enter · Esc sale)">⤢</button>
     <button type="button" class="gu-b solo-ancho" data-a="linea" title="Línea de tiempo y escaleta">▤ <span class="gu-lbl">Línea de tiempo</span></button>
     <button type="button" class="gu-b solo-ancho" data-a="buscar" title="Buscar y reemplazar (${CTRL}+F)">Buscar</button>
     <button type="button" class="gu-b gu-compartir solo-duenio" data-a="compartir" title="Links para editar con otros o para que lo lean">Compartir</button>
@@ -5390,7 +5409,7 @@ function pintarChips(){chips.replaceChildren();if(!lay)return;const pg=PAGINAS[o
   let tope=-1e9;for(const c of [...chips.querySelectorAll(".gu-com:not(.mini)")].sort((a,b)=>parseFloat(a.style.top)-parseFloat(b.style.top))){let t=parseFloat(c.style.top);if(t<tope)t=tope;c.style.top=t+"px";tope=t+c.offsetHeight+6}}
 function pintarPie(){const pie=Q("gu-pie");if(!lay||!G){pie.textContent="";return}if(pie.contains(document.activeElement)&&document.activeElement.tagName==="INPUT")return;const p=actual();const i=p?lay.ps.indexOf(p):-1;const pagAct=i>=0&&lay.res[i]?lay.res[i].pag+1:1;
   const esc=lay.ps.filter(q=>q.dataset.t==="escena");const e=p?escenaDe(p):null;const ne=e?esc.indexOf(e)+1:0;
-  pie.innerHTML=`<span>Página <button type="button" class="gu-irpag" title="Ir a otra página">${pagAct}</button> de ${lay.N}</span><span>${ne?`Escena <b>${ne}</b> de ${esc.length}`:`${esc.length} escenas`}</span><span>≈ ${lay.N} min</span><span style="margin-left:auto">${T[p?p.dataset.t:"accion"]} · Tab cambia</span>`}
+  pie.innerHTML=`<span>Página <button type="button" class="gu-irpag" title="Ir a otra página">${pagAct}</button> de ${lay.N}</span>`}
 
 Q("gu-pie").addEventListener("click",e=>{const b=e.target.closest(".gu-irpag");if(!b||!lay)return;const i=mk("input","gu-irpag-in");i.type="number";i.min=1;i.max=lay.N;i.value=b.textContent;b.replaceWith(i);i.select();
   let hecho=false;const fin=ir=>{if(hecho)return;hecho=true;i.blur();const n=Math.max(1,Math.min(lay.N,parseInt(i.value)||0));if(ir&&n)irAPagina(n);else pintarPie()};
@@ -5539,7 +5558,7 @@ function entrar(gid,scroll,irA){if(!col){toast("Todavía se están cargando tus 
   raiz.hidden=false;document.body.classList.add("en-guion");tab.setAttribute("aria-selected","true");try{localStorage.setItem("pestana","guion")}catch(_){}
   let id=gid;if(id===undefined){try{id=localStorage.getItem("guion_ult")}catch(_){}}
   const g=id&&guiones.find(x=>x.id===id);if(g)abrirGuion(g,scroll,irA);else mostrarLista()}
-function ocultar(){cerrarAC();cerrarPop();salirMitad(true);raiz.hidden=true;document.body.classList.remove("en-guion");tab.setAttribute("aria-selected","false")}
+function ocultar(){cerrarAC();cerrarPop();salirMitad(true);raiz.hidden=true;document.body.classList.remove("en-guion","gu-foco");tab.setAttribute("aria-selected","false")}
 function salir(){guardarYa();vuelveGuion=null;ocultar();desconectarVivo();try{localStorage.setItem("pestana","")}catch(_){}}
 function abrirGuion(g,scroll,irA){guardarYa();cerrarTL();G={id:g.id,doc:JSON.parse(JSON.stringify(g))};delete G.doc.id;try{localStorage.setItem("guion_ult",g.id)}catch(_){}
   Q("gu-lista").hidden=true;Q("gu-ed").hidden=false;
@@ -5724,7 +5743,7 @@ raiz.addEventListener("click",e=>{const b=e.target.closest("[data-a],[data-lado]
   if(b.dataset.lado){if(ladoTab!==b.dataset.lado)Q("gu-sq").value="";ladoTab=b.dataset.lado;pintarSide();return}
   const a=b.dataset.a,m=Q("gu-m-archivo");if(a!=="archivo")m.hidden=true;
   ({salir,mis:mostrarLista,nuevo:()=>nuevo(),importar:()=>Q("gu-file").click(),lado:()=>{const s=Q("gu-side");s.hidden=!s.hidden;zoomAuto=true;pedirLayout()},
-    mitad:alternarMitad,comentar:()=>comentar(),linea:()=>{if(tl&&!tl.hidden)cerrarTL();else abrirTL()},b:()=>formato("b"),i:()=>formato("i"),u:()=>formato("u"),vincular,buscar:abrirBuscar,archivo:()=>{m.hidden=!m.hidden},
+    mitad:alternarMitad,foco:()=>modoFoco(true),comentar:()=>comentar(),linea:()=>{if(tl&&!tl.hidden)cerrarTL();else abrirTL()},b:()=>formato("b"),i:()=>formato("i"),u:()=>formato("u"),vincular,buscar:abrirBuscar,archivo:()=>{m.hidden=!m.hidden},
     volverp:()=>{const pe=peli();if(!pe){mostrarLista();return}guardarYa();salir();setTimeout(()=>abrir("ideas",pe.id),0)},compartir:compartirUI,portada,opciones,pdf,fdx:()=>{bajar(nombreArchivo("fdx"),aFDX(),"application/xml");toast("Exportado para Final Draft.")},fountain:()=>bajar(nombreArchivo("fountain"),aFountain(),"text/plain"),atajos,borrar:borrarGuion,
     zm:()=>{zoomAuto=false;zoom=Math.max(.4,Math.round((zoom-.1)*10)/10);maquetar()},zp:()=>{zoomAuto=false;zoom=Math.min(2,Math.round((zoom+.1)*10)/10);maquetar()},
     "f-ant":()=>irHall(-1),"f-sig":()=>irHall(1),"f-cerrar":cerrarBuscar,"f-uno":()=>reemplazar(false),"f-todo":()=>reemplazar(true)}[a]||(()=>{}))()});
@@ -5883,6 +5902,24 @@ async function arrancarInvitado(){document.body.classList.add("gu-inv");if(INV.m
 function pedirNombreG(){let n=null;try{n=localStorage.getItem("vivo_nombre")}catch(_){}if(n)return Promise.resolve(n);
   return new Promise(ok=>abrirModal(m=>{m.append(mk("h3",null,"¿Cómo te llamás?"),mk("p","gu-nota","Vas a escribir este guion con otros, en vivo. Tu nombre aparece donde estás escribiendo."));const i=mk("input");i.type="text";i.maxLength=30;i.placeholder="Tu nombre";m.append(i);
     const ir=()=>{const v=i.value.trim();if(!v){i.focus();return}try{localStorage.setItem("vivo_nombre",v)}catch(_){}cerrarModal();ok(v)};i.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();ir()}};const a=mk("div","acc");a.append(btn("si","Entrar",ir));m.append(a)}))}
+/* ---------- al marcar texto: comentar o vincular, al costado de la hoja (como Google Docs) ---------- */
+const selBar=mk("div","gu-selbar");selBar.hidden=true;escala.append(selBar);
+{const bc=mk("button",null,"💬 Comentar");bc.type="button";bc.title="Comentar lo que marcaste";const bv=mk("button",null,"↗ Vincular");bv.type="button";bv.title="Crear un post-it con lo que marcaste, adentro de la película";
+  for(const b of [bc,bv])b.addEventListener("mousedown",e=>e.preventDefault());bc.onclick=()=>{selBar.hidden=true;comentar()};bv.onclick=()=>{selBar.hidden=true;vincular()};selBar.append(bc,bv)}
+let tSel=0;function pedirSelBar(){cancelAnimationFrame(tSel);tSel=requestAnimationFrame(pintarSelBar)}
+function pintarSelBar(){const s=getSelection();if(raiz.hidden||soloLee()||!G||!s.rangeCount||s.isCollapsed||!ed.contains(s.anchorNode)||!ed.contains(s.focusNode)){selBar.hidden=true;return}
+  const t=String(s).trim();if(t.split(/\s+/).filter(Boolean).length<2){selBar.hidden=true;return}
+  const r=s.getRangeAt(0),rc=[...r.getClientRects()].find(x=>x.width>0)||r.getBoundingClientRect(),er=escala.getBoundingClientRect(),pg=PAGINAS[opc.pagina]||PAGINAS.a4;
+  selBar.hidden=false;selBar.classList.toggle("dentro",mitad||innerWidth<900);selBar.style.top=((rc.top-er.top)/zoom-6)+"px";selBar.style.left=(mitad||innerWidth<900?pg.w-150:pg.w+14)+"px"}
+document.addEventListener("selectionchange",pedirSelBar);
+ed.addEventListener("mouseup",pedirSelBar);
+
+/* ---------- modo foco: solo la hoja ---------- */
+const salirFoco=mk("button","gu-salirfoco","Salir del modo foco · Esc");salirFoco.type="button";salirFoco.onclick=()=>modoFoco(false);raiz.append(salirFoco);
+function modoFoco(v){if(v&&mitad)salirMitad(true);if(v&&tl&&!tl.hidden)cerrarTL();document.body.classList.toggle("gu-foco",v);zoomAuto=true;pedirLayout();volverAlTexto()}
+addEventListener("keydown",e=>{if(raiz.hidden)return;if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)&&e.shiftKey){e.preventDefault();e.stopImmediatePropagation();modoFoco(!document.body.classList.contains("gu-foco"));return}
+  if(e.key==="Escape"&&document.body.classList.contains("gu-foco")&&modal.hidden&&acBox.hidden&&pop.hidden){e.preventDefault();e.stopImmediatePropagation();modoFoco(false)}},true);
+
 /* ---------- comentarios ---------- */
 function comentar(){if(soloLee())return;const r=rango();let p=r?bloqueDe(r.startContainer):null;if(!p)p=actual()||ultP;if(!p||!p.isConnected){toast("Poné el cursor en el renglón que querés comentar.");return}
   const q=String(getSelection()).replace(/\s+/g," ").trim().slice(0,160);
@@ -6069,17 +6106,17 @@ if(window.__demo){(function(){
     objetivo:()=>unir(rectDe(nodo("Plaza Dorrego")),rectDe(nodo("Bar El Federal"))),listo:()=>pilas.length>0},
    {tit:"Ahí está tu pila",txt:"El número de arriba dice cuántas cosas tiene. Si alguna tiene una foto, se ve en la tapa. Y con el ✎ le cambiás el título sin entrar.",hacer:"Tocá la pila para abrirla",
     objetivo:()=>pilas[0]&&nodosPila.get(pilas[0].id),listo:()=>vis($("pila-vista"))},
-   {tit:"Adentro de la pila",txt:"Arriba le ponés título (probá «Locaciones»). <b>+ Nuevo acá</b> crea algo adentro y <b>+ Referencia</b> trae un post-it de otra pila sin sacarlo de la suya. Para cambiar el orden, arrastrá los post-its.",hacer:"Ponele un título y volvé con «← Volver»",
+   {tit:"Adentro de la pila",txt:"Arriba le ponés título (probá «Locaciones»). <b>+ Nuevo acá</b> crea algo adentro y <b>+ Vínculo</b> trae un post-it de otra pila sin sacarlo de la suya. Para cambiar el orden, arrastrá los post-its.",hacer:"Ponele un título y volvé con «← Volver»",
     objetivo:()=>document.querySelector("#pila-vista .pv-cab"),listo:()=>!vis($("pila-vista"))},
    {tit:"Cada idea tiene su propio mundo",txt:"Un post-it no es solo un título: adentro tiene otra plancha entera para desarrollar la idea, con notas, links, fotos, listas…",hacer:"Abrí «Corto: la casa de enfrente» (tocalo)",
     objetivo:()=>nodo("Corto: la casa de enfrente"),listo:()=>!!(abierto&&abierto.id==="demo0000000000000001")},
    {tit:"Acá desarrollás la idea",txt:"Lo de la izquierda es la idea en sí. Alrededor van los post-its chiquitos, notas, links, imágenes. El <b>+</b> de la barra de la izquierda y el doble clic en el fondo abren el mismo menú.",hacer:"Hacé doble clic en un lugar vacío del fondo",
     libre:1,listo:()=>[...document.querySelectorAll(".agregar-menu")].some(vis)},
-   {tit:"Lo más poderoso: las referencias",txt:"Una referencia trae adentro algo que vive en otro lado, <b>sin copiarlo</b>. Por ejemplo, la locación «Plaza Dorrego», que vive en la pila.",hacer:"Tocá «Referencia»",
+   {tit:"Lo más poderoso: los vínculos",txt:"Un vínculo trae adentro algo que vive en otro lado, <b>sin copiarlo</b>. Por ejemplo, la locación «Plaza Dorrego», que vive en la pila.",hacer:"Tocá «Vínculo»",
     objetivo:()=>[...document.querySelectorAll(".agregar-menu")].find(vis),listo:()=>vis($("panel-ref")),volver:()=>![...document.querySelectorAll(".agregar-menu")].some(vis)&&!vis($("panel-ref"))?11:null},
    {tit:"Buscala",txt:"Acá buscás entre todos tus post-its y frases. Si lo que querés no existe, escribilo y lo creás desde acá mismo.",hacer:"Escribí «Dorrego» y tocala",
     objetivo:()=>$("panel-ref"),listo:()=>!!(abierto&&abierto.doc.bloques.some(b=>b.t==="ref"))},
-   {tit:"Es el mismo post-it, no una copia",txt:"La flechita ↗ te dice que es una referencia. Si lo cambiás acá, cambia en la pila; si lo cambiás en la pila, cambia acá. <b>Abrir ↗</b> te lleva al original, y desde ahí un botón te trae de vuelta. Si ya no lo querés acá, «Quitar» lo saca de este post-it sin borrarlo.",boton:"Entendido",
+   {tit:"Es el mismo post-it, no una copia",txt:"La flechita ↗ te dice que es un vínculo. Si lo cambiás acá, cambia en la pila; si lo cambiás en la pila, cambia acá. <b>Abrir ↗</b> te lleva al original, y desde ahí un botón te trae de vuelta. Si ya no lo querés acá, «Quitar» lo saca de este post-it sin borrarlo.",boton:"Entendido",
     objetivo:()=>document.querySelector("#capa-hoja .bref")},
    {tit:"Listas de tareas",txt:"Las listas pueden estar acá adentro, en la plancha, o en los dos lados a la vez (es la misma lista).",hacer:"Doble clic en el fondo → «Tareas» → «+ Lista nueva». Ponele un nombre, Enter, y escribí una tarea con Enter",
     libre:1,objetivo:()=>{const l=[...document.querySelectorAll("#capa-hoja .btar")];return l[l.length-1]||null},listo:()=>listas.some(l=>(l.lista||[]).length>0)},
@@ -6089,7 +6126,7 @@ if(window.__demo){(function(){
     objetivo:()=>document.querySelector("#capa-hoja .btar")},
    {tit:"Volvé a la plancha",txt:"Este botón siempre te devuelve a donde estabas.",hacer:"Tocá «← Volver»",objetivo:()=>$("volver"),listo:()=>!abierto},
    {tit:"Ideas, Frases y Diario",txt:"Arriba tenés las tres partes de la web. <b>Frases</b> es para citas, cosas que leíste o escuchaste y no querés perder.",hacer:"Tocá «Frases»",objetivo:()=>$("tab-frases"),listo:()=>vista==="frases"&&!enDiario},
-   {tit:"Las frases",txt:"Funcionan igual que las ideas: doble clic para crear una, arrastrar para acomodar. También las podés poner adentro de un post-it con «Referencia».",hacer:"Tocá «Diario»",objetivo:()=>$("tab-diario"),listo:()=>enDiario},
+   {tit:"Las frases",txt:"Funcionan igual que las ideas: doble clic para crear una, arrastrar para acomodar. También las podés poner adentro de un post-it con «Vínculo».",hacer:"Tocá «Diario»",objetivo:()=>$("tab-diario"),listo:()=>enDiario},
    {tit:"Tu diario",txt:"Un día por página. Escribís directo, sin abrir nada, y cada renglón queda con su hora. Con la barra de abajo pegás post-its, notas, imágenes o links, y arriba está el <b>Calendario</b> para saltar a otro día.<br><br>¿Ves «Terminé: …»? Eso lo anotó solo tu lista de tareas.",boton:"Seguir",libre:1},
    {tit:"Volvé a las ideas",txt:"Ya casi estamos.",hacer:"Tocá «Ideas»",objetivo:()=>$("tab-ideas"),listo:()=>vista==="ideas"&&!enDiario},
    {tit:"El •••",txt:"Arriba a la derecha está todo lo demás.",hacer:"Tocá el •••",objetivo:()=>$("btn-menu"),listo:()=>document.body.classList.contains("barra-abierta")},
