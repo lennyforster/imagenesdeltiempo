@@ -1334,6 +1334,7 @@ body.gu-lectura .gu-texto{-webkit-user-select:none;user-select:none}
 .gu-acc-sep{align-items:center}.gu-chico{background:none!important;color:#888!important;font:600 12.5px var(--ui)!important;padding:6px 4px!important}
 @media (max-width:480px){.gu-comp-op{grid-template-columns:1fr}}
 .gu-mh>.gu-link-f{margin-top:14px}
+body.gu-mitad .pila-vista{left:var(--gu-corte,50%);background-color:#1f6b4a;background-image:linear-gradient(rgba(255,255,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.07) 1px,transparent 1px);background-size:32px 32px}
 </style>
 <div class="cargando" id="cargando" hidden role="status"><span class="cg-punto"></span>Cargando tu plancha…</div>
 <div class="conectar" id="conectar" hidden>
@@ -3503,6 +3504,9 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:49,f:"16 de noviembre",mio:true,it:[
+  ["Guion: si marcás un pedazo de texto y tocás «Vincular», se crea al toque un post-it con ese texto *adentro de la película* y queda pegado a ese renglón (no al encabezado de la escena).",null,2],
+  ["La pila de adentro de un post-it ahora se ve entera en el mitad y mitad.",null,3]]},
  {n:48,f:"16 de noviembre",mio:true,it:[
   ["Arreglado: las locaciones guardadas adentro de una película aparecían como una pila fantasma en la plancha principal, y al borrarla se borraban.",null,2]]},
  {n:47,f:"16 de noviembre",mio:true,it:[
@@ -5022,8 +5026,8 @@ function agregarRef(p,r){const m=meta.get(p.dataset.id)||{refs:[]};if(!m.refs.so
 function quitarRef(pid,r){const m=meta.get(pid);if(!m)return;marcar();m.refs=m.refs.filter(x=>!(x.k===r.k&&x.id===r.id));if(!m.refs.length)meta.delete(pid);cambio()}
 function itemDe(k,id){return (data[k]||[]).find(x=>x.id===id)||null}
 function vinculosEscena(p){const out=[],vistos=new Set();
-  for(const r of refsDe(p.dataset.id)){const i=itemDe(r.k,r.id);if(!i)continue;vistos.add(r.k+":"+r.id);out.push({...r,i,auto:false})}
-  const pl=postitDeLugar(lugarDe(p.textContent));if(pl&&!vistos.has("ideas:"+pl.id))out.push({k:"ideas",id:pl.id,loc:1,i:pl.i,auto:true});
+  for(const r of refsDe(p.dataset.id)){if(G&&r.k==="ideas"&&r.id===G.doc.postit)continue;const i=itemDe(r.k,r.id);if(!i)continue;vistos.add(r.k+":"+r.id);out.push({...r,i,auto:false})}
+  if(p.dataset.t==="escena"){const pl=postitDeLugar(lugarDe(p.textContent));if(pl&&!vistos.has("ideas:"+pl.id))out.push({k:"ideas",id:pl.id,loc:1,i:pl.i,auto:true})}
   return out}
 function primeraImg(i){return (i.bloques||[]).find(b=>b.t==="img"&&b.a)||null}
 function abrirPop(v,ancla,pid){const i=v.i;pop.replaceChildren();
@@ -5031,6 +5035,7 @@ function abrirPop(v,ancla,pid){const i=v.i;pop.replaceChildren();
   const tx=(i.texto||"").trim();pop.append(mk("h4",null,v.k==="frases"?`“${tx.slice(0,140)}”`:tx.split("\n")[0].slice(0,120)||"(sin texto)"));
   const im=primeraImg(i);if(im&&typeof cargarImg==="function"){const img=mk("img");img.alt="";cargarImg(img,im.a);pop.append(img)}
   const resto=v.k==="frases"?(i.autor?"— "+i.autor:""):[tx.split("\n").slice(1).join("\n"),...(i.bloques||[]).filter(b=>b.t==="post"||b.t==="txt"||b.t==="tx").map(b=>b.v||"")].join("\n").trim().slice(0,400);if(resto)pop.append(mk("p",null,resto));
+  if(v.txt)pop.append(mk("p",null,"Vinculado a: «"+v.txt+"»"));
   const acc=mk("div","acc");acc.append(btn("si","Abrir",()=>{cerrarPop();irAPostit(v.k,v.id)}));
   if(!v.auto)acc.append(btn(null,"Quitar vínculo",()=>{cerrarPop();quitarRef(pid,{k:v.k,id:v.id})}));acc.append(btn(null,"Cerrar",cerrarPop));pop.append(acc);
   pop.hidden=false;const r=ancla.getBoundingClientRect();let x=r.left,y=r.bottom+8;if(x+300>innerWidth)x=innerWidth-306;if(y+pop.offsetHeight>innerHeight-8)y=Math.max(8,r.top-pop.offsetHeight-8);pop.style.left=Math.max(6,x)+"px";pop.style.top=y+"px"}
@@ -5067,9 +5072,10 @@ function pintarVolverG(){if(!abierto||navRef.length)return;if(mitad)$("volver").
 let tChipsR=0;
 {const a0=pintarAparece;pintarAparece=function(){const r=a0.apply(this,arguments);try{pintarEnGuion()}catch(e){console.error(e)}return r}}
 function apariciones(k,id){const out=[];const it=itemDe(k,id);const nombre=it&&k==="ideas"?norm((it.texto||"").split("\n")[0]):"";const esLoc=it&&k==="ideas"&&(!!it.dentro||locPostits().some(l=>l.id===id));
-  for(const g of guiones){let n=0;for(const b of (g.bloques||[])){if(b.t!=="escena")continue;n++;
-    const tmp=mk("div");tmp.innerHTML=b.h||"";const lug=norm(lugarDe(tmp.textContent));
-    if((b.refs||[]).some(r=>r.k===k&&r.id===id)||(esLoc&&nombre&&lug===nombre))out.push({g,n,bid:b.id})}}
+  for(const g of guiones){if(k==="ideas"&&g.postit===id)continue;let n=0;const vistos=new Set();for(const b of (g.bloques||[])){if(b.t==="escena")n++;
+    let ok=(b.refs||[]).some(r=>r.k===k&&r.id===id);
+    if(!ok&&b.t==="escena"&&esLoc&&nombre){const tmp=mk("div");tmp.innerHTML=b.h||"";ok=norm(lugarDe(tmp.textContent))===nombre}
+    if(ok&&!vistos.has(n)){vistos.add(n);out.push({g,n:n||1,bid:b.id})}}}
   return out}
 /* desde un post-it: la escena se abre en la mitad izquierda, sin cerrar el post-it */
 function escenaAlLado(gid,bid){const g=guiones.find(x=>x.id===gid);if(!g){toast("Ese guion ya no existe.");return}
@@ -5138,11 +5144,11 @@ function pintarPortadaHoja(pg,ver,PASO){if(!ver){if(portadaEl)portadaEl.hidden=t
   if(!pp.autor&&!pp.contacto)portadaEl.append(mk("div","gu-port-hint","Tocá acá para poner autor, contacto y versión"))}
 const soloLectura=()=>!!(window.__guionInv&&window.__guionInv.modo==="l");
 function pintarChips(){chips.replaceChildren();if(!lay)return;const pg=PAGINAS[opc.pagina]||PAGINAS.a4;
-  lay.ps.forEach((p,i)=>{if(p.dataset.t!=="escena")return;const vs=vinculosEscena(p);vs.forEach((v,n)=>{
+  lay.ps.forEach((p,i)=>{const vs=p.dataset.t==="escena"?vinculosEscena(p):vinculosEscena(p).filter(v=>!v.auto);if(!vs.length)return;vs.forEach((v,n)=>{
     const tx=(v.i.texto||"").split("\n")[0].trim();const c=btn("gu-chip"+(v.loc?" loc":"")+(v.k==="frases"?" fr":"")+(v.auto?" auto":""),null,ev=>{ev.stopPropagation();abrirPop(v,c,p.dataset.id)});
     c.append(mk("span",null,v.k==="frases"?"“"+tx.slice(0,40)+"”":(v.loc?"":"#"+(v.i.numero||"?")+" ")+tx.slice(0,40)));if(v.k==="ideas")c.style.setProperty("--c",colorDe("ideas",v.i));if(v.loc)c.style.setProperty("--c","#e7f3ec");
     if(mitad){c.classList.add("gu-chip-mini");c.firstChild.textContent=(tx.charAt(0)||"·").toLocaleUpperCase("es");c.title=tx;c.style.left=(pg.w-40)+"px";c.style.top=(lay.res[i].top-4+n*30)+"px"}
-    else{c.style.left=(pg.w+14)+"px";c.style.top=(lay.res[i].top-4+n*28)+"px"}c.title=v.auto?"Locación que coincide con el nombre de la escena":"Vinculado a esta escena";chips.append(c)})})}
+    else{c.style.left=(pg.w+14)+"px";c.style.top=(lay.res[i].top-4+n*28)+"px"}c.title=v.auto?"Locación que coincide con el nombre de la escena":v.txt?"Vinculado a «"+v.txt.slice(0,80)+"»":"Vinculado a este renglón";chips.append(c)})})}
 function pintarPie(){const pie=Q("gu-pie");if(!lay||!G){pie.textContent="";return}const p=actual();const i=p?lay.ps.indexOf(p):-1;const pagAct=i>=0&&lay.res[i]?lay.res[i].pag+1:1;
   const esc=lay.ps.filter(q=>q.dataset.t==="escena");const e=p?escenaDe(p):null;const ne=e?esc.indexOf(e)+1:0;
   pie.innerHTML=`<span>Página <b>${pagAct}</b> de ${lay.N}</span><span>${ne?`Escena <b>${ne}</b> de ${esc.length}`:`${esc.length} escenas`}</span><span>≈ ${lay.N} min</span><span style="margin-left:auto">${T[p?p.dataset.t:"accion"]} · Tab cambia</span>`}
@@ -5258,7 +5264,7 @@ function cambio(sinMarca){seguir=true;normalizar();if(V&&!V.aplicando)empujar();
 function pedirLigero(){cancelAnimationFrame(tLay);tLay=requestAnimationFrame(()=>{const p=actual();if(lay&&p&&p._h===p.offsetHeight&&ed.children.length===lay.ps.length&&lay.ps.includes(p)&&p.dataset.t!=="personaje"&&p.dataset.t!=="escena"){pintarPie();if(seguir){seguir=false;verCaret()}return}maquetar()})}
 function pintarEstado(){const e=Q("gu-estado");e.textContent=guardando?"Guardando…":sucio?"Sin guardar":ultGuardado?"Guardado ✓":""}
 function guardarPronto(ms){clearTimeout(tGuardar);tGuardar=setTimeout(guardarYa,ms)}
-function leerDoc(){const bl=bloques().map(p=>{const b={id:p.dataset.id,t:p.dataset.t,h:htmlDe(p)};const m=meta.get(b.id);if(m&&m.refs&&m.refs.length)b.refs=m.refs.map(r=>({k:r.k,id:r.id,...(r.loc?{loc:1}:{})}));return b});
+function leerDoc(){const bl=bloques().map(p=>{const b={id:p.dataset.id,t:p.dataset.t,h:htmlDe(p)};const m=meta.get(b.id);if(m&&m.refs&&m.refs.length)b.refs=m.refs.map(r=>({k:r.k,id:r.id,...(r.loc?{loc:1}:{}),...(r.txt?{txt:r.txt}:{})}));return b});
   return {...G.doc,titulo:Q("gu-titulo").value.trim(),opciones:opc,bloques:bl}}
 let ultJSON="";
 async function guardarYa(){clearTimeout(tGuardar);if(!G||!col||!sucio)return;try{sincLocaciones()}catch(e){console.error(e)}const doc=leerDoc();
@@ -5355,12 +5361,19 @@ function elegirItem({titulo,sub,crear,tipos,onElegir,excluir,peliPrimero}){abrir
         const tx=mk("span","gu-pt");tx.append(mk("b",null,((i.texto||"").replace(/\s+/g," ").trim().slice(0,90))||"(sin texto)"),mk("small",null,k==="frases"?"Frase"+(i.autor?" · "+i.autor:""):`#${i.numero||"?"} · ${label(i.tipo)}${locs.has(i.id)?" · locación":""}`));b.append(c,tx);lista.append(b)});
       if(!todo.length&&!(q.value.trim()&&creados.length))lista.append(mk("p","gu-nota",q.value?"No encontré nada con eso.":"No hay nada para mostrar acá."));if(q.value.trim())lista.append(...creados)};
     q.oninput=pintar;pintar();const acc=mk("div","acc");acc.append(btn(null,"Cancelar",cerrarModal));m.append(acc)})}
-function vincular(){const p=actual()||ultP;const e=p?escenaDe(p):null;if(!e){toast("Poné el cursor adentro de una escena (debajo de un encabezado).");return}
-  const n=bloques().filter(x=>x.dataset.t==="escena").indexOf(e)+1,marcado=String(getSelection()).replace(/\s+/g," ").trim().slice(0,300);
-  elegirItem({titulo:`Vincular a la escena ${n}`,sub:`${e.textContent.trim()||"(escena sin título)"} — Elegí un post-it o una frase: queda pegado al costado de la escena, y adentro de ese post-it vas a ver que aparece en el guion. El texto del guion no cambia.`,
-    excluir:(k,id)=>refsDe(e.dataset.id).some(r=>r.k===k&&r.id===id),
-    crear:q=>{const out=[];const txt=q||marcado;if(txt)out.push({txt:`Crear un post-it nuevo «${txt.slice(0,60)}${txt.length>60?"…":""}» y vincularlo`,fn:async()=>{cerrarModal();const pe=peli();const id=await crearPostit(txt,pe);if(id){marcar();agregarRef(e,{k:"ideas",id});toast(pe?`Post-it creado adentro de «${(pe.texto||"").split("\n")[0].slice(0,40)}» y vinculado a la escena.`:"Post-it creado en la plancha y vinculado a la escena. (Si elegís la película del guion, los nuevos van adentro de ella.)")}}});return out},
-    onElegir:(k,id)=>{marcar();agregarRef(e,{k,id});cerrarModal();toast("Vinculado. Lo ves al costado de la escena.")}})}
+function vincular(){const r=rango();let p=r?bloqueDe(r.startContainer):null;if(!p)p=actual()||ultP;if(!p){toast("Poné el cursor en el guion.");return}
+  const marcado=String(getSelection()).replace(/\s+/g," ").trim().slice(0,300);
+  /* sin película elegida, primero se elige: lo nuevo nunca va a la plancha principal */
+  if(!peli()){toast("Primero elegí de qué película es el guion.");elegirPeli();return}
+  /* texto marcado: post-it nuevo adentro de la película con ese texto, vinculado a ese renglón */
+  if(marcado){crearYVincular(p,marcado);return}
+  const pe=peli(),e=escenaDe(p),n=e?bloques().filter(x=>x.dataset.t==="escena").indexOf(e)+1:0;
+  elegirItem({titulo:n?`Vincular (escena ${n})`:"Vincular",sub:(p.textContent.trim()||"(renglón vacío)").slice(0,140),
+    excluir:(k,id)=>(k==="ideas"&&id===pe.id)||refsDe(p.dataset.id).some(r=>r.k===k&&r.id===id),
+    crear:q=>q?[{txt:`Post-it nuevo «${q.slice(0,60)}${q.length>60?"…":""}» adentro de la película`,fn:()=>{cerrarModal();crearYVincular(p,q,"")}}]:[],
+    onElegir:(k,id)=>{marcar();agregarRef(p,{k,id});cerrarModal();toast("Vinculado.")}})}
+async function crearYVincular(p,txt,pedazo){const pe=peli();if(!pe)return;const id=await crearPostit(txt,pe);if(!id)return;marcar();const r={k:"ideas",id};const pz=pedazo===undefined?txt:pedazo;if(pz)r.txt=pz.slice(0,200);agregarRef(p,r);
+  toast(`Post-it creado adentro de «${(pe.texto||"").split("\n")[0].slice(0,40)}» y vinculado a ese renglón.`)}
 async function crearPostit(texto,dentroDe){if(!cols.ideas)return null;const ahora=Date.now(),numero=data.ideas.reduce((m,i)=>Math.max(m,i.numero||0),0)+1;
   /* adentro del post-it de la película: no aparece suelto en la plancha principal, queda como referencia adentro */
   if(dentroDe){try{const r=await cols.ideas.add({texto,tipo:tipoNueva,creado:ahora,numero,dentro:dentroDe.id});editarPeli(bl=>{const p0=lugarLibreEn(bl);bl.push({id:bid(),t:"ref",ref:r.id,x:p0.x,y:p0.y});return true});return r.id}catch(_){toast("No se pudo crear el post-it.");return null}}
