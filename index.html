@@ -3503,6 +3503,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:48,f:"16 de noviembre",mio:true,it:[
+  ["Arreglado: las locaciones guardadas adentro de una película aparecían como una pila fantasma en la plancha principal, y al borrarla se borraban.",null,2]]},
  {n:47,f:"16 de noviembre",mio:true,it:[
   ["Guion: «Compartir» ahora te pregunta si es *para leer* o *para editar* y te da ese link. El de lectura no deja bajar ni imprimir el guion.",null,2]]},
  {n:46,f:"16 de noviembre",it:[
@@ -4016,7 +4018,7 @@ function editarTituloPila(c,id){if(c._editTit)return;const keep=id==="keep",tp=c
   requestAnimationFrame(()=>{i.focus();i.select()})}
 function pintarPila(){pintarPilas()}
 function pintarPilas(){const vivos=new Set();
-  if(vista==="ideas"){const cuenta=new Map();for(const i of data.ideas){const id=enPilaId(i);if(id)cuenta.set(id,(cuenta.get(id)||0)+1);if(Array.isArray(i.pilasExtra))for(const x of i.pilasExtra)if(x!==id&&pilas.some(p=>p.id===x))cuenta.set(x,(cuenta.get(x)||0)+1)}
+  if(vista==="ideas"){const cuenta=new Map();for(const i of data.ideas){const id=enPilaId(i);if(id&&!String(id).startsWith("dentro:"))cuenta.set(id,(cuenta.get(id)||0)+1);if(Array.isArray(i.pilasExtra))for(const x of i.pilasExtra)if(x!==id&&pilas.some(p=>p.id===x))cuenta.set(x,(cuenta.get(x)||0)+1)}
     if(!pilaPos&&pilaCargada&&docPila&&cuenta.has("keep")&&enPlancha("ideas").length){pilaPos=pilaXY("keep");docPila.set({...pilaPos,titulo:pilaTitulo,orden:keepOrden}).catch(()=>{})}
     if(pilasCargadas)for(const p of pilas)if((p.titulo||"").trim()&&!cuenta.has(p.id))cuenta.set(p.id,0);
     if(pilasCargadas)for(const p of pilas)if(!(p.titulo||"").trim()&&(!cuenta.get(p.id)||cuenta.get(p.id)<2)){if(!disolviendo.has(p.id)){disolviendo.add(p.id);setTimeout(()=>{if(itemsPila(p.id).length<2)disolverPila(p.id,true);else disolviendo.delete(p.id)},400)}}
@@ -4138,7 +4140,7 @@ $("pv-titulo").addEventListener("input",()=>{const id=pvPila,v=$("pv-titulo").va
   if(id==="keep"){pilaTitulo=v;if(docPila)docPila.set({...pilaXY("keep"),titulo:v,orden:keepOrden}).catch(()=>{})}else{const p=pilas.find(z=>z.id===id);if(p)p.titulo=v;if(colPilas)escribir(colPilas,id,{titulo:v})}pintarPilas()},500)});
 $("pv-titulo").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("pv-titulo").blur()}});
 $("pv-cerrar").onclick=()=>{if(document.activeElement===$("pv-titulo"))$("pv-titulo").blur();cerrarPila()};$("pv-buscar").addEventListener("input",pintarPilaVista);
-async function borrarPila(pid){const its=itemsPila(pid);for(const i of its){try{await cols.ideas.doc(i.id).delete()}catch(_){continue}borrarFlechasDe(i.id);if(assets)for(const b of i.bloques||[])if(b.t==="img")quitarAsset(b.a,i.id).catch(()=>{})}
+async function borrarPila(pid){if(String(pid).startsWith("dentro:"))return;const its=itemsPila(pid);for(const i of its){try{await cols.ideas.doc(i.id).delete()}catch(_){continue}borrarFlechasDe(i.id);if(assets)for(const b of i.bloques||[])if(b.t==="img")quitarAsset(b.a,i.id).catch(()=>{})}
   if(pid!=="keep"&&colPilas)colPilas.doc(pid).delete().catch(()=>{});toast(its.length===1?"Pila borrada (1 nota).":`Pila borrada (${its.length} notas).`)}
 {let seguro=false,tm;$("pv-borrar").onclick=()=>{const b=$("pv-borrar"),n=itemsPila(pvPila).length;
   if(!seguro){seguro=true;b.textContent=`¿Borrar la pila y sus ${n} notas? Tocá de nuevo`;b.classList.add("sure");clearTimeout(tm);tm=setTimeout(()=>{seguro=false;b.textContent="Borrar pila";b.classList.remove("sure")},4000);return}
