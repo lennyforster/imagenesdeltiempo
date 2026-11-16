@@ -3473,6 +3473,9 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:42,f:"16 de noviembre",mio:true,it:[
+  ["Guion: tocar una locación (o cualquier post-it vinculado) la abre mitad y mitad al lado del guion, no en pantalla completa.",null,2],
+  ["Las pilas «Locaciones · …» que habían quedado sueltas en la plancha se mudan solas adentro del post-it de su película, aunque ese guion ya no exista.",null,2]]},
  {n:41,f:"16 de noviembre",mio:true,it:[
   ["Guion: «Compartir» ahora es un botón propio arriba, al lado de «Archivo».",null,3]]},
  {n:39,f:"16 de noviembre",it:[
@@ -4999,7 +5002,7 @@ function alternarMitad(){if(mitad){salirMitad(true);return}if(!G)return;const pi
   elegirPeli();esperandoMitad=true}
 let esperandoMitad=false;
 addEventListener("pointerdown",e=>{if(mitad)ladoMitad=e.clientX<innerWidth/2?"guion":"plancha"},true);
-function irAPostit(k,id){if(!itemDe(k,id)){toast("Ya no existe.");return}if(mitad){abrirEnMitad(k,id);return}guardarYa();vuelveGuion={gid:G.id,scroll:scroller.scrollTop};ocultar();abrir(k,id);pintarVolverG()}
+function irAPostit(k,id){if(!itemDe(k,id)){toast("Ya no existe.");return}if(mitad||innerWidth>900){guardarYa();abrirEnMitad(k,id);return}guardarYa();vuelveGuion={gid:G.id,scroll:scroller.scrollTop};ocultar();abrir(k,id);pintarVolverG()}
 function pintarVolverG(){if(!abierto||navRef.length)return;if(mitad)$("volver").textContent="✕ Cerrar plancha";else if(vuelveGuion)$("volver").textContent="← Guion"}
 {const c0=cerrar;cerrar=function(){const r=c0.apply(this,arguments);if(mitad&&!mitadCambia)setTimeout(()=>{if(!abierto&&mitad)salirMitad(false)},0);if(vuelveGuion)setTimeout(()=>{if(!abierto&&vuelveGuion){const v=vuelveGuion;vuelveGuion=null;entrar(v.gid,v.scroll)}},0);return r};
  const v0=pintarVolver;pintarVolver=function(){const r=v0.apply(this,arguments);pintarVolverG();return r}}
@@ -5168,6 +5171,21 @@ async function sincLocaciones(extra){if(!G||!cols.ideas||sincEnCurso)return;cons
       return cambio},pe);
     if(idsNuevos.length||borrar.size)setTimeout(()=>{pintarChips();pintarSide()},500)}
   finally{sincEnCurso=false}}
+/* las pilas «Locaciones · …» que armaba la versión anterior en la plancha se mudan adentro del post-it de su película */
+let migrando=false;
+async function migrarPilasViejas(){if(migrando||!cols.ideas||!colPilas||!pilasCargadas||!cargados)return;const viejas=pilas.filter(p=>/^Locaciones · /.test(p.titulo||""));if(!viejas.length)return;migrando=true;
+  try{for(const pl of viejas){const nombre=norm(pl.titulo.replace(/^Locaciones · /,""));
+      let g=guiones.find(x=>x.id===pl.guion&&x.postit&&itemDe("ideas",x.postit))||guiones.find(x=>x.postit&&itemDe("ideas",x.postit)&&norm(x.titulo)===nombre);
+      let pe=g?itemDe("ideas",g.postit):null;
+      if(!pe&&nombre)pe=data.ideas.find(i=>!i.dentro&&!i.pila&&norm((i.texto||"").split("\n")[0]).startsWith(nombre))||null;
+      if(!pe)continue;
+      const ms=data.ideas.filter(i=>i.pila===pl.id);
+      for(const i of ms)escribir(cols.ideas,i.id,{pila:"",dentro:pe.id,guionLoc:i.guionLoc||(g?g.id:""),guionLocTxt:i.guionLocTxt||i.texto},{silencioso:true});
+      editarPeli(bl=>{let pb=bl.find(b=>b.t==="pila"&&norm(b.titulo)==="locaciones");let c=false;if(!pb){const p0=lugarLibreEn(bl);pb={id:bid(),t:"pila",titulo:"Locaciones",x:p0.x,y:p0.y};bl.push(pb);c=true}
+        for(const i of ms)if(!bl.some(b=>b.t==="ref"&&b.ref===i.id)){bl.push({id:bid(),t:"ref",ref:i.id,en:pb.id,x:pb.x,y:pb.y});c=true}return c},pe);
+      try{await colPilas.doc(pl.id).delete()}catch(_){}
+      toast(`Mudé «${pl.titulo}» adentro de «${(pe.texto||"").split("\n")[0].slice(0,40)}».`)}}
+  finally{migrando=false}}
 /* las locaciones de una película no aparecen sueltas en la plancha principal */
 {const e0=enPilaId;enPilaId=function(i){if(i&&i.dentro&&!i.pila)return "dentro:"+i.dentro;return e0.apply(this,arguments)}}
 /* el acceso al guion que queda adentro del post-it */
@@ -5238,7 +5256,7 @@ async function borrarGuion(){if(!G)return;const g=G;const ok=await confirmar(`¿
     try{if(abierto)pintarEnGuion()}catch(_){}
     if(!arrancado&&/^#guion=/.test(location.hash)){const id=location.hash.slice(7);history.replaceState(null,"",location.pathname+location.search);arrancado=true;if(guiones.some(g=>g.id===id))entrar(id)}
     try{if(localStorage.getItem("pestana")==="guion"&&raiz.hidden&&!abierto&&!arrancado){arrancado=true;entrar()}}catch(_){}
-    arrancado=true},()=>{});})();
+    arrancado=true;setTimeout(migrarPilasViejas,1500)},()=>{});})();
 
 /* ---------- ventanas ---------- */
 function abrirModal(arm){mh.replaceChildren();arm(mh);modal.hidden=false;const f=mh.querySelector("input,select,textarea,button.si");if(f)setTimeout(()=>f.focus(),30)}
