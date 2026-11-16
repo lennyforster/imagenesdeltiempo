@@ -1274,9 +1274,9 @@ body.barra-abierta .barra-extra.h-extra:not(.abierta){display:none}
 .gu-pilaloc small{color:rgba(43,37,32,.7)}
 .gu-pilaloc button{justify-self:start;border:0;border-radius:999px;background:var(--ink);color:var(--paper);font:700 12px var(--ui);padding:6px 11px;cursor:pointer}
 /* guion y plancha, mitad y mitad */
-body.gu-mitad #guion{right:50%}
-body.gu-mitad #detalle{left:50%;transform:translateZ(0);box-shadow:-6px 0 22px rgba(0,0,0,.35)}
-body.gu-mitad .panel{left:75%!important;width:min(420px,calc(50vw - 24px))!important}
+body.gu-mitad #guion{right:calc(100% - var(--gu-corte,50%))}
+body.gu-mitad #detalle{left:var(--gu-corte,50%);transform:translateZ(0);box-shadow:-6px 0 22px rgba(0,0,0,.35)}
+body.gu-mitad .panel{left:calc((100% + var(--gu-corte,50%)) / 2)!important;width:min(420px,calc(100vw - var(--gu-corte,50%) - 24px))!important}
 @media (max-width:900px){.gu-top [data-a="mitad"]{display:none}}
 .gu-pilaloc .acc{display:flex;gap:6px;flex-wrap:wrap}.gu-pilaloc .gu-sec{background:rgba(43,37,32,.12);color:var(--ink)}
 .gu-mh>input{margin-top:12px}
@@ -1295,7 +1295,7 @@ body.gu-mitad .gu-top{flex-wrap:nowrap}
 body.gu-mitad .gu-pie span:not(:first-child):not(:nth-child(2)){display:none}
 .gu-chip.gu-chip-mini{width:26px;height:26px;padding:0;justify-content:center;font:800 12px var(--ui);border-radius:50%}
 .gu-chip.gu-chip-mini::before{display:none}
-body.gu-mitad #detalle{border-left:4px solid #ffe76a}
+
 /* en vivo */
 .gu-gente{display:flex;align-items:center;gap:4px;background:rgba(255,253,246,.92);border-radius:999px;padding:3px 8px 3px 6px}
 .gu-gente[hidden]{display:none}
@@ -1316,6 +1316,15 @@ body.gu-lectura .gu-texto{caret-color:transparent}
 body.gu-lectura .gu-pie span:last-child{display:none}
 .gu-b.gu-compartir{background:#e0457b;color:#fff}.gu-b.gu-compartir:hover{background:#c93469}
 .gu-titulo::placeholder{color:rgba(255,253,246,.55)}
+/* la plancha al lado usa el mismo fondo que el guion */
+body.gu-mitad #vp-hoja{background-color:#1f6b4a!important;background-image:linear-gradient(rgba(255,255,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.07) 1px,transparent 1px)!important;background-size:32px 32px!important}
+/* división arrastrable */
+.gu-corte{display:none;position:fixed;top:0;bottom:0;left:var(--gu-corte,50%);width:14px;margin-left:-7px;z-index:48;cursor:col-resize;touch-action:none}
+body.gu-mitad .gu-corte{display:block}
+.gu-corte::before{content:"";position:absolute;left:6px;top:0;bottom:0;width:2px;background:rgba(255,253,246,.25);transition:background .15s,width .15s,left .15s}
+.gu-corte::after{content:"";position:absolute;left:3px;top:50%;width:8px;height:44px;margin-top:-22px;border-radius:999px;background:#fffdf6;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.gu-corte:hover::before,.gu-corte.on::before{background:#ffe76a;width:4px;left:5px}
+body.gu-arrastrando,body.gu-arrastrando *{cursor:col-resize!important;user-select:none!important}
 </style>
 <div class="cargando" id="cargando" hidden role="status"><span class="cg-punto"></span>Cargando tu plancha…</div>
 <div class="conectar" id="conectar" hidden>
@@ -3473,6 +3482,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:44,f:"16 de noviembre",mio:true,it:[
+  ["Guion mitad y mitad: la plancha de al lado usa el mismo fondo que el guion, y la *división se arrastra* para darle más lugar a uno o al otro (doble clic la vuelve al medio). Se acuerda de dónde la dejaste.",null,2]]},
  {n:43,f:"16 de noviembre",mio:true,it:[
   ["Guion: al volver de un post-it ya no se ve un instante la plancha de atrás.",null,3]]},
  {n:42,f:"16 de noviembre",mio:true,it:[
@@ -4997,13 +5008,24 @@ function abrirPop(v,ancla,pid){const i=v.i;pop.replaceChildren();
 function cerrarPop(){pop.hidden=true}
 document.addEventListener("pointerdown",e=>{if(!pop.hidden&&!pop.contains(e.target)&&!e.target.closest(".gu-chip"))cerrarPop();const m=Q("gu-m-archivo");if(!m.hidden&&!e.target.closest(".gu-mw"))m.hidden=true},true);
 let mitad=false,mitadCambia=false,ladoMitad="guion";
-function abrirEnMitad(k,id){mitadCambia=true;try{if(abierto)cerrar();abrir(k,id)}finally{mitadCambia=false}if(!mitad){ladoAntes=Q("gu-side").hidden;Q("gu-side").hidden=true;try{lzHoja.tx-=innerWidth/4;lzHoja.apply()}catch(_){}}document.body.classList.add("gu-mitad");mitad=true;Q("gu-ed").querySelector('[data-a="mitad"]').setAttribute("aria-pressed","true");zoomAuto=true;pedirLayout();pintarVolverG()}
+function abrirEnMitad(k,id){mitadCambia=true;try{if(abierto)cerrar();abrir(k,id)}finally{mitadCambia=false}if(!mitad){ladoAntes=Q("gu-side").hidden;Q("gu-side").hidden=true;try{lzHoja.tx-=corteX()/2;lzHoja.apply()}catch(_){}}document.body.classList.add("gu-mitad");mitad=true;Q("gu-ed").querySelector('[data-a="mitad"]').setAttribute("aria-pressed","true");zoomAuto=true;pedirLayout();pintarVolverG()}
 let ladoAntes=false;
 function salirMitad(cerrarHoja){if(!mitad)return;mitad=false;Q("gu-side").hidden=ladoAntes&&innerWidth>=760?true:innerWidth<760;document.body.classList.remove("gu-mitad");Q("gu-ed").querySelector('[data-a="mitad"]').setAttribute("aria-pressed","false");if(cerrarHoja&&abierto){mitadCambia=true;try{cerrar()}finally{mitadCambia=false}}zoomAuto=true;pedirLayout()}
 function alternarMitad(){if(mitad){salirMitad(true);return}if(!G)return;const pid=G.doc.postit;if(pid&&itemDe("ideas",pid)){guardarYa();abrirEnMitad("ideas",pid);return}
   elegirPeli();esperandoMitad=true}
 let esperandoMitad=false;
-addEventListener("pointerdown",e=>{if(mitad)ladoMitad=e.clientX<innerWidth/2?"guion":"plancha"},true);
+addEventListener("pointerdown",e=>{if(mitad)ladoMitad=e.clientX<corteX()?"guion":"plancha"},true);
+/* la división se arrastra: más lugar para el guion o para la plancha */
+let corteFr=.5;try{const v=parseFloat(localStorage.getItem("gu_corte"));if(v>.15&&v<.85)corteFr=v}catch(_){}
+const corteX=()=>Math.round(Math.max(320,Math.min(innerWidth-320,innerWidth*corteFr)));
+function ponerCorte(){document.body.style.setProperty("--gu-corte",corteX()+"px")}
+const corte=mk("div","gu-corte");corte.title="Arrastrá para darle más lugar al guion o a la plancha";corte.setAttribute("role","separator");corte.setAttribute("aria-orientation","vertical");document.body.append(corte);
+corte.addEventListener("pointerdown",e=>{e.preventDefault();corte.setPointerCapture(e.pointerId);corte.classList.add("on");document.body.classList.add("gu-arrastrando");let ult=corteX();
+  const mover=ev=>{corteFr=Math.max(.15,Math.min(.85,ev.clientX/innerWidth));const x=corteX();ponerCorte();try{lzHoja.tx-=(x-ult);lzHoja.apply()}catch(_){}ult=x;zoomAuto=true;pedirLayout()};
+  const fin=()=>{corte.classList.remove("on");document.body.classList.remove("gu-arrastrando");corte.removeEventListener("pointermove",mover);corte.removeEventListener("pointerup",fin);corte.removeEventListener("pointercancel",fin);try{localStorage.setItem("gu_corte",String(corteFr))}catch(_){}try{pintarHilos()}catch(_){}};
+  corte.addEventListener("pointermove",mover);corte.addEventListener("pointerup",fin);corte.addEventListener("pointercancel",fin)});
+corte.addEventListener("dblclick",()=>{const x0=corteX();corteFr=.5;ponerCorte();try{lzHoja.tx-=(corteX()-x0);lzHoja.apply()}catch(_){}try{localStorage.setItem("gu_corte",".5")}catch(_){}zoomAuto=true;pedirLayout()});
+addEventListener("resize",ponerCorte);ponerCorte();
 function irAPostit(k,id){if(!itemDe(k,id)){toast("Ya no existe.");return}if(mitad||innerWidth>900){guardarYa();abrirEnMitad(k,id);return}guardarYa();vuelveGuion={gid:G.id,scroll:scroller.scrollTop};ocultar();abrir(k,id);pintarVolverG()}
 function pintarVolverG(){if(!abierto||navRef.length)return;if(mitad)$("volver").textContent="✕ Cerrar plancha";else if(vuelveGuion)$("volver").textContent="← Guion"}
 {const c0=cerrar;cerrar=function(){const r=c0.apply(this,arguments);if(mitad&&!mitadCambia)queueMicrotask(()=>{if(!abierto&&mitad)salirMitad(false)});if(vuelveGuion&&!mitad){/* el guion aparece ya mismo, sin que se vea la plancha de atrás ni un instante */
@@ -5025,7 +5047,7 @@ function escenaAlLado(gid,bid){const g=guiones.find(x=>x.id===gid);if(!g){toast(
   if(innerWidth<=900||!abierto){vuelveGuion=null;if(abierto)cerrar();entrar(gid,null,bid);return}
   raiz.hidden=false;document.body.classList.add("en-guion");tab.setAttribute("aria-selected","true");
   if(!G||G.id!==gid)abrirGuion(g,null,bid);else{const p=ed.querySelector(`p[data-id="${CSS.escape(bid)}"]`);if(p)setTimeout(()=>irABloque(p),60)}
-  if(!mitad){ladoAntes=Q("gu-side").hidden;Q("gu-side").hidden=true;try{lzHoja.tx-=innerWidth/4;lzHoja.apply()}catch(_){}}document.body.classList.add("gu-mitad");mitad=true;Q("gu-ed").querySelector('[data-a="mitad"]').setAttribute("aria-pressed","true");zoomAuto=true;pedirLayout();pintarVolverG();
+  if(!mitad){ladoAntes=Q("gu-side").hidden;Q("gu-side").hidden=true;try{lzHoja.tx-=corteX()/2;lzHoja.apply()}catch(_){}}document.body.classList.add("gu-mitad");mitad=true;Q("gu-ed").querySelector('[data-a="mitad"]').setAttribute("aria-pressed","true");zoomAuto=true;pedirLayout();pintarVolverG();
   setTimeout(()=>{const p=ed.querySelector(`p[data-id="${CSS.escape(bid)}"]`);if(p){p.classList.add("gu-flash");setTimeout(()=>p.classList.remove("gu-flash"),1600)}},250)}
 function pintarEnGuion(){if(!abierto||abierto.k==="diario")return;const p=$("capa-hoja").querySelector(".principal");if(!p)return;let a=p.querySelector(".aparece.ap-guion");
   const l=apariciones(abierto.k,abierto.id);if(!l.length){if(a)a.remove();return}
