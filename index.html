@@ -13,7 +13,9 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
 <meta name="robots" content="noindex">
-<style>html,body{margin:0}body{font:14px/1.4 system-ui,-apple-system,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<style>html,body{margin:0}body{font:14px/1.4 system-ui,-apple-system,sans-serif}img{max-width:100%}[hidden]{display:none!important}
+::selection{background:#ffe066;color:#2b2520}
+</style>
 </head>
 <body>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1461,6 +1463,7 @@ body.gu-foco .gu-top,body.gu-foco .gu-side,body.gu-foco .gu-pie,body.gu-foco .gu
 body.gu-foco .gu-salirfoco{display:block;position:fixed;top:10px;right:14px;z-index:40;border:0;border-radius:999px;background:rgba(255,253,246,.92);color:var(--ink);font:600 12px var(--ui);padding:7px 14px;cursor:pointer;opacity:.25;transition:opacity .2s;box-shadow:0 4px 14px rgba(0,0,0,.25)}
 body.gu-foco .gu-salirfoco:hover{opacity:1}
 .gu-irpag{font-size:10.5px;padding:0 5px}
+.gu-texto ::selection,.gu-texto::selection{background:#ffe066;color:#111}
 </style>
 <div class="cargando" id="cargando" hidden role="status"><span class="cg-punto"></span>Cargando tu plancha…</div>
 <div class="conectar" id="conectar" hidden>
@@ -3644,6 +3647,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:59,f:"16 de noviembre",it:[
+  ["El texto que marcás ahora se pinta de amarillo, no de celeste.",null,3]]},
  {n:58,f:"16 de noviembre",it:[
   ["Las *referencias ahora se llaman vínculos*, en toda la web: «+ Vínculo» adentro de los post-its y de las pilas. Funcionan igual que antes.",null,1],
   ["Guion: si marcás más de una palabra, al costado de la hoja te aparece *Comentar* o *Vincular*, como en Google Docs.",null,2],
