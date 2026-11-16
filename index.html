@@ -3375,12 +3375,12 @@ document.addEventListener("keydown",e=>{if(e.key!=="Tab"||e.shiftKey||e.ctrlKey|
     const poner=si=>{document.documentElement.classList.toggle("plano",si);try{localStorage.setItem("plano",si?"1":"0")}catch(_){}
       for(const b of bts){b.replaceChildren(si?el("span","ic-post"):el("span","ic-a","A"));const t=si?"Versión normal":"Versión texto";b.title=t;b.setAttribute("aria-label",t)}
       try{pintarLista()}catch(_){}requestAnimationFrame(()=>document.querySelectorAll("textarea").forEach(t=>{try{if(!t.id&&t.getClientRects().length)autosize(t)}catch(_){}}))};
-    const pl=mk();pl.id="btn-plano";ex.lastElementChild.before(pl);
+    const pl=mk();pl.id="btn-plano";pl.hidden=true; /* oculto por ahora (lo pidió Lenny el 16/11); para volver a mostrarlo, sacar los hidden y lo de revisarPlano */ex.lastElementChild.before(pl);
     {const fb=el("button","btn");fb.type="button";fb.id="btn-fondo";fb.append(el("span","ic-cuad"));const pf=si=>{document.documentElement.classList.toggle("fondo-cuad",si);try{localStorage.setItem("fondo",si?"cuad":"")}catch(_){}fb.setAttribute("aria-pressed",String(si));const t=si?"Volver al fondo original":"Fondo cuadriculado";fb.title=t;fb.setAttribute("aria-label",t)};
       fb.onclick=()=>pf(!document.documentElement.classList.contains("fondo-cuad"));let f0=false;try{f0=localStorage.getItem("fondo")==="cuad"}catch(_){}pf(f0);ex.lastElementChild.before(fb)}
     
-    const enPost=mk();enPost.id="h-plano";$("h-ayuda").before(enPost);
-    window.revisarPlano=()=>{let puesto=false;try{puesto=localStorage.getItem("plano")==="1"}catch(_){}poner(puesto)};window.revisarPlano()}
+    const enPost=mk();enPost.id="h-plano";enPost.hidden=true;$("h-ayuda").before(enPost);
+    window.revisarPlano=()=>{poner(false)};window.revisarPlano()}
   $("btn-menu").before(ex);
   ex.addEventListener("click",e=>{const b=e.target.closest("[data-mm]");if(!b)return;const m=b.dataset.mm;if(m==="undo")deshacerUI(false);else if(m==="redo")deshacerUI(true);else lzMain.setModo(lzMain.modo===m?null:m)})}
 
@@ -3508,7 +3508,6 @@ const AYUDA=[
   [{chip:"Mezclar"},"Junta dos ideas al azar para ver qué sale. Podés filtrar qué entra en la mezcla."],
   [{h:'<span class="ay-seg"><b>N.º</b><span>Categoría</span><span>Grilla</span></span>'},"Cómo se ordenan los post-its."],
   [{chip:"Cómo se usa?"},"Esta guía."],
-  [{h:'<span class="ay-chip"><span class="ic-a">A</span></span> <span class="ay-chip"><span class="ic-post"></span></span>'},"La A pasa a la versión texto: todo en letra de máquina, y las ideas y frases como una lista que se ordena tocando la palabra subrayada del título. El post-it te devuelve a la versión normal. También está en el ••• de cada post-it."],
   [{chip:"Novedades"},"Cuando la web tiene cambios nuevos, al entrar te aparece un cartel que cuenta qué cambió. Sale una sola vez por cada tanda de cambios."],
   [{chip:"Tu cuenta"},"Te muestra con qué usuario entraste. Si todavía entrás con la clave larga, desde acá creás tu cuenta con usuario y contraseña."],
   [{chip:"Salir"},"Cierra la sesión en este dispositivo. Para volver, entrás con tu usuario y tu contraseña."],
@@ -3655,6 +3654,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:61,f:"16 de noviembre",it:[
+  ["Saqué por ahora el botón de la «A» (versión texto). Si la tenías puesta, volvés a la versión normal.",null,3]]},
  {n:60,f:"16 de noviembre",it:[
   ["Guion: el comentario nuevo se escribe al costado de la hoja, sin tapar nada. Enter lo deja, Esc lo cancela.",null,3],
   ["Guion: el zoom que elegís ya no se reinicia cuando abrís el panel de escenas. Tocando el % volvés al tamaño automático.",null,3]]},
@@ -6150,7 +6151,7 @@ if(window.__demo){(function(){
    {tit:"Tu diario",txt:"Un día por página. Escribís directo, sin abrir nada, y cada renglón queda con su hora. Con la barra de abajo pegás post-its, notas, imágenes o links, y arriba está el <b>Calendario</b> para saltar a otro día.<br><br>¿Ves «Terminé: …»? Eso lo anotó solo tu lista de tareas.",boton:"Seguir",libre:1},
    {tit:"Volvé a las ideas",txt:"Ya casi estamos.",hacer:"Tocá «Ideas»",objetivo:()=>$("tab-ideas"),listo:()=>vista==="ideas"&&!enDiario},
    {tit:"El •••",txt:"Arriba a la derecha está todo lo demás.",hacer:"Tocá el •••",objetivo:()=>$("btn-menu"),listo:()=>document.body.classList.contains("barra-abierta")},
-   {tit:"Lo que hay en el •••",txt:"<b>Buscar</b> en todo · <b>Línea de tiempo</b> de tus ideas · <b>Mezclar</b> ideas al azar · ordenar por <b>N.º, Categoría o Grilla</b> · <b>A</b>: versión texto, como una lista · el cuadradito cambia el fondo · y <b>Cómo se usa</b> tiene todo explicado.",boton:"Seguir",
+   {tit:"Lo que hay en el •••",txt:"<b>Buscar</b> en todo · <b>Línea de tiempo</b> de tus ideas · <b>Mezclar</b> ideas al azar · ordenar por <b>N.º, Categoría o Grilla</b> · el cuadradito cambia el fondo · y <b>Cómo se usa</b> tiene todo explicado.",boton:"Seguir",
     objetivo:()=>$("barra-extra")},
    {tit:"Algunos trucos más",txt:"<b>Shift + arrastrar</b> en el fondo: elegís varias cosas a la vez. <b>Ctrl+G</b>: las agrupás para que se muevan juntas. <b>Ctrl+Z</b>: deshacer. En la barra de la izquierda tenés flechas para unir post-its y un lápiz para dibujar.",boton:"Seguir",
     objetivo:()=>[...document.querySelectorAll(".lateral")].find(vis)},
