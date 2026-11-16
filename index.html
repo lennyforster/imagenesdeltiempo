@@ -3473,6 +3473,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:43,f:"16 de noviembre",mio:true,it:[
+  ["Guion: al volver de un post-it ya no se ve un instante la plancha de atrás.",null,3]]},
  {n:42,f:"16 de noviembre",mio:true,it:[
   ["Guion: tocar una locación (o cualquier post-it vinculado) la abre mitad y mitad al lado del guion, no en pantalla completa.",null,2],
   ["Las pilas «Locaciones · …» que habían quedado sueltas en la plancha se mudan solas adentro del post-it de su película, aunque ese guion ya no exista.",null,2]]},
@@ -5004,7 +5006,10 @@ let esperandoMitad=false;
 addEventListener("pointerdown",e=>{if(mitad)ladoMitad=e.clientX<innerWidth/2?"guion":"plancha"},true);
 function irAPostit(k,id){if(!itemDe(k,id)){toast("Ya no existe.");return}if(mitad||innerWidth>900){guardarYa();abrirEnMitad(k,id);return}guardarYa();vuelveGuion={gid:G.id,scroll:scroller.scrollTop};ocultar();abrir(k,id);pintarVolverG()}
 function pintarVolverG(){if(!abierto||navRef.length)return;if(mitad)$("volver").textContent="✕ Cerrar plancha";else if(vuelveGuion)$("volver").textContent="← Guion"}
-{const c0=cerrar;cerrar=function(){const r=c0.apply(this,arguments);if(mitad&&!mitadCambia)setTimeout(()=>{if(!abierto&&mitad)salirMitad(false)},0);if(vuelveGuion)setTimeout(()=>{if(!abierto&&vuelveGuion){const v=vuelveGuion;vuelveGuion=null;entrar(v.gid,v.scroll)}},0);return r};
+{const c0=cerrar;cerrar=function(){const r=c0.apply(this,arguments);if(mitad&&!mitadCambia)queueMicrotask(()=>{if(!abierto&&mitad)salirMitad(false)});if(vuelveGuion&&!mitad){/* el guion aparece ya mismo, sin que se vea la plancha de atrás ni un instante */
+    raiz.hidden=false;queueMicrotask(()=>{if(abierto){raiz.hidden=true;return}if(!vuelveGuion)return;const v=vuelveGuion;vuelveGuion=null;
+      if(G&&G.id===v.gid&&!Q("gu-ed").hidden){document.body.classList.add("en-guion");tab.setAttribute("aria-selected","true");try{localStorage.setItem("pestana","guion")}catch(_){}scroller.scrollTop=v.scroll;ed.focus({preventScroll:true});pedirLayout();pedirSide()}
+      else entrar(v.gid,v.scroll)})}return r};
  const v0=pintarVolver;pintarVolver=function(){const r=v0.apply(this,arguments);pintarVolverG();return r}}
 /* adentro de un post-it: «En el guion: …» */
 {const r0=refrescarRefs;refrescarRefs=function(){const r=r0.apply(this,arguments);if(!raiz.hidden&&G&&lay){clearTimeout(tChipsR);tChipsR=setTimeout(()=>{pintarChips();pedirSide()},120)}return r}}
