@@ -3798,6 +3798,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:81,f:"17 de noviembre",it:[
+  ["Guion: escribiendo en vivo con el link de edición, el aviso de «cambió en otro lado» ya no sale de más: en vivo todo se mezcla al instante y se guarda solo.",null,3]]},
  {n:80,f:"17 de noviembre",it:[
   ["Guion: *ya no se puede pisar un guion sin querer.* Si lo tenés abierto en dos pestañas o dos dispositivos y uno quedó viejo, antes de guardar se da cuenta y te avisa. Ahí elegís: traer la versión nueva, guardar la tuya como copia o quedarte con la tuya.",null,1],
   ["Guion: *Archivo → Versiones anteriores.* Cada vez que se guarda queda una versión. Las ves por día y hora, mirás cómo era y volvés a la que quieras, o la abrís como copia aparte.",null,1]]},
@@ -5754,8 +5756,10 @@ function leerDoc(){const bl=bloques().map(p=>{const b={id:p.dataset.id,t:p.datas
 let ultJSON="";
 /* ---------- que nada pise nada: si el guion cambió en otro lado, no se guarda encima ---------- */
 let conflicto=false;
-function hayConflicto(){if(!G)return false;const g=guiones.find(x=>x.id===G.id);return !!(g&&(g.editado||0)>miEditado)}
-addEventListener("gh-conflicto",e=>{if(G&&e.detail&&e.detail.k==="guiones/"+G.id){ultJSON="";sucio=true;mostrarConflicto()}});
+/* en vivo no hay conflicto: todas las pestañas conectadas tienen lo mismo (se mezcla al instante), así que se guarda igual */
+const enVivoOk=()=>!!(V&&V.listo&&V.modo==="e");
+function hayConflicto(){if(!G)return false;const g=guiones.find(x=>x.id===G.id);if(!(g&&(g.editado||0)>miEditado))return false;if(enVivoOk()){miEditado=g.editado;return false}return true}
+addEventListener("gh-conflicto",e=>{if(G&&e.detail&&e.detail.k==="guiones/"+G.id){ultJSON="";sucio=true;if(enVivoOk()){guardarPronto(3000);return}mostrarConflicto()}});
 function mostrarConflicto(){conflicto=true;pintarEstado();let b=raiz.querySelector(".gu-conf");if(b)return;b=mk("div","gu-conf");
   b.append(mk("b",null,"Este guion se cambió en otra pestaña o en otro dispositivo."),mk("span",null,"Para no pisar nada, no guardé lo último que escribiste acá. Elegí qué hacer:"));
   const acc=mk("div","acc");
@@ -5849,7 +5853,8 @@ async function borrarGuion(){if(!G)return;const g=G;const ok=await confirmarBorr
   col.onSnapshot(s=>{if(INV)return;guiones=s.docs.map(d=>({id:d.id,...d.data()}));cargados=true;
     if(!raiz.hidden&&!G&&!Q("gu-lista").hidden)pintarLista();
     if(G){const g=guiones.find(x=>x.id===G.id);if(!g){if(!raiz.hidden){toast("Este guion se borró en otro lado.");mostrarLista()}}
-      else if((g.editado||0)>miEditado&&sucio&&!guardando)mostrarConflicto();
+      else if((g.editado||0)>miEditado&&sucio&&!guardando&&!enVivoOk())mostrarConflicto();
+      else if((g.editado||0)>miEditado&&enVivoOk())miEditado=g.editado;
       else if((g.editado||0)>miEditado&&!sucio&&document.activeElement!==ed){const sc=scroller.scrollTop;G.doc=JSON.parse(JSON.stringify(g));delete G.doc.id;miEditado=g.editado;cargarEnEditor(G.doc);scroller.scrollTop=sc}}
     try{if(abierto)pintarEnGuion()}catch(_){}
     if(!arrancado&&/^#guion=/.test(location.hash)){const id=location.hash.slice(7);history.replaceState(null,"",location.pathname+location.search);arrancado=true;if(guiones.some(g=>g.id===id))entrar(id)}
