@@ -1235,6 +1235,8 @@ body.barra-abierta .barra-extra.h-extra:not(.abierta){display:none}
 .gu-mh .acc button{border:0;border-radius:999px;padding:9px 16px;font:600 14px var(--ui);cursor:pointer;background:rgba(43,37,32,.08)}
 .gu-mh .acc .si{background:var(--ink);color:var(--paper)}
 .gu-mh .gu-nota{font:500 12.5px/1.45 var(--ui);color:#777;margin:8px 0 0}
+.gu-exp-ops .chk{margin:8px 0 0}.gu-mh input.gu-exp-in{margin:8px 0 0 26px;width:calc(100% - 26px)}.gu-mh .gu-exp-in~.gu-nota{margin-left:26px}
+.gu-exp-err{font:600 13px var(--ui);color:#c0392b;margin:6px 0 0 26px}.gu-exp-err:empty{display:none}
 .gu-atajos{width:100%;border-collapse:collapse;font:14px var(--ui)}
 .gu-atajos td{padding:6px 4px;border-bottom:1px solid rgba(43,37,32,.08);vertical-align:top}
 .gu-atajos td:first-child{white-space:nowrap;font:600 12.5px var(--mono);color:#1f6b4a;padding-right:14px}
@@ -3712,7 +3714,7 @@ const AYUDA=[
   [null,"A la izquierda tenés las escenas, los personajes y las locaciones, con buscador. Las locaciones se vuelven post-its adentro de la película solas."],
   [{chip:"Hilos"},"En la lista de escenas, el circulito te deja elegir a qué hilo narrativo pertenece la escena (o crear uno nuevo). Cada hilo tiene su color y la escena se pinta con ese color."],
   [{chip:"La peli"},"Arriba a la derecha. Tiene tres pestañas: Escaleta (se arma sola), Línea de tiempo (con hilos narrativos y personajes) y Desglose. Las ves abajo del guion, al costado o en pantalla completa. Arrastrando escenas reordenás el guion. Con la × al lado de un personaje lo sacás de la línea."],
-  [{chip:"↗ Vincular"},"Marcás un pedazo, tocás Vincular en el cartelito del costado (o '+CMD+'+K) y se crea un post-it con eso adentro de la película; el pedazo queda resaltado en amarillo. Sin marcar nada, lo atás a un post-it que ya existe."],
+  [{chip:"↗ Vincular"},"Marcás un pedazo, tocás Vincular en el cartelito del costado (o Ctrl+K, ⌘+K en Mac) y se crea un post-it con eso adentro de la película; el pedazo queda resaltado en amarillo. Sin marcar nada, lo atás a un post-it que ya existe."],
   [{chip:"🏷 Desglose"},"Marcás una palabra (aunque sea una sola) y la clasificás: utilería, vestuario, extras, vehículos, efectos, etc. En La peli → Desglose ves la escena donde estás o toda la peli, y lo bajás como planilla. El elenco sale solo, y además te sugiere lo que encuentra leyendo cada escena (animales, utilería, vestuario…): lo sumás con ✓ o lo descartás con ×."],
   [{chip:"💬 Comentar"},"Marcás algo y tocás Comentar en el cartelito del costado (o Ctrl+Alt+M): queda un comentario al costado del renglón. Tocalo para editarlo, responderlo o resolverlo: las respuestas quedan abajo, como una charla, sean tuyas o de otro. Cuando marcás texto, Comentar, Vincular y Desglose te aparecen al costado de la hoja."],
   [{chip:"⤢"},"En la barrita vertical de la izquierda (tipo de renglón, negrita, buscar, zoom). Modo foco: solo la hoja, sin nada alrededor. También con Ctrl+Shift+Enter. Esc para salir."],
@@ -3720,7 +3722,8 @@ const AYUDA=[
   [{chip:"Página 3"},"Abajo a la izquierda: tocá el número de página para saltar a otra."],
   [{chip:"Versiones anteriores"},"En Archivo. Cada vez que el guion se guarda queda una versión: la ves, volvés a ella o la abrís como copia aparte."],
   [null,"Si el mismo guion está abierto en dos lados y uno queda viejo, la web no deja que pise al otro: te avisa y elegís qué hacer."],
-  [{chip:"Compartir"},"Link para leer o para editar juntos en vivo. Archivo: PDF, Final Draft, Fountain y todos tus guiones."]]},
+  [{chip:"Compartir"},"Link para leer o para editar juntos en vivo. Archivo: PDF, Final Draft, Fountain y todos tus guiones."],
+  [{chip:"Exportar PDF…"},"En Archivo (o Ctrl+P, ⌘+P en Mac). Elegís todo el guion, la página donde estás o algunas páginas: 10-15, 23-28, o 20- para ir hasta el final. Cada página sale con su número de siempre."]]},
  {t:"En vivo",it:[
   [null,"Trabajás un post-it con otra gente al mismo tiempo, como en Miro o Google Docs. Cada uno desde su compu o su celu."],
   [{h:'<span class="ay-chip" style="background:#1f9d6b;color:#fff">● En vivo</span>'},"Adentro de una idea, en •••. Se crea un link para ese post-it."],
@@ -3805,6 +3808,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:83,f:"17 de noviembre",it:[
+  ["Guion: *ahora podés exportar solo algunas páginas a PDF.* En Archivo → Exportar PDF elegís todo, la página donde estás o las que quieras, tipo _10-15, 23-28_. Salen con su número de página y de escena de siempre, así encajan con el resto del guion.",null,2]]},
  {n:82,f:"17 de noviembre",it:[
   ["Guion: *ahora se puede responder a los comentarios*, tuyos o de otro. Tocás el papelito amarillo, escribís abajo en «Responder…» y Enter. Queda como una charla debajo del comentario, y en el papelito ves cuántas respuestas tiene. Tu respuesta la podés borrar con la ×.",null,2]]},
  {n:81,f:"17 de noviembre",it:[
@@ -5198,7 +5203,7 @@ raiz.innerHTML=`
       <button type="button" data-a="portada" class="solo-edita">Portada…</button>
       <button type="button" data-a="opciones" class="solo-edita">Formato y página…</button>
       <hr>
-      <button type="button" data-a="pdf">Exportar PDF <small>${CTRL}+P</small></button>
+      <button type="button" data-a="pdf">Exportar PDF… <small>${CTRL}+P</small></button>
       <button type="button" data-a="fdx">Exportar Final Draft (.fdx)</button>
       <button type="button" data-a="fountain">Exportar Fountain (.fountain)</button>
       <button type="button" data-a="importar" class="solo-duenio">Importar Final Draft o Fountain…</button>
@@ -5997,24 +6002,45 @@ function aFountain(){const doc=leerDoc(),pp=doc.portada||{};const md=h=>segmento
     if(b.t==="escena"){l=may(plano);if(!RX_PREF.test(l))l="."+l}else if(b.t==="personaje")l=(/[a-záéíóúñ]/.test(plano)?"@":"")+may(plano);else if(b.t==="transicion"){l=may(plano);if(!/TO:$/.test(l))l=">"+l}else if(b.t==="plano")l="!"+may(plano);else if(b.t==="parentesis")l=plano;else l=md(b.h);
     const pegado=(b.t==="dialogo"||b.t==="parentesis")&&(prev==="personaje"||prev==="parentesis"||prev==="dialogo");out+=(prev&&!pegado?"\n":"")+l+"\n";if(b.t==="escena")out+="";prev=b.t}
   return out}
-async function pdf(){if(!G)return;await guardarYa();maquetar();const pg=PAGINAS[opc.pagina]||PAGINAS.a4,H=lay.H;
+/* «10-15, 23-28», «3», «20-» (hasta el final), «10 a 15» → páginas del guion (1…N) */
+function leerPaginas(txt,N){const out=new Set();const partes=String(txt).replace(/[–—]/g,"-").replace(/\s+a\s+/gi,"-").split(/[,;y]+/).map(x=>x.trim()).filter(Boolean);if(!partes.length)return {err:"Escribí qué páginas querés."};
+  for(const x of partes){const m=x.replace(/\s+/g,"").match(/^(\d+)(?:-(\d*))?$/);if(!m)return {err:"No entiendo «"+x+"». Escribilo así: 10-15, 23-28"};
+    const a=+m[1],b=m[2]===undefined?a:(m[2]===""?N:+m[2]);if(a<1||b<1)return {err:"Las páginas arrancan en 1."};if(Math.min(a,b)>N)return {err:"El guion tiene "+N+(N===1?" página.":" páginas.")};
+    for(let n=Math.min(a,b);n<=Math.min(N,Math.max(a,b));n++)out.add(n)}return {set:out}}
+function textoRangos(set){const v=[...set].sort((a,b)=>a-b),r=[];for(let i=0;i<v.length;){let j=i;while(j+1<v.length&&v[j+1]===v[j]+1)j++;r.push(i===j?String(v[i]):v[i]+"-"+v[j]);i=j+1}return r.join(", ")}
+function exportarPDF(){if(!G)return;maquetar();const N=lay?lay.N:1,pa=(()=>{const p=actual();const i=p?lay.ps.indexOf(p):-1;return i>=0&&lay.res[i]?lay.res[i].pag+1:1})();
+  abrirModal(m=>{m.append(mk("h3",null,"Exportar PDF"));let modo="todo";const ops=mk("div","gu-exp-ops");
+    const op=(v,t)=>{const l=mk("label","chk");const r=mk("input");r.type="radio";r.name="gu-exp";r.value=v;r.checked=v==="todo";r.onchange=()=>{modo=v;pc.checked=v==="todo";if(v==="rango")setTimeout(()=>inp.focus(),0);err.textContent=""};r.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();e.stopPropagation();ir()}};l.append(r," "+t);ops.append(l);return r};
+    op("todo","Todo el guion ("+N+(N===1?" página)":" páginas)"));op("actual","La página donde estás (la "+pa+")");const rr=op("rango","Algunas páginas:");m.append(ops);
+    const inp=mk("input","gu-exp-in");inp.type="text";inp.placeholder="Ej: 10-15, 23-28";inp.onfocus=()=>{rr.checked=true;modo="rango";pc.checked=false};
+    inp.onkeydown=e=>{e.stopPropagation();if(e.key==="Enter"){e.preventDefault();ir()}else if(e.key==="Escape"){e.preventDefault();cerrarModal()}};m.append(inp);
+    m.append(mk("p","gu-nota","Separá con comas. Podés poner una sola (3), un rango (10-15) o desde una hasta el final (20-). Cada página sale con su número de siempre."));
+    const err=mk("p","gu-exp-err");m.append(err);
+    const l=mk("label","chk");const pc=mk("input");pc.type="checkbox";pc.checked=true;l.append(pc," Con portada");if(opc.portada===false){pc.checked=false;l.hidden=true}m.append(l);
+    const ir=()=>{let set=null;if(modo==="actual")set=new Set([pa]);else if(modo==="rango"){const r=leerPaginas(inp.value,N);if(r.err){err.textContent=r.err;inp.focus();return}set=r.set}
+      cerrarModal();pdf(set,opc.portada!==false&&pc.checked)};
+    const a=mk("div","acc");a.append(btn(null,"Cancelar",cerrarModal),btn("si","Exportar",ir));m.append(a)})}
+async function pdf(sel,conPortada){if(!G)return;if(conPortada===undefined)conPortada=true;await guardarYa();maquetar();const pg=PAGINAS[opc.pagina]||PAGINAS.a4,H=lay.H;
   document.getElementById("gu-print")?.remove();document.getElementById("gu-page")?.remove();
   const st=document.createElement("style");st.id="gu-page";st.textContent=`@page{size:${pg.css};margin:0}`;document.head.append(st);
   const pr=mk("div");pr.id="gu-print";varsPagina(pr);
   const hoja=()=>{const h=mk("div","gu-pp");h.style.width=pg.w+"px";h.style.height=pg.css.split(" ")[1];pr.append(h);return h};
-  if(opc.portada!==false){const pp=G.doc.portada||{};const h=hoja();const c=mk("div","gu-port");c.style.top=(pg.h*0.36)+"px";c.style.paddingLeft=ML+"px";c.style.paddingRight=MR+"px";
+  if(opc.portada!==false){const pp=G.doc.portada||{};const h=hoja();if(sel&&!conPortada)h.classList.add("fuera");const c=mk("div","gu-port");c.style.top=(pg.h*0.36)+"px";c.style.paddingLeft=ML+"px";c.style.paddingRight=MR+"px";
     c.append(mk("div","tt",may(Q("gu-titulo").value||"Sin título")));if(pp.autor){c.append(mk("div","cc"," "),mk("div","cc","Escrito por"),mk("div","cc"," "),mk("div","cc",pp.autor))}if(pp.basado){c.append(mk("div","cc"," "),mk("div","cc",pp.basado))}h.append(c);
     if(pp.contacto){const k=mk("div","gu-port");k.style.top=(pg.h-MB-LH*pp.contacto.split("\n").length)+"px";k.style.paddingLeft=ML+"px";k.style.whiteSpace="pre-wrap";k.textContent=pp.contacto;h.append(k)}
     if(pp.borrador){const k=mk("div","gu-port");k.style.top=(pg.h-MB-LH)+"px";k.style.paddingRight=MR+"px";k.style.textAlign="right";k.textContent=pp.borrador;h.append(k)}}
   const paginas=[];for(let n=0;n<lay.N;n++){const h=hoja();const caja=mk("div","caja");caja.style.top=MT+"px";caja.style.height=H+"px";const t=mk("div",clasesTexto());t.style.width=pg.w+"px";caja.append(t);h.append(caja);
-    if(opc.numPaginas&&n>0){const np=mk("span","np",(n+1)+".");np.style.top="48px";np.style.right=MR+"px";h.append(np)}paginas.push({t,fin:0})}
-  lay.ps.forEach((p,i)=>{const r=lay.res[i];const c=p.cloneNode(true);c.removeAttribute("data-ph");const P=paginas[r.pag];c.style.marginTop=(r.y-P.fin)+"px";P.t.append(c);P.fin=r.y+r.h;
+    if(opc.numPaginas&&n>0){const np=mk("span","np",(n+1)+".");np.style.top="48px";np.style.right=MR+"px";h.append(np)}if(sel&&!sel.has(n+1))h.classList.add("fuera");paginas.push({t,fin:0})}
+
+  let nEsc=0;lay.ps.forEach((p,i)=>{const r=lay.res[i];const c=p.cloneNode(true);c.removeAttribute("data-ph");if(p.dataset.t==="escena"){nEsc++;if(sel)c.style.counterSet="esc "+nEsc}const P=paginas[r.pag];c.style.marginTop=(r.y-P.fin)+"px";P.t.append(c);P.fin=r.y+r.h;
     let resto=r.y+r.h-H,k=1;while(resto>0&&paginas[r.pag+k]){const c2=p.cloneNode(true);c2.removeAttribute("data-ph");c2.style.marginTop=(-(r.h-resto))+"px";c2.style.counterIncrement="none";const Q2=paginas[r.pag+k];Q2.t.append(c2);Q2.fin=Math.max(Q2.fin,resto);resto-=H;k++}});
   /* los números de escena siguen la cuenta aunque cada página sea un bloque aparte */
+  /* si exportás algunas páginas, las otras se sacan; cada escena lleva su número fijo para que no se corra */
+  if(sel)pr.querySelectorAll(".gu-pp.fuera").forEach(h=>h.remove());
   document.body.append(pr);document.body.classList.add("gu-imprimiendo");
   const fin=()=>{document.body.classList.remove("gu-imprimiendo");pr.remove();st.remove();removeEventListener("afterprint",fin)};addEventListener("afterprint",fin);
   try{await document.fonts.ready}catch(_){}
-  setTimeout(()=>{const t0=document.title;document.title=nombreArchivo("pdf").replace(/\.pdf$/,"");window.print();document.title=t0;setTimeout(()=>{if(document.body.classList.contains("gu-imprimiendo")&&!matchMedia("print").matches)fin()},1500)},80)}
+  setTimeout(()=>{const t0=document.title;document.title=nombreArchivo("pdf").replace(/\.pdf$/,"")+(sel?" - pág "+textoRangos(sel).replace(/, /g," y "):"");window.print();document.title=t0;setTimeout(()=>{if(document.body.classList.contains("gu-imprimiendo")&&!matchMedia("print").matches)fin()},1500)},80)}
 
 /* ---------- botones ---------- */
 raiz.addEventListener("click",e=>{const b=e.target.closest("[data-a],[data-lado]");if(!b||!raiz.contains(b))return;
@@ -6022,7 +6048,7 @@ raiz.addEventListener("click",e=>{const b=e.target.closest("[data-a],[data-lado]
   const a=b.dataset.a,m=Q("gu-m-archivo");if(a!=="archivo")m.hidden=true;
   ({salir,versiones:()=>abrirVersiones(),mis:mostrarLista,nuevo:()=>nuevo(),importar:()=>Q("gu-file").click(),lado:()=>{const s=Q("gu-side");s.hidden=!s.hidden;if(innerWidth>=760)try{localStorage.setItem("gu_lado",s.hidden?"0":"1")}catch(_){}zoomAuto=true;pedirLayout()},
     mitad:alternarMitad,foco:()=>modoFoco(true),comentar:()=>comentar(),linea:()=>{if(tl&&!tl.hidden)cerrarTL();else abrirTL()},b:()=>formato("b"),i:()=>formato("i"),u:()=>formato("u"),vincular,buscar:abrirBuscar,archivo:()=>{m.hidden=!m.hidden},
-    volverp:()=>{const pe=peli();if(!pe){mostrarLista();return}guardarYa();salir();setTimeout(()=>abrir("ideas",pe.id),0)},compartir:compartirUI,portada,opciones,pdf,fdx:()=>{bajar(nombreArchivo("fdx"),aFDX(),"application/xml");toast("Exportado para Final Draft.")},fountain:()=>bajar(nombreArchivo("fountain"),aFountain(),"text/plain"),atajos,borrar:borrarGuion,
+    volverp:()=>{const pe=peli();if(!pe){mostrarLista();return}guardarYa();salir();setTimeout(()=>abrir("ideas",pe.id),0)},compartir:compartirUI,portada,opciones,pdf:exportarPDF,fdx:()=>{bajar(nombreArchivo("fdx"),aFDX(),"application/xml");toast("Exportado para Final Draft.")},fountain:()=>bajar(nombreArchivo("fountain"),aFountain(),"text/plain"),atajos,borrar:borrarGuion,
     zauto:()=>{zoomManual=false;zoomAuto=true;maquetar()},zm:()=>{zoomAuto=false;zoomManual=true;zoom=Math.max(.4,Math.round((zoom-.1)*10)/10);maquetar()},zp:()=>{zoomAuto=false;zoomManual=true;zoom=Math.min(2,Math.round((zoom+.1)*10)/10);maquetar()},
     "f-ant":()=>irHall(-1),"f-sig":()=>irHall(1),"f-cerrar":cerrarBuscar,"f-uno":()=>reemplazar(false),"f-todo":()=>reemplazar(true)}[a]||(()=>{}))()});
 /* clic en el papel debajo del texto: el cursor va al final */
@@ -6043,7 +6069,7 @@ addEventListener("keydown",e=>{if(raiz.hidden)return;const tg=e.target;if(tg&&tg
     if(l==="f"){e.preventDefault();abrirBuscar();e.stopPropagation();return}
     if(l==="k"){e.preventDefault();vincular();e.stopPropagation();return}
     if(l==="s"){e.preventDefault();sucio=true;guardarYa();e.stopPropagation();return}
-    if(l==="p"){e.preventDefault();if(!soloLectura())pdf();e.stopPropagation();return}}
+    if(l==="p"){e.preventDefault();if(!soloLectura())exportarPDF();e.stopPropagation();return}}
   if((tg===ed||ed.contains(tg))&&!soloLectura())tecla(e);
   e.stopPropagation()},true);
 
