@@ -1516,19 +1516,18 @@ body.gu-foco .gu-com-nuevo{display:none}
 .gu-dg-si,.gu-dg-no{border:0;width:28px;height:28px;border-radius:50%;font:700 14px var(--ui);cursor:pointer}
 .gu-dg-si{background:var(--ink);color:var(--paper)}.gu-dg-no{background:rgba(43,37,32,.08);color:var(--ink)}
 
-/* tirita de herramientas: en la fila del título, centrada sobre la hoja (la ubica ubicarHerr) */
-.gu-top{position:relative;flex-wrap:nowrap}
-.gu-herr-in{position:absolute;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:2px;background:#fffdf6;border-radius:999px;padding:2px 6px;box-shadow:0 2px 10px rgba(0,0,0,.18);color:var(--ink);white-space:nowrap}
-.gu-herr-in.suelta{position:static;transform:none}
-.gu-h{border:0;background:none;min-width:28px;height:28px;border-radius:8px;font:600 14px var(--ui);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
-.gu-h:hover{background:rgba(43,37,32,.08)}
-.gu-sep{width:1px;height:18px;background:rgba(43,37,32,.15);margin:0 5px}
-.gu-herr-in .gu-sel{background:#ffe76a}
-.gu-herr-in .gu-zoom{background:none;box-shadow:none}
+/* herramientas de escribir: barrita vertical a la izquierda, como en la plancha (va pegada al panel de escenas) */
+.gu-herr-in{order:0;align-self:center;flex:none;display:flex;flex-direction:column;align-items:center;gap:2px;background:#fffdf6;border-radius:999px;padding:5px;margin-left:10px;box-shadow:0 2px 8px rgba(0,0,0,.28);color:var(--ink);position:relative;z-index:7}
+.gu-side{order:-1}
+.gu-h{width:36px;height:36px;border:0;border-radius:50%;background:none;font:600 15px var(--ui);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.gu-h:hover{background:rgba(43,37,32,.1)}
+.gu-sep{height:1px;width:auto;align-self:stretch;margin:3px 7px;background:rgba(43,37,32,.18)}
+.gu-herr-in .gu-sel{width:36px;height:36px;border-radius:50%;padding:0;font:700 11.5px var(--ui);background:#ffe76a;color:var(--ink)}
+.gu-herr-in .gu-sel-menu{top:0;left:calc(100% + 10px)}
+.gu-zv{font:600 10px var(--mono)!important}
 .gu-blapeli svg{vertical-align:-3px}
 body.gu-foco .gu-herr-in{display:none!important}
-.gu-titulo{min-width:0}
-@media (max-width:760px){.gu-herr-in .gu-zoom,.gu-herr-in .gu-sep:not(.gu-edh){display:none}}
+@media (max-width:760px){.gu-herr-in{position:absolute;left:4px;top:8px;margin:0;z-index:5}.gu-herr-in .gu-zv,.gu-herr-in [data-a="zp"],.gu-herr-in [data-a="zm"]{display:none}}
 @media (max-width:760px){.gu-top{flex-wrap:wrap}}
 </style>
 <div class="cargando" id="cargando" hidden role="status"><span class="cg-punto"></span>Cargando tu plancha…</div>
@@ -3625,7 +3624,7 @@ const AYUDA=[
   [{chip:"↗ Vincular"},"Marcás un pedazo, tocás Vincular en el cartelito del costado (o '+CMD+'+K) y se crea un post-it con eso adentro de la película; el pedazo queda resaltado en amarillo. Sin marcar nada, lo atás a un post-it que ya existe."],
   [{chip:"🏷 Desglose"},"Marcás una palabra (aunque sea una sola) y la clasificás: utilería, vestuario, extras, vehículos, efectos, etc. En La peli → Desglose ves la escena donde estás o toda la peli, y lo bajás como planilla. El elenco sale solo, y además te sugiere lo que encuentra leyendo cada escena (animales, utilería, vestuario…): lo sumás con ✓ o lo descartás con ×."],
   [{chip:"💬 Comentar"},"Marcás algo y tocás Comentar en el cartelito del costado (o Ctrl+Alt+M): queda un comentario al costado del renglón. Tocalo para editarlo o resolverlo. Cuando marcás texto, Comentar, Vincular y Desglose te aparecen al costado de la hoja."],
-  [{chip:"⤢"},"En la tirita de arriba de la hoja (tipo de renglón, negrita, buscar, zoom). Modo foco: solo la hoja, sin nada alrededor. También con Ctrl+Shift+Enter. Esc para salir."],
+  [{chip:"⤢"},"En la barrita vertical de la izquierda (tipo de renglón, negrita, buscar, zoom). Modo foco: solo la hoja, sin nada alrededor. También con Ctrl+Shift+Enter. Esc para salir."],
   [null,"Ortografía: las palabras mal escritas quedan subrayadas en rojo (diccionario rioplatense, con voseo). Clic derecho para ver sugerencias o agregarla a tu diccionario. Se apaga en Archivo → Formato."],
   [{chip:"Página 3"},"Abajo a la izquierda: tocá el número de página para saltar a otra."],
   [{chip:"Compartir"},"Link para leer o para editar juntos en vivo. Archivo: PDF, Final Draft, Fountain y todos tus guiones."]]},
@@ -3713,6 +3712,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:67,f:"16 de noviembre",it:[
+  ["Guion: las herramientas de escribir ahora son una barrita vertical a la izquierda, como en la plancha. Se corren cuando abrís el panel de escenas.",null,3]]},
  {n:66,f:"16 de noviembre",it:[
   ["Guion: la barra de arriba vuelve a ser una sola fila. La tirita de herramientas queda centrada justo arriba de la hoja.",null,3]]},
  {n:65,f:"16 de noviembre",it:[
@@ -5061,19 +5062,7 @@ raiz.innerHTML=`
     <input class="gu-titulo" id="gu-titulo" placeholder="Sin título" maxlength="120" aria-label="Título del guion">
     <span class="gu-estado" id="gu-estado"></span><span class="gu-gente" id="gu-gente" hidden></span>
     <span class="gu-esp"></span>
-    <div class="gu-herr-in" id="gu-herr">
-    <span class="gu-sel-w"><button type="button" class="gu-sel" id="gu-tipo" title="Tipo de renglón. Tab y Shift+Tab lo cambian." aria-label="Tipo de renglón" aria-haspopup="listbox"></button><span class="gu-sel-menu" id="gu-tipo-menu" role="listbox" hidden></span></span>
-    <span class="gu-sep gu-edh"></span>
-    <button type="button" class="gu-h gu-edh" data-a="b" title="Negrita (${CTRL}+B)"><b>B</b></button>
-    <button type="button" class="gu-h gu-edh" data-a="i" title="Itálica (${CTRL}+I)"><i>I</i></button>
-    <button type="button" class="gu-h gu-edh" data-a="u" title="Subrayado (${CTRL}+U)"><u>U</u></button>
-    <span class="gu-sep gu-edh"></span>
-    <button type="button" class="gu-h" data-a="buscar" title="Buscar y reemplazar (${CTRL}+F)"><svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
-    <span class="gu-sep"></span>
-    <div class="gu-zoom"><button type="button" data-a="zm" aria-label="Alejar">−</button><button type="button" id="gu-zv" data-a="zauto" title="Volver al tamaño automático">100%</button><button type="button" data-a="zp" aria-label="Acercar">+</button></div>
-    <span class="gu-sep"></span>
-    <button type="button" class="gu-h" data-a="foco" title="Modo foco: solo la hoja (Ctrl+Shift+Enter · Esc sale)">⤢</button>
-  </div>
+    
     <button type="button" class="gu-b gu-ic solo-ancho gu-bmitad" data-a="mitad" title="Plancha de la película al lado (mitad y mitad)">◧</button>
     <button type="button" class="gu-b solo-ancho gu-blapeli" data-a="linea" title="Escaleta, línea de tiempo y desglose"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><rect x="2.5" y="3" width="15" height="3.2" rx="1.2" fill="currentColor"/><rect x="2.5" y="8.4" width="9" height="3.2" rx="1.2" fill="currentColor"/><rect x="2.5" y="13.8" width="12" height="3.2" rx="1.2" fill="currentColor"/></svg> <span class="gu-lbl">La peli</span></button>
     <button type="button" class="gu-b gu-compartir solo-duenio" data-a="compartir" title="Links para editar con otros o para que lo lean">Compartir</button>
@@ -5094,6 +5083,19 @@ raiz.innerHTML=`
   </div>
 
   <div class="gu-cuerpo">
+    <div class="gu-herr-in" id="gu-herr" role="toolbar" aria-label="Escribir">
+    <span class="gu-sel-w"><button type="button" class="gu-sel" id="gu-tipo" title="Tipo de renglón. Tab y Shift+Tab lo cambian." aria-label="Tipo de renglón" aria-haspopup="listbox"></button><span class="gu-sel-menu" id="gu-tipo-menu" role="listbox" hidden></span></span>
+    <span class="gu-sep gu-edh"></span>
+    <button type="button" class="gu-h gu-edh" data-a="b" title="Negrita (${CTRL}+B)"><b>B</b></button>
+    <button type="button" class="gu-h gu-edh" data-a="i" title="Itálica (${CTRL}+I)"><i>I</i></button>
+    <button type="button" class="gu-h gu-edh" data-a="u" title="Subrayado (${CTRL}+U)"><u>U</u></button>
+    <span class="gu-sep gu-edh"></span>
+    <button type="button" class="gu-h" data-a="buscar" title="Buscar y reemplazar (${CTRL}+F)"><svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <span class="gu-sep"></span>
+    <button type="button" class="gu-h" data-a="zp" aria-label="Acercar" title="Acercar">+</button><button type="button" class="gu-h gu-zv" id="gu-zv" data-a="zauto" title="Volver al tamaño automático">100%</button><button type="button" class="gu-h" data-a="zm" aria-label="Alejar" title="Alejar">−</button>
+    <span class="gu-sep"></span>
+    <button type="button" class="gu-h" data-a="foco" title="Modo foco: solo la hoja (Ctrl+Shift+Enter · Esc sale)">⤢</button>
+  </div>
     <aside class="gu-side" id="gu-side"><div class="gu-stabs" role="tablist"><button type="button" data-lado="escenas">Escenas</button><button type="button" data-lado="personajes">Personajes</button><button type="button" data-lado="locaciones">Locaciones</button></div><input class="gu-sq" id="gu-sq" type="search" placeholder="Buscar…" aria-label="Buscar en la lista"><div class="gu-sc" id="gu-sc"></div></aside>
     <div class="gu-scroll" id="gu-scroll"><div class="gu-spacer" id="gu-spacer"><div class="gu-escala" id="gu-escala"><div id="gu-hojas"></div><div class="gu-texto" id="gu-texto" contenteditable="true" spellcheck="true" lang="es" role="textbox" aria-multiline="true" aria-label="Guion"></div><div class="gu-chips" id="gu-chips"></div></div></div></div>
     <div class="gu-find" id="gu-find" hidden>
@@ -5156,7 +5158,8 @@ ed.addEventListener("contextmenu",e=>{if(!ORT.listo||soloLee())return;const h=pa
   pop.hidden=false;let x=e.clientX,y=e.clientY+14;if(x+300>innerWidth)x=innerWidth-306;if(y+pop.offsetHeight>innerHeight-8)y=Math.max(8,e.clientY-pop.offsetHeight-10);pop.style.left=Math.max(6,x)+"px";pop.style.top=y+"px"});
 
 /* desplegable propio (el <select> nativo abre la lista con la letra del sistema) */
-const selTipo=(()=>{const bt=Q("gu-tipo"),mn=Q("gu-tipo-menu");let v=CICLO[0];const o={onchange:null,get value(){return v},set value(x){v=x;bt.textContent=(T[x]||x)+" ▾";for(const b of mn.children)b.classList.toggle("on",b.dataset.t===x)}};
+const ABR={escena:"Esc",accion:"Acc",personaje:"Per",dialogo:"Diá",parentesis:"( )",transicion:"Tra",plano:"Pla",general:"Gen"};
+const selTipo=(()=>{const bt=Q("gu-tipo"),mn=Q("gu-tipo-menu");let v=CICLO[0];const o={onchange:null,get value(){return v},set value(x){v=x;bt.textContent=ABR[x]||x;bt.title=(T[x]||x)+" · Tab y Shift+Tab lo cambian";for(const b of mn.children)b.classList.toggle("on",b.dataset.t===x)}};
   const cerrarM=()=>{mn.hidden=true};
   CICLO.forEach(t=>{const b=mk("button",null,T[t]);b.type="button";b.dataset.t=t;b.setAttribute("role","option");b.onmousedown=e=>e.preventDefault();b.onclick=()=>{cerrarM();if(t!==v){o.value=t;o.onchange&&o.onchange()}};mn.append(b)});
   bt.onmousedown=e=>e.preventDefault();bt.onclick=()=>{mn.hidden=!mn.hidden};
@@ -6096,7 +6099,7 @@ function bajarDesglose(datos){const q=v=>'"'+String(v).replace(/"/g,'""')+'"';co
 addEventListener("keydown",e=>{if(raiz.hidden||!G)return;if((e.ctrlKey||e.metaKey)&&e.altKey&&e.code==="KeyD"){const s=getSelection();if(!s.isCollapsed&&ed.contains(s.anchorNode)){e.preventDefault();e.stopImmediatePropagation();pintarSelBar();elegirCatDesglose(selBar.hidden?ed:selBar)}}},true);
 
 /* la tirita de herramientas va centrada sobre la hoja, en la misma fila que el título */
-function ubicarHerr(){const h=Q("gu-herr"),top=raiz.querySelector(".gu-top");if(!h||!top)return;h.classList.remove("suelta");h.style.left="";if(innerWidth<760){h.classList.add("suelta");return}
+function ubicarHerr(){return;const h=Q("gu-herr"),top=raiz.querySelector(".gu-top");if(!h||!top)return;h.classList.remove("suelta");h.style.left="";if(innerWidth<760){h.classList.add("suelta");return}
   const tr=top.getBoundingClientRect(),sr=scroller.getBoundingClientRect(),w=h.offsetWidth;const izq=Q("gu-estado").getBoundingClientRect().right+12,der=Q("gu-ed").querySelector('[data-a="mitad"]');const lim=(der&&der.offsetParent?der.getBoundingClientRect().left:Q("gu-ed").querySelector('[data-a="compartir"]').getBoundingClientRect().left)-12;
   let x=sr.left+sr.width/2-w/2;x=Math.max(izq,Math.min(lim-w,x));if(lim-izq<w){h.classList.add("suelta");return}h.style.left=(x-tr.left)+"px"}
 addEventListener("resize",()=>{if(!raiz.hidden)requestAnimationFrame(ubicarHerr)});
