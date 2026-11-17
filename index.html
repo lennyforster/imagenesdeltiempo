@@ -1456,6 +1456,13 @@ body.gu-mitad .pila-vista{left:var(--gu-corte,50%);background-color:#1f6b4a;back
 .gu-com-in{width:100%;box-sizing:border-box;border:1px solid rgba(43,37,32,.2);border-radius:10px;padding:8px 10px;font:500 14px/1.4 var(--ui);resize:vertical;color:var(--ink);background:#fff}
 .gu-mq{font:italic 500 12.5px/1.4 var(--ui);color:var(--soft);margin:0 0 8px;border-left:3px solid #ffe066;padding-left:8px}
 @media print{.gu-com{display:none!important}}
+.gu-com i.gu-com-r{font:600 10px var(--ui);font-style:normal;opacity:.6;margin-top:2px}
+.gu-com-hilo{max-height:220px;overflow:auto;margin:8px 0 6px;border-left:2px solid rgba(43,37,32,.12);padding-left:10px;display:flex;flex-direction:column;gap:8px}
+.gu-com-resp .k{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.gu-com-resp p{margin:2px 0 0;max-height:none;font-size:13.5px}
+.gu-com-borrar{border:0;background:none;cursor:pointer;font:600 15px/1 var(--ui);color:#aaa;padding:0 2px}.gu-com-borrar:hover{color:#c0392b}
+.gu-pop .gu-com-rin{margin-top:8px;resize:none;font-size:13.5px}
+.gu-pop:has(.gu-com-rin){max-height:calc(100vh - 16px);overflow:auto}
 
 .gu-ortl{position:absolute;inset:0;pointer-events:none}
 .gu-ort{position:absolute;height:3px;background:radial-gradient(circle at 50% 0,transparent 1px,#e5383b 1.2px,#e5383b 1.6px,transparent 2px) 0 0/4px 3px repeat-x;opacity:.9}
@@ -3707,7 +3714,7 @@ const AYUDA=[
   [{chip:"La peli"},"Arriba a la derecha. Tiene tres pestañas: Escaleta (se arma sola), Línea de tiempo (con hilos narrativos y personajes) y Desglose. Las ves abajo del guion, al costado o en pantalla completa. Arrastrando escenas reordenás el guion. Con la × al lado de un personaje lo sacás de la línea."],
   [{chip:"↗ Vincular"},"Marcás un pedazo, tocás Vincular en el cartelito del costado (o '+CMD+'+K) y se crea un post-it con eso adentro de la película; el pedazo queda resaltado en amarillo. Sin marcar nada, lo atás a un post-it que ya existe."],
   [{chip:"🏷 Desglose"},"Marcás una palabra (aunque sea una sola) y la clasificás: utilería, vestuario, extras, vehículos, efectos, etc. En La peli → Desglose ves la escena donde estás o toda la peli, y lo bajás como planilla. El elenco sale solo, y además te sugiere lo que encuentra leyendo cada escena (animales, utilería, vestuario…): lo sumás con ✓ o lo descartás con ×."],
-  [{chip:"💬 Comentar"},"Marcás algo y tocás Comentar en el cartelito del costado (o Ctrl+Alt+M): queda un comentario al costado del renglón. Tocalo para editarlo o resolverlo. Cuando marcás texto, Comentar, Vincular y Desglose te aparecen al costado de la hoja."],
+  [{chip:"💬 Comentar"},"Marcás algo y tocás Comentar en el cartelito del costado (o Ctrl+Alt+M): queda un comentario al costado del renglón. Tocalo para editarlo, responderlo o resolverlo: las respuestas quedan abajo, como una charla, sean tuyas o de otro. Cuando marcás texto, Comentar, Vincular y Desglose te aparecen al costado de la hoja."],
   [{chip:"⤢"},"En la barrita vertical de la izquierda (tipo de renglón, negrita, buscar, zoom). Modo foco: solo la hoja, sin nada alrededor. También con Ctrl+Shift+Enter. Esc para salir."],
   [null,"Ortografía: las palabras mal escritas quedan subrayadas en rojo (diccionario rioplatense, con voseo). Clic derecho para ver sugerencias o agregarla a tu diccionario. Se apaga en Archivo → Formato."],
   [{chip:"Página 3"},"Abajo a la izquierda: tocá el número de página para saltar a otra."],
@@ -3798,6 +3805,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:82,f:"17 de noviembre",it:[
+  ["Guion: *ahora se puede responder a los comentarios*, tuyos o de otro. Tocás el papelito amarillo, escribís abajo en «Responder…» y Enter. Queda como una charla debajo del comentario, y en el papelito ves cuántas respuestas tiene. Tu respuesta la podés borrar con la ×.",null,2]]},
  {n:81,f:"17 de noviembre",it:[
   ["Guion: escribiendo en vivo con el link de edición, el aviso de «cambió en otro lado» ya no sale de más: en vivo todo se mezcla al instante y se guarda solo.",null,3]]},
  {n:80,f:"17 de noviembre",it:[
@@ -5621,8 +5630,9 @@ function pintarChips(){chips.replaceChildren();if(!lay)return;const pg=PAGINAS[o
   if(soloLee())return;
   lay.ps.forEach((p,i)=>{const cs=(meta.get(p.dataset.id)||{}).co;if(!cs||!cs.length)return;const nv=(p.dataset.t==="escena"?vinculosEscena(p):vinculosEscena(p).filter(v=>!v.auto)).length;
     cs.forEach((co,n)=>{const c=mk("button","gu-com"+(mitad?" mini":""));c.type="button";c.dataset.p=p.dataset.id;c.dataset.c=co.id;
-      if(mitad){c.textContent="💬";c.style.left=(pg.w-40)+"px";c.style.top=(lay.res[i].top-4+(nv+n)*30)+"px";c.title=co.x}
-      else{c.append(mk("b",null,co.a||"Alguien"),mk("span",null,co.x));c.style.left=(pg.w+14)+"px";c.style.top=(lay.res[i].top-4+nv*28+n*6)+"px"}
+      const nr=(co.r||[]).length,tr=nr?(nr===1?"1 respuesta":nr+" respuestas"):"";
+      if(mitad){c.textContent=nr?"💬"+nr:"💬";c.style.left=(pg.w-40)+"px";c.style.top=(lay.res[i].top-4+(nv+n)*30)+"px";c.title=co.x+(tr?" · "+tr:"")}
+      else{c.append(mk("b",null,co.a||"Alguien"),mk("span",null,co.x));if(nr)c.append(mk("i","gu-com-r","↳ "+tr));c.style.left=(pg.w+14)+"px";c.style.top=(lay.res[i].top-4+nv*28+n*6)+"px"}
       c.onclick=ev=>{ev.stopPropagation();abrirComentario(p.dataset.id,co.id,c)};chips.append(c)})});
   /* que no se pisen los comentarios entre sí */
   let tope=-1e9;for(const c of [...chips.querySelectorAll(".gu-com:not(.mini)")].sort((a,b)=>parseFloat(a.style.top)-parseFloat(b.style.top))){let t=parseFloat(c.style.top);if(t<tope)t=tope;c.style.top=t+"px";tope=t+c.offsetHeight+6}}
@@ -5751,7 +5761,7 @@ function cambio(sinMarca){seguir=true;normalizar();if(V&&!V.aplicando)empujar();
 function pedirLigero(){cancelAnimationFrame(tLay);tLay=requestAnimationFrame(()=>{const p=actual();if(lay&&p&&p._h===p.offsetHeight&&ed.children.length===lay.ps.length&&lay.ps.includes(p)&&p.dataset.t!=="personaje"&&p.dataset.t!=="escena"){pintarPie();if(seguir){seguir=false;verCaret()}return}maquetar()})}
 function pintarEstado(){const e=Q("gu-estado");e.textContent=conflicto?"⚠ Sin guardar: cambió en otro lado":guardando?"Guardando…":sucio?"Sin guardar":ultGuardado?"Guardado ✓":""}
 function guardarPronto(ms){clearTimeout(tGuardar);tGuardar=setTimeout(guardarYa,ms)}
-function leerDoc(){const bl=bloques().map(p=>{const b={id:p.dataset.id,t:p.dataset.t,h:htmlDe(p)};const m=meta.get(b.id);if(m&&m.refs&&m.refs.length)b.refs=m.refs.map(r=>({k:r.k,id:r.id,...(r.loc?{loc:1}:{}),...(r.txt?{txt:r.txt}:{})}));if(m&&b.t==="escena"){if(m.c)b.c=m.c;if(m.hl&&m.hl.length)b.hl=[...m.hl];if(m.s)b.s=m.s}if(m&&m.co&&m.co.length)b.co=m.co.map(x=>({...x}));if(m&&m.dg&&m.dg.length)b.dg=m.dg.map(x=>({...x}));return b});
+function leerDoc(){const bl=bloques().map(p=>{const b={id:p.dataset.id,t:p.dataset.t,h:htmlDe(p)};const m=meta.get(b.id);if(m&&m.refs&&m.refs.length)b.refs=m.refs.map(r=>({k:r.k,id:r.id,...(r.loc?{loc:1}:{}),...(r.txt?{txt:r.txt}:{})}));if(m&&b.t==="escena"){if(m.c)b.c=m.c;if(m.hl&&m.hl.length)b.hl=[...m.hl];if(m.s)b.s=m.s}if(m&&m.co&&m.co.length)b.co=m.co.map(copiaCom);if(m&&m.dg&&m.dg.length)b.dg=m.dg.map(x=>({...x}));return b});
   return {...G.doc,titulo:Q("gu-titulo").value.trim(),opciones:opc,bloques:bl}}
 let ultJSON="";
 /* ---------- que nada pise nada: si el guion cambió en otro lado, no se guarda encima ---------- */
@@ -5811,7 +5821,7 @@ Q("gu-titulo").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefau
 function cargarEnEditor(doc,irA){opc={...OPC0,...(doc.opciones||{})};meta.clear();pilaU=[];pilaR=[];
   const bl=Array.isArray(doc.bloques)&&doc.bloques.length?doc.bloques:[{id:rid(),t:"escena",h:""}];
   ed.innerHTML=bl.map(b=>`<p data-t="${T[b.t]?b.t:"accion"}" data-id="${esc(b.id||rid())}">${sanear(b.h)||"<br>"}</p>`).join("");
-  for(const b of bl){const m={};if(b.refs&&b.refs.length)m.refs=b.refs.map(r=>({...r}));if(b.c)m.c=b.c;if(b.hl&&b.hl.length)m.hl=[...b.hl];if(b.s)m.s=b.s;if(b.co&&b.co.length)m.co=b.co.map(x=>({...x}));if(b.dg&&b.dg.length)m.dg=b.dg.map(x=>({...x}));if(Object.keys(m).length)meta.set(b.id,m)}
+  for(const b of bl){const m={};if(b.refs&&b.refs.length)m.refs=b.refs.map(r=>({...r}));if(b.c)m.c=b.c;if(b.hl&&b.hl.length)m.hl=[...b.hl];if(b.s)m.s=b.s;if(b.co&&b.co.length)m.co=b.co.map(copiaCom);if(b.dg&&b.dg.length)m.dg=b.dg.map(x=>({...x}));if(Object.keys(m).length)meta.set(b.id,m)}
   normalizar();Q("gu-titulo").value=doc.titulo||"";sucio=false;ultGuardado=0;pintarEstado();maquetar();pintarSide();
   if(irA){const p=ed.querySelector(`p[data-id="${CSS.escape(irA)}"]`);if(p)setTimeout(()=>irABloque(p),60)}}
 function entrar(gid,scroll,irA){if(!col){toast("Todavía se están cargando tus datos. Probá en un segundo.");return}
@@ -6289,12 +6299,22 @@ function comentar(){if(soloLee())return;const r=rango();let p=r?bloqueDe(r.start
   const a=mk("div","acc");a.append(btn(null,"Cancelar",()=>{cerrarComposer();volverAlTexto()}),btn("si","Comentar",ok));box.append(a);escala.append(box);composer=box;
   requestAnimationFrame(()=>{t.focus({preventScroll:true});const r=box.getBoundingClientRect(),sr=scroller.getBoundingClientRect();if(r.right>sr.right)scroller.scrollLeft+=r.right-sr.right+12;if(r.bottom>sr.bottom)scroller.scrollTop+=r.bottom-sr.bottom+12})}
 let composer=null;function cerrarComposer(){if(composer){composer.remove();composer=null}}
-function abrirComentario(pid,cid,ancla){const m=meta.get(pid),co=m&&(m.co||[]).find(x=>x.id===cid);if(!co)return;pop.replaceChildren();
-  const f=co.f?new Date(co.f).toLocaleDateString("es-AR",{day:"numeric",month:"short"}):"";pop.append(mk("div","k","Comentario · "+(co.a||"Alguien")+(f?" · "+f:"")));
+function copiaCom(x){const y={...x};if(x.r)y.r=x.r.map(z=>({...z}));return y}
+function abrirComentario(pid,cid,ancla,quieto){const m=meta.get(pid),co=m&&(m.co||[]).find(x=>x.id===cid);if(!co)return;pop.replaceChildren();
+  const fe=t=>t?new Date(t).toLocaleDateString("es-AR",{day:"numeric",month:"short"}):"";const f=fe(co.f);pop.append(mk("div","k","Comentario · "+(co.a||"Alguien")+(f?" · "+f:"")));
   if(co.q)pop.append(mk("p","gu-mq","«"+co.q+"»"));const t=mk("textarea","gu-com-in");t.rows=3;t.value=co.x;pop.append(t);
   const guardar=()=>{const x=t.value.trim();if(x&&x!==co.x){marcar();co.x=x;cambio();pedirLayout()}};t.onchange=guardar;
-  const acc=mk("div","acc");acc.append(btn(null,"Ir al renglón",()=>{cerrarPop();const p=ed.querySelector(`p[data-id="${CSS.escape(pid)}"]`);if(p)irABloque(p)}),btn(null,"Resolver",()=>{cerrarPop();marcar();m.co=m.co.filter(x=>x.id!==cid);if(!m.co.length)delete m.co;limpiarMeta(pid);cambio();pedirLayout();toast("Comentario resuelto.")}),btn("si","Listo",()=>{guardar();cerrarPop()}));pop.append(acc);
-  pop.hidden=false;const r=ancla.getBoundingClientRect();let x=r.left,y=r.bottom+8;if(x+300>innerWidth)x=innerWidth-306;if(y+pop.offsetHeight>innerHeight-8)y=Math.max(8,r.top-pop.offsetHeight-8);pop.style.left=Math.max(6,x)+"px";pop.style.top=y+"px"}
+  /* respuestas: en orden, como un hilo */
+  const yo=miNombreVivo();
+  if(co.r&&co.r.length){const l=mk("div","gu-com-hilo");for(const r of co.r){const it=mk("div","gu-com-resp");const cab=mk("div","k",(r.a||"Alguien")+(r.f?" · "+fe(r.f):""));
+      if(r.a===yo){const x=mk("button","gu-com-borrar","×");x.type="button";x.title="Borrar tu respuesta";x.onclick=e=>{e.stopPropagation();guardar();marcar();co.r=co.r.filter(z=>z.id!==r.id);if(!co.r.length)delete co.r;cambio();pedirLayout();abrirComentario(pid,cid,ancla,true)};cab.append(x)}
+      it.append(cab,mk("p",null,r.x));l.append(it)}pop.append(l)}
+  const rt=mk("textarea","gu-com-in gu-com-rin");rt.rows=1;rt.placeholder="Responder…";pop.append(rt);
+  const responder=()=>{const x=rt.value.trim();if(!x){rt.focus();return}guardar();marcar();co.r=[...(co.r||[]),{id:rid(),x,a:yo,f:Date.now()}];cambio();pedirLayout();abrirComentario(pid,cid,ancla,true);const n=pop.querySelector(".gu-com-rin");if(n)n.focus({preventScroll:true});const h=pop.querySelector(".gu-com-hilo");if(h)h.scrollTop=h.scrollHeight};
+  rt.onkeydown=e=>{e.stopPropagation();if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();responder()}else if(e.key==="Escape"){e.preventDefault();cerrarPop();volverAlTexto()}};
+  rt.oninput=()=>{rt.style.height="auto";rt.style.height=Math.min(120,rt.scrollHeight+2)+"px"};
+  const acc=mk("div","acc");acc.append(btn(null,"Ir al renglón",()=>{cerrarPop();const p=ed.querySelector(`p[data-id="${CSS.escape(pid)}"]`);if(p)irABloque(p)}),btn(null,"Resolver",()=>{cerrarPop();marcar();m.co=m.co.filter(x=>x.id!==cid);if(!m.co.length)delete m.co;limpiarMeta(pid);cambio();pedirLayout();toast("Comentario resuelto.")}),btn("si","Listo",()=>{guardar();if(rt.value.trim())responder();cerrarPop()}));pop.append(acc);
+  pop.hidden=false;if(quieto)return;const r=ancla.getBoundingClientRect();let x=r.left,y=r.bottom+8;if(x+300>innerWidth)x=innerWidth-306;if(y+pop.offsetHeight>innerHeight-8)y=Math.max(8,r.top-pop.offsetHeight-8);pop.style.left=Math.max(6,x)+"px";pop.style.top=y+"px"}
 
 /* ---------- colores por escena, línea de tiempo y escaleta ---------- */
 const COLS_ESC=["#ff8a80","#ffb74d","#ffe066","#9be37a","#5fd3c4","#74b9ff","#b39ddb","#f48fb1"];
