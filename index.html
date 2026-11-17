@@ -1575,6 +1575,17 @@ body.gu-foco .gu-herr-in{display:none!important}
 .gu-pophilo i{width:12px;height:12px;border-radius:50%;flex:none}.gu-pophilo .ok{margin-left:auto;font-weight:800}
 .gu-ph-nuevo{padding:4px}.gu-ph-nuevo input{width:100%;box-sizing:border-box;border:1px solid rgba(43,37,32,.18);border-radius:8px;padding:7px 9px;font:500 13px var(--ui);background:#fff;color:var(--ink)}
 .gu-ph-ayuda{margin:2px 8px 6px;font:500 12px/1.4 var(--ui);color:var(--soft)}
+
+.gu-conf{display:flex;flex-direction:column;gap:6px;background:#ffe0dc;color:#5a1a12;padding:12px 16px;border-bottom:2px solid #e5383b;font:500 13.5px/1.4 var(--ui)}
+.gu-conf b{font-weight:700;font-size:14.5px}.gu-conf .acc{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.gu-conf .acc button{border:0;border-radius:999px;padding:7px 13px;font:600 13px var(--ui);cursor:pointer;background:#fff;color:#5a1a12}.gu-conf .acc button:first-child{background:#5a1a12;color:#fff}
+.gu-ver{display:flex;flex-direction:column;gap:2px;max-height:58vh;overflow:auto;margin:6px 0}
+.gu-ver-dia{font:700 11px var(--mono);text-transform:uppercase;letter-spacing:.04em;color:var(--soft);padding:10px 4px 4px}
+.gu-ver-it{border:0;background:none;text-align:left;border-radius:8px;padding:7px 10px;font:600 13.5px var(--ui);color:var(--ink);cursor:pointer}.gu-ver-it:hover{background:#ffe76a}
+.gu-ver-det{display:flex;flex-direction:column;gap:6px;font:500 13.5px/1.4 var(--ui)}.gu-ver-det b{font-size:15px}
+.gu-ver-pv{max-height:34vh;overflow:auto;background:#fff;border-radius:10px;padding:10px 14px;box-shadow:inset 0 0 0 1px rgba(43,37,32,.1);font:12.5px/1.35 "Courier Prime","Courier New",Courier,monospace}
+.gu-ver-pv p{margin:0 0 6px}.gu-ver-pv p[data-t="escena"]{font-weight:700;text-transform:uppercase}.gu-ver-pv p[data-t="personaje"]{margin-left:35%}.gu-ver-pv p[data-t="dialogo"]{margin-left:18%;margin-right:15%}
+.gu-ver-det .acc{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;align-items:center}
 </style>
 <div class="cargando" id="cargando" hidden role="status"><span class="cg-punto"></span>Cargando tu plancha…</div>
 <div class="conectar" id="conectar" hidden>
@@ -1628,6 +1639,12 @@ async function api(path,opt={}){
     throw e}
   if(opt.blob)return r.blob();return r.status===204?null:r.json();
 }
+/* protección de guiones: antes de guardar, ¿alguien (otra pestaña, otro dispositivo) lo cambió desde la última vez que lo trajimos? */
+async function blobSha(txt){const b=new TextEncoder().encode(txt),h=new TextEncoder().encode("blob "+b.length+"\0"),all=new Uint8Array(h.length+b.length);all.set(h);all.set(b,h.length);const d=await crypto.subtle.digest("SHA-1",all);return [...new Uint8Array(d)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+async function shasGuiones(treeSha){const raiz=await api(`${RB}/git/trees/${treeSha}`);const g=raiz.tree.find(e=>e.path==="guiones"&&e.type==="tree");if(!g)return new Map();const t=await api(`${RB}/git/trees/${g.sha}`);return new Map(t.tree.filter(e=>e.path.endsWith(".json")).map(e=>["guiones/"+e.path.slice(0,-5),e.sha]))}
+/* historial de un archivo, para «Versiones anteriores» */
+window.__ghHist={lista:async(path,pag)=>{const r=await api(`${RB}/commits?path=${encodeURIComponent(path)}&per_page=100&page=${pag||1}`);return r.map(c=>({sha:c.sha,fecha:Date.parse(c.commit.author&&c.commit.author.date||c.commit.committer.date)}))},
+  leer:async(path,sha)=>{const r=await api(`${RB}/contents/${path}?ref=${sha}`);let txt;if(r.content)txt=dec(r.content);else{const b=await api(`${RB}/git/blobs/${r.sha}`);txt=dec(b.content)}return JSON.parse(txt)}};
 const dec=b64=>{const bin=atob(b64.replace(/\n/g,""));const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new TextDecoder().decode(u)};
 const colDe=k=>k.slice(0,k.lastIndexOf("/"));
 const ocupado=k=>pend.has(k)||enVuelo.has(k);
@@ -1693,13 +1710,16 @@ async function subir(){
     for(let intento=0;;intento++){
       const ref=await api(`${RB}/git/ref/heads/${GH.branch}`);const base=ref.object.sha;const bc=await api(`${RB}/git/commits/${base}`);
       const tree=[];
-      for(const [k,v] of lote){const path=k+".json";if(v===null){if(remotos.has(path))tree.push({path,mode:"100644",type:"blob",sha:null})}else tree.push({path,mode:"100644",type:"blob",content:JSON.stringify(v,null,1)+"\n"})}
+      {const gk=[...lote.keys()].filter(k=>k.startsWith("guiones/")&&lote.get(k)!==null&&shas.has(k));
+        if(gk.length){const rem=await shasGuiones(bc.tree.sha);for(const k of gk){const r=rem.get(k);if(r&&r!==shas.get(k)){lote.delete(k);window.dispatchEvent(new CustomEvent("gh-conflicto",{detail:{k}}));setTimeout(()=>{ultimoCommit=null;traer().catch(()=>{})},50)}}}}
+      const contenidos=new Map();
+      for(const [k,v] of lote){const path=k+".json";if(v===null){if(remotos.has(path))tree.push({path,mode:"100644",type:"blob",sha:null})}else{const c=JSON.stringify(v,null,1)+"\n";contenidos.set(k,c);tree.push({path,mode:"100644",type:"blob",content:c})}}
       for(const [path,s] of loteBin){if(s===null){if(remotos.has(path))tree.push({path,mode:"100644",type:"blob",sha:null})}else tree.push({path,mode:"100644",type:"blob",sha:s})}
       if(!tree.length)break;
       const nt=await api(`${RB}/git/trees`,{method:"POST",body:{base_tree:bc.tree.sha,tree}});
       const nc=await api(`${RB}/git/commits`,{method:"POST",body:{message:"Imágenes del tiempo: "+[...lote.keys(),...loteBin.keys()].slice(0,4).join(", ")+(lote.size+loteBin.size>4?"…":""),tree:nt.sha,parents:[base]}});
       try{await api(`${RB}/git/refs/heads/${GH.branch}`,{method:"PATCH",body:{sha:nc.sha,force:false}});
-        for(const [k,v] of lote){if(v===null){remotos.delete(k+".json");shas.delete(k)}else{remotos.add(k+".json");shas.delete(k)}}
+        for(const [k,v] of lote){if(v===null){remotos.delete(k+".json");shas.delete(k)}else{remotos.add(k+".json");if(k.startsWith("guiones/")&&contenidos.has(k)){try{shas.set(k,await blobSha(contenidos.get(k)))}catch(_){shas.delete(k)}}else shas.delete(k)}}
         for(const [p,s] of loteBin){if(s===null)remotos.delete(p);else remotos.add(p)}
         break}
       catch(e){if((e.status===422||e.status===409)&&intento<4)continue;throw e}
@@ -3691,6 +3711,8 @@ const AYUDA=[
   [{chip:"⤢"},"En la barrita vertical de la izquierda (tipo de renglón, negrita, buscar, zoom). Modo foco: solo la hoja, sin nada alrededor. También con Ctrl+Shift+Enter. Esc para salir."],
   [null,"Ortografía: las palabras mal escritas quedan subrayadas en rojo (diccionario rioplatense, con voseo). Clic derecho para ver sugerencias o agregarla a tu diccionario. Se apaga en Archivo → Formato."],
   [{chip:"Página 3"},"Abajo a la izquierda: tocá el número de página para saltar a otra."],
+  [{chip:"Versiones anteriores"},"En Archivo. Cada vez que el guion se guarda queda una versión: la ves, volvés a ella o la abrís como copia aparte."],
+  [null,"Si el mismo guion está abierto en dos lados y uno queda viejo, la web no deja que pise al otro: te avisa y elegís qué hacer."],
   [{chip:"Compartir"},"Link para leer o para editar juntos en vivo. Archivo: PDF, Final Draft, Fountain y todos tus guiones."]]},
  {t:"En vivo",it:[
   [null,"Trabajás un post-it con otra gente al mismo tiempo, como en Miro o Google Docs. Cada uno desde su compu o su celu."],
@@ -3776,6 +3798,9 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:80,f:"17 de noviembre",it:[
+  ["Guion: *ya no se puede pisar un guion sin querer.* Si lo tenés abierto en dos pestañas o dos dispositivos y uno quedó viejo, antes de guardar se da cuenta y te avisa. Ahí elegís: traer la versión nueva, guardar la tuya como copia o quedarte con la tuya.",null,1],
+  ["Guion: *Archivo → Versiones anteriores.* Cada vez que se guarda queda una versión. Las ves por día y hora, mirás cómo era y volvés a la que quieras, o la abrís como copia aparte.",null,1]]},
  {n:79,f:"17 de noviembre",it:[
   ["Guion: arreglé un error grave. Si el guion tenía links para compartir, al recargar la página una copia vieja podía pisar lo último que habías escrito. Ahora, cuando abrís el guion, manda lo tuyo guardado, salvo que alguien haya escrito después en el link compartido.",null,1]]},
  {n:78,f:"17 de noviembre",it:[
@@ -5167,6 +5192,7 @@ raiz.innerHTML=`
       <button type="button" data-a="fountain">Exportar Fountain (.fountain)</button>
       <button type="button" data-a="importar" class="solo-duenio">Importar Final Draft o Fountain…</button>
       <hr>
+      <button type="button" data-a="versiones" class="solo-duenio">Versiones anteriores…</button>
       <button type="button" data-a="mis" class="solo-duenio">Todos los guiones</button>
       <button type="button" data-a="atajos">Atajos de teclado</button>
       <hr>
@@ -5721,12 +5747,52 @@ function renombrar(de,a){marcar();for(const p of bloques())if(p.dataset.t==="per
 function cambio(sinMarca){seguir=true;normalizar();if(V&&!V.aplicando)empujar();sucio=true;pintarEstado();guardarPronto(5000);if(ligero)pedirLigero();else pedirLayout();pedirSide()}
 /* al escribir dentro de un renglón que no cambia de alto, no hace falta rearmar las páginas */
 function pedirLigero(){cancelAnimationFrame(tLay);tLay=requestAnimationFrame(()=>{const p=actual();if(lay&&p&&p._h===p.offsetHeight&&ed.children.length===lay.ps.length&&lay.ps.includes(p)&&p.dataset.t!=="personaje"&&p.dataset.t!=="escena"){pintarPie();if(seguir){seguir=false;verCaret()}return}maquetar()})}
-function pintarEstado(){const e=Q("gu-estado");e.textContent=guardando?"Guardando…":sucio?"Sin guardar":ultGuardado?"Guardado ✓":""}
+function pintarEstado(){const e=Q("gu-estado");e.textContent=conflicto?"⚠ Sin guardar: cambió en otro lado":guardando?"Guardando…":sucio?"Sin guardar":ultGuardado?"Guardado ✓":""}
 function guardarPronto(ms){clearTimeout(tGuardar);tGuardar=setTimeout(guardarYa,ms)}
 function leerDoc(){const bl=bloques().map(p=>{const b={id:p.dataset.id,t:p.dataset.t,h:htmlDe(p)};const m=meta.get(b.id);if(m&&m.refs&&m.refs.length)b.refs=m.refs.map(r=>({k:r.k,id:r.id,...(r.loc?{loc:1}:{}),...(r.txt?{txt:r.txt}:{})}));if(m&&b.t==="escena"){if(m.c)b.c=m.c;if(m.hl&&m.hl.length)b.hl=[...m.hl];if(m.s)b.s=m.s}if(m&&m.co&&m.co.length)b.co=m.co.map(x=>({...x}));if(m&&m.dg&&m.dg.length)b.dg=m.dg.map(x=>({...x}));return b});
   return {...G.doc,titulo:Q("gu-titulo").value.trim(),opciones:opc,bloques:bl}}
 let ultJSON="";
-async function guardarYa(){clearTimeout(tGuardar);if(!G||!col||!sucio)return;try{sincLocaciones()}catch(e){console.error(e)}const doc=leerDoc();
+/* ---------- que nada pise nada: si el guion cambió en otro lado, no se guarda encima ---------- */
+let conflicto=false;
+function hayConflicto(){if(!G)return false;const g=guiones.find(x=>x.id===G.id);return !!(g&&(g.editado||0)>miEditado)}
+addEventListener("gh-conflicto",e=>{if(G&&e.detail&&e.detail.k==="guiones/"+G.id){ultJSON="";sucio=true;mostrarConflicto()}});
+function mostrarConflicto(){conflicto=true;pintarEstado();let b=raiz.querySelector(".gu-conf");if(b)return;b=mk("div","gu-conf");
+  b.append(mk("b",null,"Este guion se cambió en otra pestaña o en otro dispositivo."),mk("span",null,"Para no pisar nada, no guardé lo último que escribiste acá. Elegí qué hacer:"));
+  const acc=mk("div","acc");
+  acc.append(btn(null,"Traer la versión nueva",async()=>{const g=guiones.find(x=>x.id===G.id);if(!g||(g.editado||0)<=miEditado){toast("Un segundo, estoy trayendo la versión nueva…");setTimeout(()=>{if(conflicto)acc.firstChild.click()},2000);return}
+      if(!await confirmar("¿Traer la versión nueva?","Lo que escribiste acá desde el último guardado se pierde. Si no querés perderlo, tocá «Guardar la mía como copia».","Traer la nueva"))return;
+      const sc=scroller.scrollTop;G.doc=JSON.parse(JSON.stringify(g));delete G.doc.id;miEditado=g.editado||0;sucio=false;ultJSON="";cerrarConflicto();cargarEnEditor(G.doc);scroller.scrollTop=sc;toast("Listo: estás viendo la versión nueva.")}),
+    btn(null,"Guardar la mía como copia",async()=>{const d=leerDoc();d.titulo=(d.titulo||"Guion")+" (copia)";delete d.vivo;cerrarConflicto();sucio=false;await nuevo(d);toast("Guardé lo tuyo como un guion aparte. El original quedó como estaba en el otro lado.")}),
+    btn(null,"Quedarme con la mía",async()=>{if(!await confirmar("¿Quedarte con la tuya?","Reemplaza lo que se cambió en el otro lado. Igual queda en «Versiones anteriores», por las dudas.","Quedarme con la mía"))return;const g=guiones.find(x=>x.id===G.id);miEditado=Math.max(miEditado,(g&&g.editado)||0);cerrarConflicto();sucio=true;ultJSON="";guardarYa()}));
+  b.append(acc);raiz.querySelector(".gu-top").after(b)}
+function cerrarConflicto(){conflicto=false;raiz.querySelector(".gu-conf")?.remove();pintarEstado()}
+
+/* ---------- versiones anteriores: cada guardado queda; se puede volver a cualquiera ---------- */
+async function abrirVersiones(){if(!G)return;let nube=false;try{nube=localStorage.getItem("plancha_modo")==="nube"}catch(_){}
+  if(!window.__ghHist||nube){toast("Las versiones anteriores todavía no están para este tipo de cuenta.");return}
+  const path="guiones/"+G.id+".json";let pag=1,todas=[];
+  abrirModal(async m=>{m.classList.add("gu-ver-m");m.append(mk("h3",null,"Versiones anteriores"),mk("p","gu-snota","Cada vez que el guion se guarda, queda una versión. Tocá una para verla."));const ls=mk("div","gu-ver");ls.append(mk("p","gu-snota","Cargando…"));m.append(ls);
+    const a=mk("div","acc");a.append(btn(null,"Cerrar",cerrarModal));m.append(a);
+    const pintarLs=()=>{ls.replaceChildren();let dia="";for(const v of todas){const d=new Date(v.fecha),k=d.toLocaleDateString("es-AR",{weekday:"long",day:"numeric",month:"long"});if(k!==dia){dia=k;ls.append(mk("div","gu-ver-dia",k))}
+        const b=btn("gu-ver-it",d.toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit",second:"2-digit",hourCycle:"h23"}),()=>verVersion(v,m,ls,pintarLs));ls.append(b)}
+      if(todas.length%100===0&&todas.length){ls.append(btn("gu-dg-mas","Ver más viejas",async()=>{pag++;try{todas=todas.concat(await window.__ghHist.lista(path,pag))}catch(_){}pintarLs()}))}
+      if(!todas.length)ls.append(mk("p","gu-snota","Todavía no hay versiones guardadas."))};
+    try{todas=await window.__ghHist.lista(path,1)}catch(e){ls.replaceChildren(mk("p","gu-snota","No pude traer el historial. Probá de nuevo en un rato."));return}
+    pintarLs()})}
+async function verVersion(v,m,ls,volver){ls.replaceChildren(mk("p","gu-snota","Trayendo esa versión…"));let d;try{d=await window.__ghHist.leer("guiones/"+G.id+".json",v.sha)}catch(_){ls.replaceChildren(mk("p","gu-snota","No pude traer esa versión."),btn("gu-dg-mas","← Volver a la lista",volver));return}
+  const hoy=leerDoc(),cuenta=x=>({esc:(x.bloques||[]).filter(b=>b.t==="escena").length,ren:(x.bloques||[]).length,car:(x.bloques||[]).reduce((n,b)=>n+(b.h||"").length,0)}),cv=cuenta(d),ch=cuenta(hoy);
+  const ids=new Map((hoy.bloques||[]).map(b=>[b.id,b.h])),dist=(d.bloques||[]).filter(b=>ids.get(b.id)!==b.h).length+(hoy.bloques||[]).filter(b=>!(d.bloques||[]).some(x=>x.id===b.id)).length;
+  const f=new Date(v.fecha);ls.replaceChildren();const c=mk("div","gu-ver-det");
+  c.append(mk("b",null,"Versión del "+f.toLocaleDateString("es-AR",{day:"numeric",month:"long"})+" a las "+f.toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit",hourCycle:"h23"})),
+    mk("span",null,`${cv.esc} escenas · ${cv.ren} renglones (ahora: ${ch.esc} escenas · ${ch.ren} renglones)`),mk("span",null,dist?(dist===1?"1 renglón distinto a lo que tenés ahora.":`${dist} renglones distintos a lo que tenés ahora.`):"Es igual a lo que tenés ahora."));
+  const pv=mk("div","gu-ver-pv");for(const b of (d.bloques||[]).slice(0,40)){const x=mk("p",null,b.h||"");x.dataset.t=b.t;pv.append(x)}c.append(pv);
+  const acc=mk("div","acc");acc.append(btn("gu-dg-mas","← Volver a la lista",volver),
+    btn(null,"Abrirla como copia aparte",async()=>{const n={...d};delete n.vivo;n.titulo=(n.titulo||"Guion")+" (versión del "+f.toLocaleDateString("es-AR",{day:"numeric",month:"numeric"})+" "+f.toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit",hourCycle:"h23"})+")";cerrarModal();await nuevo(n)}),
+    btn("si","Volver a esta versión",async()=>{if(!await confirmar("¿Volver a esta versión?","Lo que tenés ahora no se pierde: queda como una versión más en esta lista.","Volver a esta versión"))return;
+      cerrarModal();const n={...d,vivo:G.doc.vivo,postit:G.doc.postit||d.postit};G.doc=n;cargarEnEditor(n);cerrarConflicto();cambio();guardarYa();toast("Volviste a la versión de las "+f.toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit",hourCycle:"h23"})+".")}));
+  c.append(acc);ls.append(c)}
+
+async function guardarYa(){clearTimeout(tGuardar);if(!G||!col||!sucio)return;if(conflicto||hayConflicto()){mostrarConflicto();return}try{sincLocaciones()}catch(e){console.error(e)}const doc=leerDoc();
   /* si no cambió nada de verdad, no se manda (cada guardado es un pedido a GitHub) */
   const js=G.id+JSON.stringify(doc,(k,v)=>k==="editado"?undefined:v);if(js===ultJSON){sucio=false;pintarEstado();return}ultJSON=js;doc.editado=Date.now();miEditado=doc.editado;G.doc=doc;sucio=false;guardando=true;pintarEstado();
   try{await col.doc(G.id).set(doc);ultGuardado=Date.now()}catch(_){ultJSON="";sucio=true;toast("No se guardó el guion. Revisá la conexión; lo vuelvo a intentar.");guardarPronto(5000)}finally{guardando=false;pintarEstado()}}
@@ -5751,7 +5817,7 @@ function entrar(gid,scroll,irA){if(!col){toast("Todavía se están cargando tus 
   const g=id&&guiones.find(x=>x.id===id);if(g)abrirGuion(g,scroll,irA);else mostrarLista()}
 function ocultar(){cerrarAC();cerrarPop();cerrarComposer();salirMitad(true);raiz.hidden=true;document.body.classList.remove("en-guion","gu-foco");tab.setAttribute("aria-selected","false")}
 function salir(){guardarYa();vuelveGuion=null;ocultar();desconectarVivo();try{localStorage.setItem("pestana","")}catch(_){}}
-function abrirGuion(g,scroll,irA){guardarYa();zoomManual=false;cerrarTL();G={id:g.id,doc:JSON.parse(JSON.stringify(g))};delete G.doc.id;try{localStorage.setItem("guion_ult",g.id)}catch(_){}
+function abrirGuion(g,scroll,irA){guardarYa();zoomManual=false;cerrarTL();G={id:g.id,doc:JSON.parse(JSON.stringify(g))};delete G.doc.id;miEditado=g.editado||0;if(conflicto)cerrarConflicto();try{localStorage.setItem("guion_ult",g.id)}catch(_){}
   Q("gu-lista").hidden=true;Q("gu-ed").hidden=false;
   if(V&&(!g.vivo||V.id!==g.vivo.e))desconectarVivo();if(g.vivo&&g.vivo.e&&(!V||V.id!==g.vivo.e))setTimeout(()=>{if(G&&G.id===g.id)conectarVivo(g.vivo.e,"e",miNombreVivo()).catch(e=>{console.error(e);toast("No pude conectar el guion en vivo. Lo que escribas igual se guarda.")})},50);
   setTimeout(()=>{if(!G||G.id!==g.id)return;const vieja=pilas.find(p=>p.id===G.doc.pilaLoc||(p.guion===G.id&&/^Locaciones · /.test(p.titulo||"")));if(vieja&&!G.doc.pilaLoc){G.doc.pilaLoc=vieja.id;sucio=true}
@@ -5783,6 +5849,7 @@ async function borrarGuion(){if(!G)return;const g=G;const ok=await confirmarBorr
   col.onSnapshot(s=>{if(INV)return;guiones=s.docs.map(d=>({id:d.id,...d.data()}));cargados=true;
     if(!raiz.hidden&&!G&&!Q("gu-lista").hidden)pintarLista();
     if(G){const g=guiones.find(x=>x.id===G.id);if(!g){if(!raiz.hidden){toast("Este guion se borró en otro lado.");mostrarLista()}}
+      else if((g.editado||0)>miEditado&&sucio&&!guardando)mostrarConflicto();
       else if((g.editado||0)>miEditado&&!sucio&&document.activeElement!==ed){const sc=scroller.scrollTop;G.doc=JSON.parse(JSON.stringify(g));delete G.doc.id;miEditado=g.editado;cargarEnEditor(G.doc);scroller.scrollTop=sc}}
     try{if(abierto)pintarEnGuion()}catch(_){}
     if(!arrancado&&/^#guion=/.test(location.hash)){const id=location.hash.slice(7);history.replaceState(null,"",location.pathname+location.search);arrancado=true;if(guiones.some(g=>g.id===id))entrar(id)}
@@ -5938,7 +6005,7 @@ async function pdf(){if(!G)return;await guardarYa();maquetar();const pg=PAGINAS[
 raiz.addEventListener("click",e=>{const b=e.target.closest("[data-a],[data-lado]");if(!b||!raiz.contains(b))return;
   if(b.dataset.lado){if(ladoTab!==b.dataset.lado)Q("gu-sq").value="";ladoTab=b.dataset.lado;pintarSide();return}
   const a=b.dataset.a,m=Q("gu-m-archivo");if(a!=="archivo")m.hidden=true;
-  ({salir,mis:mostrarLista,nuevo:()=>nuevo(),importar:()=>Q("gu-file").click(),lado:()=>{const s=Q("gu-side");s.hidden=!s.hidden;if(innerWidth>=760)try{localStorage.setItem("gu_lado",s.hidden?"0":"1")}catch(_){}zoomAuto=true;pedirLayout()},
+  ({salir,versiones:()=>abrirVersiones(),mis:mostrarLista,nuevo:()=>nuevo(),importar:()=>Q("gu-file").click(),lado:()=>{const s=Q("gu-side");s.hidden=!s.hidden;if(innerWidth>=760)try{localStorage.setItem("gu_lado",s.hidden?"0":"1")}catch(_){}zoomAuto=true;pedirLayout()},
     mitad:alternarMitad,foco:()=>modoFoco(true),comentar:()=>comentar(),linea:()=>{if(tl&&!tl.hidden)cerrarTL();else abrirTL()},b:()=>formato("b"),i:()=>formato("i"),u:()=>formato("u"),vincular,buscar:abrirBuscar,archivo:()=>{m.hidden=!m.hidden},
     volverp:()=>{const pe=peli();if(!pe){mostrarLista();return}guardarYa();salir();setTimeout(()=>abrir("ideas",pe.id),0)},compartir:compartirUI,portada,opciones,pdf,fdx:()=>{bajar(nombreArchivo("fdx"),aFDX(),"application/xml");toast("Exportado para Final Draft.")},fountain:()=>bajar(nombreArchivo("fountain"),aFountain(),"text/plain"),atajos,borrar:borrarGuion,
     zauto:()=>{zoomManual=false;zoomAuto=true;maquetar()},zm:()=>{zoomAuto=false;zoomManual=true;zoom=Math.max(.4,Math.round((zoom-.1)*10)/10);maquetar()},zp:()=>{zoomAuto=false;zoomManual=true;zoom=Math.min(2,Math.round((zoom+.1)*10)/10);maquetar()},
