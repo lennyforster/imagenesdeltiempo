@@ -3776,6 +3776,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:79,f:"17 de noviembre",it:[
+  ["Guion: arreglé un error grave. Si el guion tenía links para compartir, al recargar la página una copia vieja podía pisar lo último que habías escrito. Ahora, cuando abrís el guion, manda lo tuyo guardado, salvo que alguien haya escrito después en el link compartido.",null,1]]},
  {n:78,f:"17 de noviembre",it:[
   ["Guion: ahora *el color de una escena es su hilo narrativo*. Tocás el circulito de la escena y elegís el hilo, o escribís uno nuevo. La escena queda pintada con su color, y en la línea de tiempo aparece en la fila de ese hilo. Los colores que ya tenías se convirtieron en hilos (ponéles nombre en la línea de tiempo).",null,1]]},
  {n:77,f:"16 de noviembre",it:[
@@ -6002,7 +6004,7 @@ function volcar(doc,Y){/* pasa lo que hay en pantalla al documento compartido (s
   for(const k of [...pars.keys()])if(!vivos.has(k))pars.delete(k);
   const tit=Q("gu-titulo").value.trim();if(mt.get("titulo")!==tit)mt.set("titulo",tit);
   const pp=JSON.stringify(G.doc.portada||{});if(mt.get("portada")!==pp)mt.set("portada",pp);
-  const oo=JSON.stringify(opc);if(mt.get("opciones")!==oo)mt.set("opciones",oo);const hh=JSON.stringify(G.doc.hilos||[]);if((mt.get("hilos")||"[]")!==hh)mt.set("hilos",hh);const nn=JSON.stringify(G.doc.dgNo||[]);if((mt.get("dgno")||"[]")!==nn)mt.set("dgno",nn)}
+  const oo=JSON.stringify(opc);if(mt.get("opciones")!==oo)mt.set("opciones",oo);mt.set("ts",Date.now());const hh=JSON.stringify(G.doc.hilos||[]);if((mt.get("hilos")||"[]")!==hh)mt.set("hilos",hh);const nn=JSON.stringify(G.doc.dgNo||[]);if((mt.get("dgno")||"[]")!==nn)mt.set("dgno",nn)}
 function empujar(){if(!V||V.modo!=="e"||V.aplicando||!V.listo)return;V.doc.transact(()=>volcar(V.doc,V.Y),"local");guardarRel()}
 function guardarRel(){if(!V||!V.listo)return;const p=document.activeElement===ed?actual():null;if(!p){V.rel=null;return}const ym=V.doc.getMap("pars").get(p.dataset.id);if(!ym){V.rel=null;return}
   V.rel={id:p.dataset.id,rp:V.Y.createRelativePositionFromTypeIndex(ym.get("x"),Math.min(offCaret(p),ym.get("x").length))};avisarCursor()}
@@ -6065,7 +6067,12 @@ async function conectarVivo(id,modo,nombre){const {Y,cliente}=await deps();const
   ch.send({type:"broadcast",event:"hola",payload:{}});
   if(modo==="e")try{ch.track({n:nombre,c:v.color,id:null,p:null})}catch(_){}
   v.listo=true;
-  if(doc.getArray("orden").length)aplicarRemoto();else if(modo==="e")empujar();
+  /* al conectarse, ¿qué manda? Si sos el dueño y lo que tenés guardado es más nuevo que la copia en vivo
+     (o la copia en vivo no dice cuándo cambió), manda lo tuyo: así una copia vieja nunca pisa el guion. */
+  {const tsR=+(doc.getMap("meta").get("ts")||0),tsL=(G&&G.doc&&G.doc.editado)||0,duenio=modo==="e"&&!window.__guionInv;
+    if(!doc.getArray("orden").length){if(modo==="e")empujar()}
+    else if(duenio&&tsL>=tsR)empujar();
+    else aplicarRemoto()}
   pintarGente();return v}
 async function desconectarVivo(){const v=V;if(!v)return;V=null;clearTimeout(v.tF);try{if(v.flush)await v.flush()}catch(_){}const {cliente}=await deps();const sb=cliente();try{await v.ch.untrack()}catch(_){}try{sb.removeChannel(v.ch)}catch(_){}if(v.chL)try{sb.removeChannel(v.chL)}catch(_){}if(carets)carets.replaceChildren();pintarGente()}
 addEventListener("pagehide",()=>{if(V&&V.flush)V.flush()});
@@ -6334,7 +6341,7 @@ function arrastreEsc(h,f,e,l,hor){let y0=0,mov=false;const P=ev=>hor?ev.clientX:
 addEventListener("keydown",e=>{if(e.key==="Escape"&&tl&&!tl.hidden&&!raiz.hidden&&modal.hidden&&!popC&&(modoTL()==="full"||tl.contains(document.activeElement))){e.preventDefault();e.stopImmediatePropagation();cerrarTL()}},true);
 /* expuesto para pruebas */
 if(INV)setTimeout(()=>arrancarInvitado().catch(e=>console.error(e)),0);
-window.__guion={sugerenciasDe,ponerColorEsc,escenas,abrirTL,conectarVivo,crearLinks,get V(){return V},apariciones,locPostits,entrar,salir,get G(){return G},leerDoc,aFDX,aFountain,deFDX,deTexto,maquetar,get lay(){return lay},guardarYa,pdf};
+window.__guion={desconectarVivo,sugerenciasDe,ponerColorEsc,escenas,abrirTL,conectarVivo,crearLinks,get V(){return V},apariciones,locPostits,entrar,salir,get G(){return G},leerDoc,aFDX,aFountain,deFDX,deTexto,maquetar,get lay(){return lay},guardarYa,pdf};
 })();
 
 /* ===== Google Calendar adentro de la web (por ahora en prueba, solo cuenta de Lenny) ===== */
