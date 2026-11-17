@@ -204,7 +204,8 @@ body.invitado #volver,body.invitado #h-mas,body.invitado>.barra,body.invitado #b
 .asa{position:absolute;right:-9px;bottom:-9px;width:18px;height:18px;border-radius:4px;background:var(--paper);border:2px solid var(--ink);cursor:nwse-resize;transform:scale(var(--inv));touch-action:none}
 .pieza:not(.sel) .herr,.pieza:not(.sel) .asa{display:none}
 .asa.lado{top:50%;bottom:auto;right:-8px;margin-top:-15px;width:12px;height:30px;border-radius:6px;cursor:ew-resize}
-@media (hover:hover){.pieza.btxt:hover .asa.lado,.pieza.btexto:hover .asa.lado{display:block}}
+@media (hover:hover){.pieza.btxt:hover .asa.lado,.pieza.btexto:hover .asa.lado,.pieza.btar:hover .asa.lado{display:block}}
+.tareas>.tr-asa{display:none}@media (hover:hover){.tareas:hover>.tr-asa{display:block}}
 .ver-img{position:fixed;inset:0;z-index:150;background:rgba(18,15,12,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:16px}
 .ver-img img{max-width:calc(100vw - 32px);max-height:calc(100vh - 110px);max-height:calc(100dvh - 110px);object-fit:contain;cursor:zoom-out;-webkit-user-drag:none}
 .ver-pie{display:flex;gap:10px}
@@ -2897,6 +2898,8 @@ function nodoBloque(b){
     redimensionable(asa,lzHoja,{inicio:()=>parseFloat(n.style.width),mover:w=>{n.style.width=Math.max(120,w)+"px";if(b.t==="txt")n.style.minHeight=n.style.width;if(ta)autosize(ta);pintarHilos()},soltar:()=>{b.w=Math.round(parseFloat(n.style.width));guardarBloques()}})}
   if(b.t==="link"){let host=b.url;try{host=new URL(b.url).hostname.replace(/^www\./,"")}catch(_){}const tt=el("button",null,"Título");tt.type="button";tt.title="Cambiarle el título al link";tt.onclick=()=>editarTituloLink(n,b,host);herr.prepend(tt);
     const asa=el("div","asa lado");asa.title="Arrastrá para achicarlo o agrandarlo";n.append(asa);redimensionable(asa,lzHoja,{inicio:()=>parseFloat(n.style.width),mover:w=>{n.style.width=Math.max(150,Math.min(900,w))+"px";pintarHilos()},soltar:()=>{b.w=Math.round(parseFloat(n.style.width));guardarBloques()}})}
+  if(b.t==="tar"){const asa=el("div","asa lado");asa.title="Arrastrá para ensanchar o angostar la lista";n.append(asa);
+    redimensionable(asa,lzHoja,{inicio:()=>parseFloat(n.style.width),mover:w=>{n.style.width=Math.max(200,Math.min(900,w))+"px";pintarHilos()},soltar:()=>{b.w=Math.round(parseFloat(n.style.width));guardarBloques()}})}
   if(b.t==="post"){const asa=el("div","asa esc-asa");asa.title="Arrastrá para achicarlo o agrandarlo";n.append(asa);
     redimensionable(asa,lzHoja,{inicio:()=>200*(parseFloat(n.style.scale)||1),mover:w=>{n.style.scale=String(Math.max(.45,Math.min(2.5,w/200)));pintarHilos()},soltar:()=>{b.esc=Math.round((parseFloat(n.style.scale)||1)*100)/100;if(b.esc===1)delete b.esc;guardarBloques()}})}
   if(b.t==="img"){const asa=el("div","asa");n.append(asa);redimensionable(asa,lzHoja,{inicio:()=>parseFloat(n.style.width),mover:w=>{n.style.width=w+"px";pintarHilos()},soltar:()=>{b.w=Math.round(parseFloat(n.style.width));guardarBloques()}})}
@@ -3767,6 +3770,7 @@ const AYUDA=[
   [[{ic:"undo"},{ic:"redo"}],"Deshacer y rehacer."],
   [[{ic:"ojo"}," Esconder todo"],"Deja solo la plancha, sin botones. Para volver queda un ojito apenas visible a la izquierda (o apretá Tab)."]]},
  {t:"Tareas",it:[
+  [{chip:"↔"},"Para ensancharla, arrastrá la manijita del borde derecho (aparece al pasar el mouse o al tocarla)."],
   [{chip:"Doble clic"},"En el fondo de la plancha de ideas → «Lista de tareas»: crea una lista nueva ahí. Podés tener todas las que quieras. Le ponés nombre arriba y la movés arrastrándola del título."],
   [{chip:"☐"},"Cuando hacés una tarea, tocá el cuadradito: se tacha y queda anotada sola en el diario de hoy, con la hora («Terminé: …»). Si la destachás, se borra del diario."],
   [{chip:"×"},"Arriba a la derecha de la lista: la saca de la plancha. Si está adentro de algún post-it, sigue ahí; si no, se borra (te pregunta antes)."],
@@ -3819,6 +3823,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:85,f:"17 de noviembre",it:[
+  ["Las listas de tareas *ahora se pueden ensanchar*: agarrás la manijita del borde derecho y arrastrás. Anda adentro de los post-its y en la plancha.",null,2]]},
  {n:84,f:"17 de noviembre",it:[
   ["*Ahora podés entrar a los post-its que están adentro de otro post-it*, y a los que están en las pilas de adentro. Tocás uno y le das «Entrar ↗» (en una pila, lo tocás y listo). Adentro tiene su propia hoja, como cualquier post-it, y podés seguir entrando todo lo que quieras. «← Volver» te lleva al de antes.",null,1]]},
  {n:83,f:"17 de noviembre",it:[
@@ -4572,7 +4578,7 @@ const refsLista=id=>data.ideas.filter(i=>(i.bloques||[]).some(b=>b.t==="tar"&&b.
 const firmaLista=(L,modo)=>JSON.stringify([L.titulo||"",limpiarItems(L.lista),!!L.enPlancha,modo==="hoja"?abierto&&abierto.id:"",refsLista(L.id).map(i=>i.id+":"+(i.numero||"")+":"+(i.texto||"").slice(0,30))]);
 const editandoLista=id=>[...document.querySelectorAll('[data-lista="'+id+'"]')].some(tecleaEn);
 function guardarLista(L){if(!colTareas||!L||!L.id)return;const o={titulo:L.titulo||"",tablero:"ideas",enPlancha:!!L.enPlancha,creado:L.creado||Date.now(),lista:limpiarItems(L.lista)};
-  if(typeof L.x==="number"&&typeof L.y==="number"){o.x=L.x;o.y=L.y}colTareas.doc(L.id).set(o).catch(()=>toast("No se guardaron las tareas. Revisá la conexión."))}
+  if(typeof L.x==="number"&&typeof L.y==="number"){o.x=L.x;o.y=L.y}if(L.w)o.w=L.w;colTareas.doc(L.id).set(o).catch(()=>toast("No se guardaron las tareas. Revisá la conexión."))}
 async function nuevaLista(extra){if(!colTareas)return null;const o={titulo:"",tablero:"ideas",enPlancha:false,creado:Date.now(),lista:[],...extra};
   try{const r=await colTareas.add(o);listasNuevas.add(r.id);return r.id}catch(_){toast("No se pudo crear la lista.");return null}}
 function nombreLista(L){return (L.titulo||"").trim()||"Tareas"}
@@ -4616,13 +4622,16 @@ function nodoListaPlancha(id){const n=el("div","tareas");n.dataset.lista=id;
     soltar:()=>{const L=listas.find(z=>z.id===id);if(!L)return;L.x=Math.round(parseFloat(n.style.left));L.y=Math.round(parseFloat(n.style.top));limCache=null;guardarLista(L)}});return n}
 function pintarListasPlana(box,foco){const ls=listas.filter(l=>l.enPlancha),ids=new Set(ls.map(l=>l.id));[...box.children].forEach(c=>{if(!ids.has(c.dataset.lista))c.remove()});
   for(const L of ls){let c=box.querySelector(':scope>[data-lista="'+L.id+'"]');if(!c){c=el("div","tareas plana");c.dataset.lista=L.id;box.append(c)}if(foco===L.id||(!tecleaEn(c)&&c._f!==firmaLista(L,"plana")))armarLista(c,L,"plana")}}
+/* en la plancha la lista se ensancha arrastrando el borde derecho */
+function asaLista(n,L){if(!n.classList.contains("ensanchando"))n.style.width=L.w?L.w+"px":"";if(n.querySelector(":scope>.tr-asa"))return;const asa=el("div","asa lado tr-asa");asa.title="Arrastrá para ensanchar o angostar la lista";n.append(asa);
+  redimensionable(asa,lzMain,{inicio:()=>n.offsetWidth,mover:w=>{n.classList.add("ensanchando");n.style.width=Math.max(200,Math.min(900,w))+"px"},soltar:()=>{n.classList.remove("ensanchando");const LL=listas.find(z=>z.id===n.dataset.lista);if(!LL)return;LL.w=Math.round(parseFloat(n.style.width));limCache=null;guardarLista(LL)}})}
 function pintarBloqueTar(n,b,foco){const L=listas.find(z=>z.id===b.ref);let c=n.querySelector(":scope>.tareas");
   if(!L){if(c)c.remove();let m=n.querySelector(":scope>.tr-falta");if(!m){m=el("p","tr-falta");n.prepend(m)}m.textContent=!tareasCargadas||listasNuevas.has(b.ref)?"…":"Esta lista se borró. Podés quitarla.";return}
   n.querySelector(":scope>.tr-falta")?.remove();if(!c){c=el("div","tareas en-hoja");n.prepend(c)}if(foco===L.id||(!tecleaEn(c)&&c._f!==firmaLista(L,"hoja")))armarLista(c,L,"hoja")}
 function pintarTareas(foco){const ver=vista==="ideas"&&tareasCargadas,vivos=new Set();let k=0;
   if(ver)for(const L of listas.filter(l=>l.enPlancha)){vivos.add(L.id);let n=nodosTar.get(L.id);if(!n){n=nodoListaPlancha(L.id);nodosTar.set(L.id,n);$("capa-main").append(n)}
     if(!n.classList.contains("arrastrando")){const p=posLista(L,typeof L.x==="number"?0:k++);n.style.left=p.x+"px";n.style.top=p.y+"px"}
-    if(foco===L.id||(!tecleaEn(n)&&n._f!==firmaLista(L,"plancha")))armarLista(n,L,"plancha")}
+    if(foco===L.id||(!tecleaEn(n)&&n._f!==firmaLista(L,"plancha")))armarLista(n,L,"plancha");asaLista(n,L)}
   for(const [id,n] of nodosTar)if(!vivos.has(id)){n.remove();nodosTar.delete(id)}
   const box=$("lista-plana")&&$("lista-plana").querySelector(":scope>.tr-plana");if(box)pintarListasPlana(box,foco);
   if(abierto)document.querySelectorAll("#capa-hoja .pieza.btar").forEach(n=>{const b=abierto.doc.bloques.find(x=>x.id===n.dataset.bid);if(b)pintarBloqueTar(n,b,foco)})}
