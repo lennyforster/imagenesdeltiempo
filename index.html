@@ -3714,6 +3714,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:70,f:"16 de noviembre",it:[
+  ["Guion: en la línea de tiempo las escenas muestran solo su número, sin la locación. Si pasás el mouse, ves todo.",null,3]]},
  {n:69,f:"16 de noviembre",it:[
   ["Guion: el panel de escenas, personajes y locaciones arranca cerrado. Lo abrís con ☰ y, si lo dejás abierto, se acuerda para la próxima.",null,3]]},
  {n:68,f:"16 de noviembre",it:[
@@ -6187,7 +6189,7 @@ function pintarLinea(cu,es){const Z=tlZoom,tot=es[es.length-1].x+es[es.length-1]
   const pe=fila("Escenas","gu-tl-esc");
   for(const e of es){const b=mk("div","gu-tl-b"+(e.c?" con-c":""));b.style.left=(e.x*Z)+"px";b.style.width=Math.max(6,e.largo*Z-2)+"px";if(e.c)b.style.setProperty("--ec",e.c);b.dataset.id=e.id;
     b.title=`${e.n}. ${e.tit||"(sin título)"}\n${octavos(e.largo)} pág.${e.pj.length?"\n"+e.pj.join(", "):""}${e.s||e.auto?"\n"+(e.s||e.auto).slice(0,160):""}`;
-    b.append(mk("b",null,String(e.n)),mk("span",null,lugarDe(e.tit)||e.tit));pe.append(b);arrastreTL(b,e,es,pe,Z)}
+    b.append(mk("b",null,String(e.n)));pe.append(b);arrastreTL(b,e,es,pe,Z)}
   /* hilos */
   const sep=mk("div","gu-tl-sep");sep.append(mk("span",null,"Hilos narrativos"));if(!lee)sep.append(btn("gu-tl-mas","+ Hilo",()=>{const n=(G.doc.hilos||[]).length;guardarHilos([...(G.doc.hilos||[]),{id:rid(),n:"Hilo "+(n+1),c:COLS_ESC[(n+5)%COLS_ESC.length]}]);setTimeout(()=>{const i=tl.querySelectorAll(".gu-tl-hn input");i[i.length-1]?.select()},30)}));g.append(sep);
   if(!hilos.length)g.append(mk("p","gu-tl-ayuda",lee?"Sin hilos.":"Armá un hilo por cada trama (la de Marco, la del romance, la policial…) y tocá las escenas donde aparece."));
