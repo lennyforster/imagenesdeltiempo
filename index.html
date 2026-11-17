@@ -24,6 +24,7 @@
 .mas-menu button:hover{background:rgba(43,37,32,.1)}
 .mas-menu svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;flex:none}
 .mas-menu .n{margin-left:auto;font:500 .75rem var(--mono);color:var(--muted)}
+#tab-mas{padding:7px 9px;align-items:center}
 </style>
 </head>
 <body>
@@ -1866,7 +1867,7 @@ window.claude={use:async n=>{if(INVITADO&&n==="db"){if(!listo)listo=conectar();r
     <button class="tab" id="tab-ideas" role="tab" type="button" aria-selected="true">Ideas <span class="n" id="n-ideas"></span></button>
     <button class="tab" id="tab-frases" role="tab" type="button" aria-selected="false">Frases <span class="n" id="n-frases"></span></button>
     <button class="tab" id="tab-diario" role="tab" type="button" aria-selected="false">Diario <span class="n" id="n-diario"></span></button>
-    <button class="tab" id="tab-mas" type="button" aria-haspopup="true" aria-expanded="false" title="Frases, guiones y línea de tiempo">Más ▾</button>
+    <button class="tab" id="tab-mas" type="button" aria-haspopup="true" aria-expanded="false" title="Más: frases, guiones y línea de tiempo" aria-label="Más: frases, guiones y línea de tiempo"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   </div>
   <div class="mas-menu" id="mas-menu" hidden role="menu">
     <button type="button" data-mas="frases" role="menuitem"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 4.5h4v4H5c0 1.5.7 2.5 2 3M9 4.5h4v4h-2c0 1.5.7 2.5 2 3"/></svg>Frases <span class="n" id="n-frases-m"></span></button>
@@ -3570,8 +3571,8 @@ const MAC=/Mac|iPhone|iPad/.test(navigator.platform||navigator.userAgent||""),CM
 const CAL_IC='<svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3" width="12" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M2 6.5h12M5.5 1.5v3M10.5 1.5v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
 const AYUDA=[
  {t:"Lo básico",it:[
-  [null,"Arriba a la izquierda: Ideas y Diario. En «Más ▾» están las Frases, todos tus guiones y la línea de tiempo."],
-  [{h:'<span class="ay-seg"><b>Ideas</b><span>Diario</span><span>Más ▾</span></span>'},"Cambiás de sección."],
+  [null,"Arriba a la izquierda: Ideas y Diario. La flechita de al lado abre las Frases, todos tus guiones y la línea de tiempo."],
+  [{h:'<span class="ay-seg"><b>Ideas</b><span>Diario</span><span>⌄</span></span>'},"Cambiás de sección. La flechita del costado abre las Frases, tus guiones y la línea de tiempo."],
   [{chip:"+ Nueva idea",c:"amarillo"},"Escribís una idea nueva y elegís su categoría. Con "+CMD+"+Enter la pegás."],
   ["Doble clic en el fondo","Escribís un post-it ahí mismo. Enter lo pega, Esc lo cancela. En el celu es doble toque."],
   [{h:'<span class="ay-post"></span>'},"Tocá un post-it para abrirlo: adentro tenés una hoja entera para desarrollar la idea. Arrastralo para moverlo."],
@@ -3583,7 +3584,7 @@ const AYUDA=[
   [{chip:"Ctrl + G"},"Con varias cosas seleccionadas (Shift + arrastrar en el fondo), las agrupa: después se mueven juntas. Ctrl + Shift + G las separa. También está el botón «Agrupar» en la barra de arriba. Funciona en la plancha y adentro de los post-its."],
   [null,"En el modo «Grilla», si arrastrás un post-it los demás se corren para hacerle lugar, y queda ese orden."],
   [{chip:"⌟"},"Adentro de un post-it, la esquinita de abajo a la derecha de los post-its chiquitos los hace más grandes o más chicos."]]},
- {t:"Más ▾",it:[
+ {t:"La flechita ⌄ (al lado de Diario)",it:[
   [{chip:"Frases"},"Citas, cosas que leíste o escuchaste y no querés perder. Mientras estás ahí, aparece como pestaña."],
   [{chip:"Guiones"},"Todos tus guiones juntos: abrirlos, cambiarles el nombre, borrarlos o importar uno."],
   [{chip:"Línea de tiempo"},"Tus ideas (o frases) en el orden en que las fuiste anotando."]]},
@@ -3741,6 +3742,9 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:73,f:"16 de noviembre",it:[
+  ["El «Más» de arriba ahora es una flechita al lado de Diario: abre las Frases, tus guiones y la línea de tiempo.",null,3],
+  ["Borrar un guion ahora pregunta dos veces.",null,3]]},
  {n:72,f:"16 de noviembre",it:[
   ["Arriba ahora quedan *Ideas* y *Diario*. Al lado está *Más ▾*, donde encontrás las *Frases*, *todos tus guiones* juntos y la *línea de tiempo*.",null,1],
   ["Guion: con la plancha al lado, el doble clic vuelve a abrir el menú para crear cosas, justo donde hiciste clic.",null,3]]},
@@ -5715,11 +5719,14 @@ function pintarLista(){const c=Q("gu-cards");c.replaceChildren();
     const ed2=mk("span","gu-card-ed","✎");ed2.title="Cambiarle el título";ed2.setAttribute("role","button");ed2.setAttribute("aria-label","Cambiarle el título");
     ed2.onclick=e=>{e.stopPropagation();abrirModal(m=>{m.append(mk("h3",null,"Título del guion"));const i=mk("input");i.type="text";i.value=g.titulo||"";m.append(i);const ok=async()=>{const t=i.value.trim();cerrarModal();if(t===(g.titulo||""))return;g.titulo=t;pintarLista();try{await col.doc(g.id).update({titulo:t})}catch(_){toast("No se pudo cambiar el título.")}};
       i.onkeydown=ev=>{if(ev.key==="Enter"){ev.preventDefault();ok()}};const a=mk("div","acc");a.append(btn(null,"Cancelar",cerrarModal),btn("si","Listo",ok));m.append(a);setTimeout(()=>i.select(),40)})};b.append(ed2);
-    const x=mk("span","gu-card-x","×");x.title="Borrar este guion";x.setAttribute("role","button");x.setAttribute("aria-label","Borrar este guion");x.onclick=async e=>{e.stopPropagation();const ok=await confirmar(`¿Borrar «${g.titulo||"Sin título"}»?`,"Se borra el guion entero. No se puede deshacer.","Borrar");if(!ok)return;try{await col.doc(g.id).delete();guiones=guiones.filter(z=>z.id!==g.id);pintarLista();toast("Guion borrado.")}catch(_){toast("No se pudo borrar.")}};b.append(x);c.append(b)}}
+    const x=mk("span","gu-card-x","×");x.title="Borrar este guion";x.setAttribute("role","button");x.setAttribute("aria-label","Borrar este guion");x.onclick=async e=>{e.stopPropagation();const ok=await confirmarBorrarGuion(g.titulo);if(!ok)return;try{await col.doc(g.id).delete();guiones=guiones.filter(z=>z.id!==g.id);pintarLista();toast("Guion borrado.")}catch(_){toast("No se pudo borrar.")}};b.append(x);c.append(b)}}
 async function nuevo(doc){if(!col)return;const ahora=Date.now();const d=doc||{titulo:"",portada:{},opciones:{...OPC0},bloques:[{id:rid(),t:"escena",h:""}]};d.creado=ahora;d.editado=ahora;miEditado=ahora;
   try{const r=await col.add(d);const g={id:r.id,...d};if(!guiones.some(x=>x.id===r.id))guiones.push(g);abrirGuion(g);if(!doc)setTimeout(()=>{Q("gu-titulo").focus()},80);
     setTimeout(()=>{if(!G||G.id!==r.id)return;if(!G.doc.postit)elegirPeli();else{sucio=true;guardarYa();setTimeout(()=>{const p=ed.firstElementChild;ed.focus({preventScroll:true});caret(p,0)},100)}},doc&&!doc.postit?300:60)}catch(_){toast("No se pudo crear el guion.")}}
-async function borrarGuion(){if(!G)return;const g=G;const ok=await confirmar(`¿Borrar «${Q("gu-titulo").value||"Sin título"}»?`,"Se borra el guion entero. No se puede deshacer.","Borrar");if(!ok)return;sucio=false;clearTimeout(tGuardar);
+/* borrar un guion pregunta dos veces: es mucho laburo para perderlo por un clic */
+async function confirmarBorrarGuion(t){t=t||"Sin título";if(!await confirmar(`¿Borrar «${t}»?`,"Se borra el guion entero, con sus comentarios, colores y desglose.","Borrar"))return false;
+  return await confirmar("¿Seguro, seguro?",`«${t}» no se puede recuperar después.`,"Sí, borrarlo para siempre")}
+async function borrarGuion(){if(!G)return;const g=G;const ok=await confirmarBorrarGuion(Q("gu-titulo").value);if(!ok)return;sucio=false;clearTimeout(tGuardar);
   try{await col.doc(g.id).delete();guiones=guiones.filter(x=>x.id!==g.id);mostrarLista();toast("Guion borrado.")}catch(_){toast("No se pudo borrar.")}}
 
 /* datos */
@@ -6355,7 +6362,7 @@ if(window.__demo){(function(){
    {tit:"Quedó anotado en tu diario",txt:"Cada tarea que tachás se escribe sola en el diario de hoy, con la hora («Terminé: …»). Así, sin hacer nada, te queda registro de lo que fuiste haciendo. Si la destachás, se borra.",boton:"Qué bueno",
     objetivo:()=>document.querySelector("#capa-hoja .btar")},
    {tit:"Volvé a la plancha",txt:"Este botón siempre te devuelve a donde estabas.",hacer:"Tocá «← Volver»",objetivo:()=>$("volver"),listo:()=>!abierto},
-   {tit:"Ideas, Diario y «Más»",txt:"Arriba tenés las ideas y el diario. En <b>Más ▾</b> están las <b>Frases</b> (citas, cosas que leíste o escuchaste y no querés perder), tus guiones y la línea de tiempo.",hacer:"Tocá «Más» y después «Frases»",objetivo:()=>$("mas-menu").hidden?$("tab-mas"):$("mas-menu").querySelector('[data-mas="frases"]'),listo:()=>vista==="frases"&&!enDiario},
+   {tit:"Ideas, Diario y la flechita",txt:"Arriba tenés las ideas y el diario. En la <b>flechita</b> de al lado están las <b>Frases</b> (citas, cosas que leíste o escuchaste y no querés perder), tus guiones y la línea de tiempo.",hacer:"Tocá la flechita y después «Frases»",objetivo:()=>$("mas-menu").hidden?$("tab-mas"):$("mas-menu").querySelector('[data-mas="frases"]'),listo:()=>vista==="frases"&&!enDiario},
    {tit:"Las frases",txt:"Funcionan igual que las ideas: doble clic para crear una, arrastrar para acomodar. También las podés poner adentro de un post-it con «Vínculo».",hacer:"Tocá «Diario»",objetivo:()=>$("tab-diario"),listo:()=>enDiario},
    {tit:"Tu diario",txt:"Un día por página. Escribís directo, sin abrir nada, y cada renglón queda con su hora. Con la barra de abajo pegás post-its, notas, imágenes o links, y arriba está el <b>Calendario</b> para saltar a otro día.<br><br>¿Ves «Terminé: …»? Eso lo anotó solo tu lista de tareas.",boton:"Seguir",libre:1},
    {tit:"Volvé a las ideas",txt:"Ya casi estamos.",hacer:"Tocá «Ideas»",objetivo:()=>$("tab-ideas"),listo:()=>vista==="ideas"&&!enDiario},
