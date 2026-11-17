@@ -1313,7 +1313,7 @@ body.gu-mitad .gu-pie span:not(:first-child):not(:nth-child(2)){display:none}
 .gu-link-f{display:flex;gap:6px}.gu-link-f input{flex:1;min-width:0;border:1px solid rgba(43,37,32,.2);border-radius:9px;padding:9px 10px;font:13px var(--mono);background:#fff}
 .gu-link-f .si{border:0;border-radius:999px;padding:8px 14px;font:600 13px var(--ui);background:var(--ink);color:var(--paper);cursor:pointer;white-space:nowrap}
 body.gu-inv .gu-top [data-a="mis"],body.gu-inv .gu-top [data-a="vincular"],body.gu-inv .gu-top [data-a="mitad"],body.gu-inv .solo-duenio,body.gu-inv .gu-pilaloc{display:none!important}
-body.gu-lectura .gu-top .gu-sel,body.gu-lectura .gu-top [data-a="b"],body.gu-lectura .gu-top [data-a="i"],body.gu-lectura .gu-top [data-a="u"],body.gu-lectura .solo-edita,body.gu-lectura .gu-find .f:last-child,body.gu-lectura .gu-per .gu-ren,body.gu-lectura .gu-port-hint{display:none!important}
+body.gu-lectura .gu-herr .gu-sel-w,body.gu-lectura .gu-edh,body.gu-lectura .solo-edita,body.gu-lectura .gu-find .f:last-child,body.gu-lectura .gu-per .gu-ren,body.gu-lectura .gu-port-hint{display:none!important}
 body.gu-lectura .gu-texto{caret-color:transparent}
 .gu-texto p.gu-flash{animation:guFlash 1.6s ease-out}@keyframes guFlash{0%,40%{background:#ffe76a}100%{background:transparent}}
 body.gu-lectura .gu-pie span:last-child{display:none}
@@ -1412,7 +1412,7 @@ body.gu-mitad .pila-vista{left:var(--gu-corte,50%);background-color:#1f6b4a;back
 .gu-esc-i{display:flex;flex-wrap:wrap;gap:6px 10px;font:500 11px var(--mono);color:var(--soft)}
 .gu-esc-hl{background:var(--hc);color:var(--ink);border-radius:999px;padding:1px 8px;font:600 10.5px var(--ui)}
 
-@media (max-width:1500px){.gu-top [data-a="linea"] .gu-lbl,.gu-top [data-a="mitad"] .gu-lbl{display:none}}
+
 
 .gu-cuerpo.tl-abajo>.gu-scroll{margin-bottom:var(--tlh)}.gu-cuerpo.tl-abajo>.gu-side{margin-bottom:calc(var(--tlh) + 10px)}
 .gu-cuerpo.tl-abajo>.gu-tl{top:auto;height:var(--tlh);border-radius:16px 16px 0 0}
@@ -1506,6 +1506,54 @@ body.gu-foco .gu-com-nuevo{display:none}
 .gu-dg-escs small{font:500 11px var(--mono);color:var(--soft);margin-right:2px}
 .gu-dg-escs button{border:0;border-radius:5px;background:rgba(43,37,32,.06);font:600 11px var(--mono);padding:2px 5px;cursor:pointer;color:var(--ink)}.gu-dg-escs button:hover{background:var(--ink);color:var(--paper)}
 .gu-dg-escs .gu-dg-mas2{background:none;text-decoration:underline;color:var(--soft)}
+
+.gu-dg-sug{background:#fff8d6;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.gu-dg-sugcab{display:flex;align-items:center;justify-content:space-between;font:700 12.5px var(--ui);margin-bottom:4px}
+.gu-dg-sg{display:flex;align-items:center;gap:8px;padding:4px 0;border-top:1px solid rgba(43,37,32,.07)}
+.gu-dg-sg i{width:9px;height:9px;border-radius:50%;flex:none}
+.gu-dg-sgn{flex:1;min-width:0;font:600 14px var(--ui);cursor:pointer}.gu-dg-sgn:hover{text-decoration:underline}
+.gu-dg-sgcat{border:0;background:none;font:500 12px var(--ui);color:var(--soft);cursor:pointer;padding:2px 4px;border-radius:6px}.gu-dg-sgcat:hover{background:rgba(43,37,32,.08);color:var(--ink)}
+.gu-dg-si,.gu-dg-no{border:0;width:28px;height:28px;border-radius:50%;font:700 14px var(--ui);cursor:pointer}
+.gu-dg-si{background:var(--ink);color:var(--paper)}.gu-dg-no{background:rgba(43,37,32,.08);color:var(--ink)}
+
+/* barra de herramientas: una tirita centrada abajo del título */
+.gu-herr{display:flex;justify-content:center;padding:0 12px 8px;background:rgba(10,40,26,.35)}
+.gu-herr-in{display:flex;align-items:center;gap:2px;background:#fffdf6;border-radius:999px;padding:3px 6px;box-shadow:0 2px 10px rgba(0,0,0,.18);color:var(--ink)}
+.gu-h{border:0;background:none;min-width:30px;height:30px;border-radius:8px;font:600 14px var(--ui);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.gu-h:hover{background:rgba(43,37,32,.08)}.gu-h[aria-pressed="true"]{background:#ffe76a}
+.gu-sep{width:1px;height:18px;background:rgba(43,37,32,.15);margin:0 6px}
+.gu-herr .gu-sel{background:#ffe76a}
+.gu-herr .gu-zoom{background:none;box-shadow:none}
+.gu-blapeli svg{vertical-align:-3px}
+body.gu-foco .gu-herr{display:none!important}
+@media (max-width:760px){.gu-herr .gu-zoom,.gu-herr .gu-sep:not(.gu-edh){display:none}}
+
+/* «La peli»: mismo idioma visual que el desglose */
+.gu-tl{background:#fffdf6}
+.gu-tl-cab{border-bottom:0;padding:12px 14px 6px}
+.gu-tl-x{width:32px;height:32px;padding:0;border-radius:50%;background:rgba(43,37,32,.07);color:var(--ink);font:600 18px var(--ui)}
+.gu-tl-x:hover{background:var(--ink);color:var(--paper)}
+.gu-tl-modo{background:none;padding:0}.gu-tl-modo button{opacity:.55}.gu-tl-modo button.on{opacity:1;background:rgba(43,37,32,.08)}
+/* escaleta como lista limpia */
+.gu-esc{gap:0;padding-top:4px}
+.gu-esc>.gu-tl-ayuda{margin-bottom:6px}
+.gu-esc:not(.hor) .gu-esc-f{background:none;border-radius:0;padding:12px 4px 12px 10px;box-shadow:inset 0 -1px 0 rgba(43,37,32,.1),inset 4px 0 0 var(--ec,transparent)}
+.gu-esc:not(.hor) .gu-esc-f.mov{background:#fffdf6;box-shadow:0 10px 26px rgba(0,0,0,.2)}
+.gu-esc-t{font-size:13.5px}.gu-esc-n{color:var(--soft);font-weight:600}
+.gu-esc-h{opacity:0;transition:opacity .15s}.gu-esc-f:hover .gu-esc-h{opacity:1}@media (hover:none){.gu-esc-h{opacity:1}}
+.gu-esc-f .gu-cdot{margin-top:4px}
+.gu-esc.hor .gu-esc-f{background:#fff;box-shadow:inset 0 0 0 1px rgba(43,37,32,.1),inset 0 4px 0 var(--ec,transparent);border-radius:12px}
+/* línea de tiempo más liviana */
+.gu-tl-fila{border-bottom:1px solid rgba(43,37,32,.07)}
+.gu-tl-lbl{background:#fffdf6;font:600 12.5px var(--ui);box-shadow:none;border-right:1px solid rgba(43,37,32,.1)}
+.gu-tl-b{background:#fff;box-shadow:inset 0 0 0 1px rgba(43,37,32,.16);border-radius:6px}
+.gu-tl-b.con-c{background:color-mix(in srgb,var(--ec) 55%,#fff);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ec) 80%,#000 5%)}
+.gu-tl-c{top:11px;bottom:11px;border-radius:999px;background:rgba(43,37,32,.035)}
+.gu-tl-pj .gu-tl-c.on{background:rgba(43,37,32,.38)}
+.gu-tl-sep{font:600 13px var(--ui);text-transform:none;letter-spacing:0;color:var(--ink);padding:18px 12px 6px}
+.gu-tl-sep small{font:500 11.5px var(--ui);color:var(--soft)}
+.gu-tl-mas{background:none;text-decoration:underline;text-underline-offset:3px;color:var(--soft);padding:2px 0;font:600 12.5px var(--ui)}.gu-tl-mas:hover{color:var(--ink)}
+.gu-tl-zoom button{width:30px;height:30px;padding:0;border-radius:50%}
 </style>
 <div class="cargando" id="cargando" hidden role="status"><span class="cg-punto"></span>Cargando tu plancha…</div>
 <div class="conectar" id="conectar" hidden>
@@ -3597,11 +3645,11 @@ const AYUDA=[
   [{chip:"Tab"},"Cambia el tipo de renglón: escena, acción, personaje, diálogo, paréntesis, transición. Enter pasa al que sigue. Cuando escribís un personaje y queda una sola opción, Enter lo completa."],
   [null,"A la izquierda tenés las escenas, los personajes y las locaciones, con buscador. Las locaciones se vuelven post-its adentro de la película solas."],
   [{chip:"Colores"},"En la lista de escenas, el circulito le pone color a cada escena."],
-  [{chip:"▤ Línea de tiempo"},"La peli entera en el tiempo, con hilos narrativos y personajes. Al lado está la Escaleta, que se arma sola. Las podés ver abajo del guion, al costado (la escaleta) o en pantalla completa. Arrastrando escenas reordenás el guion. Con la × al lado de un personaje lo sacás de la línea."],
-  [{chip:"↗ Vincular"},"Marcás un pedazo y se crea un post-it con eso adentro de la película; el pedazo queda resaltado en amarillo. Sin marcar nada, lo atás a un post-it que ya existe."],
-  [{chip:"🏷 Desglose"},"Marcás una palabra (aunque sea una sola) y la clasificás: utilería, vestuario, extras, vehículos, efectos, etc. En ▤ → Desglose ves la escena donde estás o toda la peli, y lo bajás como planilla. El elenco sale solo."],
-  [{chip:"💬 Comentar"},"Deja un comentario al costado del renglón. Tocalo para editarlo o resolverlo. Cuando marcás texto, Comentar, Vincular y Desglose te aparecen al costado de la hoja."],
-  [{chip:"⤢"},"Modo foco: solo la hoja, sin nada alrededor. También con Ctrl+Shift+Enter. Esc para salir."],
+  [{chip:"La peli"},"Arriba a la derecha. Tiene tres pestañas: Escaleta (se arma sola), Línea de tiempo (con hilos narrativos y personajes) y Desglose. Las ves abajo del guion, al costado o en pantalla completa. Arrastrando escenas reordenás el guion. Con la × al lado de un personaje lo sacás de la línea."],
+  [{chip:"↗ Vincular"},"Marcás un pedazo, tocás Vincular en el cartelito del costado (o '+CMD+'+K) y se crea un post-it con eso adentro de la película; el pedazo queda resaltado en amarillo. Sin marcar nada, lo atás a un post-it que ya existe."],
+  [{chip:"🏷 Desglose"},"Marcás una palabra (aunque sea una sola) y la clasificás: utilería, vestuario, extras, vehículos, efectos, etc. En La peli → Desglose ves la escena donde estás o toda la peli, y lo bajás como planilla. El elenco sale solo, y además te sugiere lo que encuentra leyendo cada escena (animales, utilería, vestuario…): lo sumás con ✓ o lo descartás con ×."],
+  [{chip:"💬 Comentar"},"Marcás algo y tocás Comentar en el cartelito del costado (o Ctrl+Alt+M): queda un comentario al costado del renglón. Tocalo para editarlo o resolverlo. Cuando marcás texto, Comentar, Vincular y Desglose te aparecen al costado de la hoja."],
+  [{chip:"⤢"},"En la barrita de arriba (tipo de renglón, negrita, buscar, zoom). Modo foco: solo la hoja, sin nada alrededor. También con Ctrl+Shift+Enter. Esc para salir."],
   [null,"Ortografía: las palabras mal escritas quedan subrayadas en rojo (diccionario rioplatense, con voseo). Clic derecho para ver sugerencias o agregarla a tu diccionario. Se apaga en Archivo → Formato."],
   [{chip:"Página 3"},"Abajo a la izquierda: tocá el número de página para saltar a otra."],
   [{chip:"Compartir"},"Link para leer o para editar juntos en vivo. Archivo: PDF, Final Draft, Fountain y todos tus guiones."]]},
@@ -3689,6 +3737,10 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:65,f:"16 de noviembre",it:[
+  ["Guion: el *desglose ahora lee la escena solo* y te sugiere lo que encuentra (peces → Animales, pecera → Utilería, frascos → Arte…). Lo sumás con ✓, lo descartás con × o le cambiás la categoría.",null,1],
+  ["Guion: ordené la barra de arriba. Las herramientas de escribir quedaron en una tirita al medio, y la escaleta, la línea de tiempo y el desglose quedaron juntas en el botón *La peli*.",null,2],
+  ["Comentar y Vincular salen del cartelito que aparece cuando marcás texto, así que ya no están arriba.",null,3]]},
  {n:64,f:"16 de noviembre",it:[
   ["Guion: rediseñé el *Desglose*. «Esta escena» muestra la escena donde estás escribiendo, con flechitas para pasar a la anterior o la siguiente. «Toda la peli» muestra cada cosa con sus escenas.",null,2],
   ["Guion: al cerrar el panel del costado, la hoja vuelve al centro.",null,3]]},
@@ -5031,16 +5083,8 @@ raiz.innerHTML=`
     <input class="gu-titulo" id="gu-titulo" placeholder="Sin título" maxlength="120" aria-label="Título del guion">
     <span class="gu-estado" id="gu-estado"></span><span class="gu-gente" id="gu-gente" hidden></span>
     <span class="gu-esp"></span>
-    <span class="gu-sel-w"><button type="button" class="gu-sel" id="gu-tipo" title="Tipo de texto. Tab y Shift+Tab lo cambian." aria-label="Tipo de texto" aria-haspopup="listbox"></button><span class="gu-sel-menu" id="gu-tipo-menu" role="listbox" hidden></span></span>
-    <button type="button" class="gu-b gu-ic solo-ancho" data-a="b" title="Negrita (${CTRL}+B)"><b>B</b></button>
-    <button type="button" class="gu-b gu-ic solo-ancho" data-a="i" title="Itálica (${CTRL}+I)"><i>I</i></button>
-    <button type="button" class="gu-b gu-ic solo-ancho" data-a="u" title="Subrayado (${CTRL}+U)"><u>U</u></button>
-    <button type="button" class="gu-b" data-a="vincular" title="Vincular un post-it o una frase a esta escena (${CTRL}+K)">↗ <span class="gu-lbl">Vincular</span></button>
     <button type="button" class="gu-b solo-ancho gu-bmitad" data-a="mitad" title="Guion y plancha de la película, mitad y mitad">◧ <span class="gu-lbl">Plancha al lado</span></button>
-    <button type="button" class="gu-b solo-ancho solo-edita" data-a="comentar" title="Comentar este renglón (Ctrl+Alt+M)">💬 <span class="gu-lbl">Comentar</span></button>
-    <button type="button" class="gu-b solo-ancho" data-a="foco" title="Modo foco: solo la hoja (Ctrl+Shift+Enter · Esc sale)">⤢</button>
-    <button type="button" class="gu-b solo-ancho" data-a="linea" title="Línea de tiempo y escaleta">▤ <span class="gu-lbl">Línea de tiempo</span></button>
-    <button type="button" class="gu-b solo-ancho" data-a="buscar" title="Buscar y reemplazar (${CTRL}+F)">Buscar</button>
+    <button type="button" class="gu-b solo-ancho gu-blapeli" data-a="linea" title="Escaleta, línea de tiempo y desglose"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><rect x="2.5" y="3" width="15" height="3.2" rx="1.2" fill="currentColor"/><rect x="2.5" y="8.4" width="9" height="3.2" rx="1.2" fill="currentColor"/><rect x="2.5" y="13.8" width="12" height="3.2" rx="1.2" fill="currentColor"/></svg> <span class="gu-lbl">La peli</span></button>
     <button type="button" class="gu-b gu-compartir solo-duenio" data-a="compartir" title="Links para editar con otros o para que lo lean">Compartir</button>
     <div class="gu-mw"><button type="button" class="gu-b" data-a="archivo">Archivo ▾</button><div class="gu-menu" id="gu-m-archivo" hidden>
       <button type="button" data-a="portada" class="solo-edita">Portada…</button>
@@ -5056,8 +5100,20 @@ raiz.innerHTML=`
       <hr>
       <button type="button" class="peligro solo-duenio" data-a="borrar">Borrar este guion</button>
     </div></div>
-    <div class="gu-zoom solo-ancho"><button type="button" data-a="zm" aria-label="Alejar">−</button><button type="button" id="gu-zv" data-a="zauto" title="Volver al tamaño automático">100%</button><button type="button" data-a="zp" aria-label="Acercar">+</button></div>
   </div>
+  <div class="gu-herr"><div class="gu-herr-in">
+    <span class="gu-sel-w"><button type="button" class="gu-sel" id="gu-tipo" title="Tipo de renglón. Tab y Shift+Tab lo cambian." aria-label="Tipo de renglón" aria-haspopup="listbox"></button><span class="gu-sel-menu" id="gu-tipo-menu" role="listbox" hidden></span></span>
+    <span class="gu-sep gu-edh"></span>
+    <button type="button" class="gu-h gu-edh" data-a="b" title="Negrita (${CTRL}+B)"><b>B</b></button>
+    <button type="button" class="gu-h gu-edh" data-a="i" title="Itálica (${CTRL}+I)"><i>I</i></button>
+    <button type="button" class="gu-h gu-edh" data-a="u" title="Subrayado (${CTRL}+U)"><u>U</u></button>
+    <span class="gu-sep gu-edh"></span>
+    <button type="button" class="gu-h" data-a="buscar" title="Buscar y reemplazar (${CTRL}+F)"><svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <span class="gu-sep"></span>
+    <div class="gu-zoom"><button type="button" data-a="zm" aria-label="Alejar">−</button><button type="button" id="gu-zv" data-a="zauto" title="Volver al tamaño automático">100%</button><button type="button" data-a="zp" aria-label="Acercar">+</button></div>
+    <span class="gu-sep"></span>
+    <button type="button" class="gu-h" data-a="foco" title="Modo foco: solo la hoja (Ctrl+Shift+Enter · Esc sale)">⤢</button>
+  </div></div>
   <div class="gu-cuerpo">
     <aside class="gu-side" id="gu-side"><div class="gu-stabs" role="tablist"><button type="button" data-lado="escenas">Escenas</button><button type="button" data-lado="personajes">Personajes</button><button type="button" data-lado="locaciones">Locaciones</button></div><input class="gu-sq" id="gu-sq" type="search" placeholder="Buscar…" aria-label="Buscar en la lista"><div class="gu-sc" id="gu-sc"></div></aside>
     <div class="gu-scroll" id="gu-scroll"><div class="gu-spacer" id="gu-spacer"><div class="gu-escala" id="gu-escala"><div id="gu-hojas"></div><div class="gu-texto" id="gu-texto" contenteditable="true" spellcheck="true" lang="es" role="textbox" aria-multiline="true" aria-label="Guion"></div><div class="gu-chips" id="gu-chips"></div></div></div></div>
@@ -5869,7 +5925,7 @@ function volcar(doc,Y){/* pasa lo que hay en pantalla al documento compartido (s
   for(const k of [...pars.keys()])if(!vivos.has(k))pars.delete(k);
   const tit=Q("gu-titulo").value.trim();if(mt.get("titulo")!==tit)mt.set("titulo",tit);
   const pp=JSON.stringify(G.doc.portada||{});if(mt.get("portada")!==pp)mt.set("portada",pp);
-  const oo=JSON.stringify(opc);if(mt.get("opciones")!==oo)mt.set("opciones",oo);const hh=JSON.stringify(G.doc.hilos||[]);if((mt.get("hilos")||"[]")!==hh)mt.set("hilos",hh)}
+  const oo=JSON.stringify(opc);if(mt.get("opciones")!==oo)mt.set("opciones",oo);const hh=JSON.stringify(G.doc.hilos||[]);if((mt.get("hilos")||"[]")!==hh)mt.set("hilos",hh);const nn=JSON.stringify(G.doc.dgNo||[]);if((mt.get("dgno")||"[]")!==nn)mt.set("dgno",nn)}
 function empujar(){if(!V||V.modo!=="e"||V.aplicando||!V.listo)return;V.doc.transact(()=>volcar(V.doc,V.Y),"local");guardarRel()}
 function guardarRel(){if(!V||!V.listo)return;const p=document.activeElement===ed?actual():null;if(!p){V.rel=null;return}const ym=V.doc.getMap("pars").get(p.dataset.id);if(!ym){V.rel=null;return}
   V.rel={id:p.dataset.id,rp:V.Y.createRelativePositionFromTypeIndex(ym.get("x"),Math.min(offCaret(p),ym.get("x").length))};avisarCursor()}
@@ -5887,7 +5943,7 @@ function aplicarRemoto(){if(!V)return;const {doc,Y}=V,orden=doc.getArray("orden"
     if(!ed.firstElementChild)ed.append(nuevoP("escena"));
     if(mt.has("titulo")&&document.activeElement!==Q("gu-titulo"))Q("gu-titulo").value=mt.get("titulo")||"";
     try{if(mt.has("portada"))G.doc.portada=JSON.parse(mt.get("portada"))}catch(_){}
-    try{if(mt.has("opciones"))opc={...OPC0,...JSON.parse(mt.get("opciones"))}}catch(_){}try{if(mt.has("hilos"))G.doc.hilos=JSON.parse(mt.get("hilos"))}catch(_){}
+    try{if(mt.has("opciones"))opc={...OPC0,...JSON.parse(mt.get("opciones"))}}catch(_){}try{if(mt.has("hilos"))G.doc.hilos=JSON.parse(mt.get("hilos"))}catch(_){}try{if(mt.has("dgno"))G.doc.dgNo=JSON.parse(mt.get("dgno"))}catch(_){}
     if(cr&&enfocado){const p=ed.querySelector(`p[data-id="${CSS.escape(cr.id)}"]`);const abs=Y.createAbsolutePositionFromRelativePosition(cr.rp,doc);if(p&&abs)caret(p,Math.min(abs.index,p.textContent.length))}}
   finally{V.aplicando=false}
   if(V.modo==="e"&&G&&!INV){sucio=true;pintarEstado();guardarPronto(2500)}
@@ -6014,6 +6070,18 @@ function desgloseDe(e,todosPj){const items=[];const pj=new Set(e.pj);
 let dgVista="escena";try{dgVista=localStorage.getItem("gu_dgv")==="todo"?"todo":"escena"}catch(_){}
 const normDG=t=>norm(t).replace(/\s+/g," ").trim();
 let dgCur=null;
+/* lectura del guion: un diccionario de cosas que suelen ir al desglose. Son sugerencias: se aceptan o se descartan. */
+const DG_LEX={"perro": "animales", "perra": "animales", "perrito": "animales", "perrita": "animales", "cachorro": "animales", "gato": "animales", "gata": "animales", "gatito": "animales", "pez": "animales", "peces": "animales", "pececito": "animales", "pájaro": "animales", "pajarito": "animales", "paloma": "animales", "palomas": "animales", "caballo": "animales", "yegua": "animales", "vaca": "animales", "toro": "animales", "oveja": "animales", "cabra": "animales", "gallina": "animales", "gallo": "animales", "pollito": "animales", "rata": "animales", "ratón": "animales", "ratones": "animales", "mosca": "animales", "moscas": "animales", "cucaracha": "animales", "araña": "animales", "serpiente": "animales", "víbora": "animales", "tortuga": "animales", "conejo": "animales", "loro": "animales", "cotorra": "animales", "pato": "animales", "chancho": "animales", "cerdo": "animales", "burro": "animales", "mono": "animales", "oso": "animales", "lobo": "animales", "zorro": "animales", "ciervo": "animales", "hormiga": "animales", "hormigas": "animales", "mosquito": "animales", "abeja": "animales", "mariposa": "animales", "mascota": "animales", "caniche": "animales", "hámster": "animales", "iguana": "animales", "lagartija": "animales", "sapo": "animales", "rana": "animales", "auto": "vehiculos", "autos": "vehiculos", "coche": "vehiculos", "camioneta": "vehiculos", "camión": "vehiculos", "colectivo": "vehiculos", "bondi": "vehiculos", "taxi": "vehiculos", "remis": "vehiculos", "moto": "vehiculos", "motito": "vehiculos", "bicicleta": "vehiculos", "bici": "vehiculos", "patrullero": "vehiculos", "ambulancia": "vehiculos", "tren": "vehiculos", "subte": "vehiculos", "ómnibus": "vehiculos", "micro": "vehiculos", "lancha": "vehiculos", "bote": "vehiculos", "barco": "vehiculos", "avión": "vehiculos", "helicóptero": "vehiculos", "tractor": "vehiculos", "combi": "vehiculos", "furgón": "vehiculos", "carro": "vehiculos", "carreta": "vehiculos", "scooter": "vehiculos", "monopatín": "vehiculos", "grúa": "vehiculos", "camisa": "vestuario", "remera": "vestuario", "pantalón": "vestuario", "pantalones": "vestuario", "jean": "vestuario", "jeans": "vestuario", "vestido": "vestuario", "pollera": "vestuario", "saco": "vestuario", "campera": "vestuario", "abrigo": "vestuario", "buzo": "vestuario", "sweater": "vestuario", "suéter": "vestuario", "chaleco": "vestuario", "corbata": "vestuario", "zapatos": "vestuario", "zapatillas": "vestuario", "botas": "vestuario", "ojotas": "vestuario", "sombrero": "vestuario", "gorra": "vestuario", "gorro": "vestuario", "bufanda": "vestuario", "guantes": "vestuario", "uniforme": "vestuario", "traje": "vestuario", "delantal": "vestuario", "pijama": "vestuario", "bata": "vestuario", "medias": "vestuario", "cinturón": "vestuario", "anteojos": "vestuario", "lentes": "vestuario", "disfraz": "vestuario", "máscara": "vestuario", "capucha": "vestuario", "camiseta": "vestuario", "short": "vestuario", "bermuda": "vestuario", "bikini": "vestuario", "malla": "vestuario", "musculosa": "vestuario", "piluso": "vestuario", "boina": "vestuario", "tapado": "vestuario", "sangre": "maquillaje", "sangrando": "maquillaje", "herida": "maquillaje", "heridas": "maquillaje", "cicatriz": "maquillaje", "moretón": "maquillaje", "tatuaje": "maquillaje", "tatuajes": "maquillaje", "peluca": "maquillaje", "barba": "maquillaje", "bigote": "maquillaje", "maquillaje": "maquillaje", "sudor": "maquillaje", "sudado": "maquillaje", "rapado": "maquillaje", "ojeras": "maquillaje", "humo": "sfx", "niebla": "sfx", "lluvia": "sfx", "fuego": "sfx", "explosión": "sfx", "disparo": "sfx", "disparos": "sfx", "chispas": "sfx", "nieve": "sfx", "incendio": "sfx", "llamas": "sfx", "vapor": "sfx", "tormenta": "sfx", "granizo": "sfx", "música": "sonido", "canción": "sonido", "radio": "sonido", "sirena": "sonido", "alarma": "sonido", "bocina": "sonido", "timbre": "sonido", "parlante": "sonido", "parlantes": "sonido", "cumbia": "sonido", "tango": "sonido", "pelea": "dobles", "trompada": "dobles", "piña": "dobles", "patada": "dobles", "caída": "dobles", "persecución": "dobles", "forcejeo": "dobles", "empujón": "dobles", "gente": "extras", "multitud": "extras", "transeúntes": "extras", "clientes": "extras", "hinchas": "extras", "público": "extras", "alumnos": "extras", "invitados": "extras", "policías": "extras", "mozos": "extras", "vecinos": "extras", "pasajeros": "extras", "peatones": "extras", "turistas": "extras", "nenes": "extras", "soldados": "extras", "oficinistas": "extras", "comensales": "extras", "espectadores": "extras", "bailarines": "extras", "frasco": "arte", "frascos": "arte", "póster": "arte", "afiche": "arte", "cortina": "arte", "cortinas": "arte", "sillón": "arte", "sofá": "arte", "cama": "arte", "mesa": "arte", "silla": "arte", "sillas": "arte", "escritorio": "arte", "estante": "arte", "estantes": "arte", "estantería": "arte", "biblioteca": "arte", "heladera": "arte", "lámpara": "arte", "velador": "arte", "alfombra": "arte", "tele": "arte", "televisor": "arte", "espejo": "arte", "mostrador": "arte", "cartel": "arte", "carteles": "arte", "letrero": "arte", "persiana": "arte", "maceta": "arte", "macetas": "arte", "plantas": "arte", "cenicero": "arte", "florero": "arte", "pecera": "utileria", "celular": "utileria", "teléfono": "utileria", "cigarrillo": "utileria", "cigarrillos": "utileria", "pucho": "utileria", "puchos": "utileria", "encendedor": "utileria", "fósforos": "utileria", "cuaderno": "utileria", "lápiz": "utileria", "birome": "utileria", "lapicera": "utileria", "libro": "utileria", "revista": "utileria", "diario": "utileria", "carta": "utileria", "cartas": "utileria", "llave": "utileria", "llaves": "utileria", "billetera": "utileria", "billete": "utileria", "billetes": "utileria", "mazo": "utileria", "mazos": "utileria", "vaso": "utileria", "vasos": "utileria", "copa": "utileria", "copas": "utileria", "botella": "utileria", "botellas": "utileria", "cerveza": "utileria", "lata": "utileria", "latas": "utileria", "mate": "utileria", "termo": "utileria", "taza": "utileria", "tazas": "utileria", "plato": "utileria", "platos": "utileria", "cuchillo": "utileria", "tenedor": "utileria", "cuchara": "utileria", "bolsa": "utileria", "bolsas": "utileria", "valija": "utileria", "mochila": "utileria", "cartera": "utileria", "paraguas": "utileria", "linterna": "utileria", "caja": "utileria", "cajas": "utileria", "sushi": "utileria", "bandeja": "utileria", "pistola": "utileria", "revólver": "utileria", "arma": "utileria", "escopeta": "utileria", "palo": "utileria", "pelota": "utileria", "guitarra": "utileria", "cámara": "utileria", "computadora": "utileria", "notebook": "utileria", "auriculares": "utileria", "reloj": "utileria", "anillo": "utileria", "collar": "utileria", "regalo": "utileria", "flores": "utileria", "ramo": "utileria", "foto": "utileria", "fotos": "utileria", "papel": "utileria", "papeles": "utileria", "documentos": "utileria", "lupa": "utileria", "jeringa": "utileria", "pastillas": "utileria", "cigarro": "utileria", "porro": "utileria", "faso": "utileria", "bolso": "utileria", "peluche": "utileria", "peluches": "utileria", "juguete": "utileria", "juguetes": "utileria", "envío": "utileria", "pizza": "utileria", "empanadas": "utileria", "bebida": "utileria", "gaseosa": "utileria", "vino": "utileria", "whisky": "utileria"};
+const DG_NO_DESPUES=new Set(["de","del","que","y","a","en","con","por","para","se","lo","la","el","los","las","un","una","al","su","sus"]);
+function sugerenciasDe(e){const ya=new Set();for(const q of e.ps){const m=meta.get(q.dataset.id);for(const d of (m&&m.dg)||[])ya.add(normDG(d.txt))}
+  const no=new Set(G.doc.dgNo||[]);const out=[],vistos=new Set();
+  for(const q of e.ps){if(q.dataset.t!=="accion")continue;const t=q.textContent;RX_PAL.lastIndex=0;let m;const ws=[];while((m=RX_PAL.exec(t)))ws.push({w:m[0],i:m.index});
+    for(let j=0;j<ws.length;j++){const w=ws[j].w,l=w.toLocaleLowerCase("es");if(w.length>2&&w===w.toLocaleUpperCase("es"))continue;const k=DG_LEX[l]||(l.endsWith("s")?DG_LEX[l.slice(0,-1)]||(l.endsWith("es")?DG_LEX[l.slice(0,-2)]:null):null);if(!k)continue;
+      let txt=w;const sig=ws[j+1];if(k==="animales"&&sig&&!DG_NO_DESPUES.has(sig.w.toLocaleLowerCase("es"))&&sig.i===ws[j].i+w.length+1&&!DG_LEX[sig.w.toLocaleLowerCase("es")]&&/^[a-záéíóúñ]/i.test(sig.w)&&sig.w.length>3&&t.slice(ws[j].i,sig.i+sig.w.length).split(" ").length===2&&!/(a|o|e)n$|aba$|ía$|ó$|ando$|endo$/.test(sig.w))txt=w+" "+sig.w;
+      const key=normDG(txt);if(ya.has(key)||ya.has(normDG(w))||vistos.has(key)||no.has(key))continue;vistos.add(key);out.push({c:k,txt,pid:q.dataset.id})}}
+  return out}
+function descartarSug(txt){G.doc.dgNo=[...new Set([...(G.doc.dgNo||[]),normDG(txt)])].slice(-2000);sucio=true;pintarEstado();guardarPronto(3000);if(V)empujar();pintarTL()}
+function aceptarSug(sg,k){const p=ed.querySelector(`p[data-id="${CSS.escape(sg.pid)}"]`);if(!p)return;agregarDesglose(p,k||sg.c,sg.txt)}
 function escenaCursor(){const p=(ultP&&ultP.isConnected?ultP:null)||actual();const e=p?escenaDe(p):null;return e?e.dataset.id:null}
 function pintarDesglose(cu,es){const lee=soloLee();const todosPj=[...new Set(es.flatMap(e=>e.pj))].filter(n=>n.length>1).map(n=>[n,new RegExp("(^|[^\\p{L}])"+n.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"([^\\p{L}]|$)","u")]);
   const w=mk("div","gu-dg");cu.append(w);
@@ -6030,7 +6098,12 @@ function pintarDesglose(cu,es){const lee=soloLee();const todosPj=[...new Set(es.
     const lista=mk("div","gu-dg-lista");let hay=0;
     for(const [k,n,c] of DG){const l=it.filter(d=>d.c===k);if(!l.length)continue;hay+=k==="elenco"?0:1;const r=mk("div","gu-dg-row");const lb=mk("div","gu-dg-lb");const dot=mk("i");dot.style.background=c;lb.append(dot,document.createTextNode(n));const ls=mk("div","gu-dg-ls");for(const d of l)ls.append(chip(d,e));r.append(lb,ls);lista.append(r)}
     w.append(lista);
-    if(!hay&&!lee){const v=mk("div","gu-dg-vacio");v.append(mk("b",null,"¿Qué hace falta para filmar esta escena?"),mk("span",null,"Marcá una palabra en el guion (una pecera, un auto, un disfraz) y tocá «🏷 Desglose»."));w.append(v)}
+    const sgs=lee?[]:sugerenciasDe(e);
+    if(sgs.length){const box=mk("div","gu-dg-sug");const cb=mk("div","gu-dg-sugcab");cb.append(mk("b",null,"Lo que encontré leyendo la escena"),btn("gu-dg-mas","Sumar todo",()=>{marcar();for(const sg of sgs){const p=ed.querySelector(`p[data-id="${CSS.escape(sg.pid)}"]`);if(p){const m=metaDe(p.dataset.id);m.dg=[...(m.dg||[]),{id:rid(),c:sg.c,txt:sg.txt}]}}cambio();pintarMarcas();pintarTL();toast("Sumé "+sgs.length+" al desglose.")}));box.append(cb);
+      for(const sg of sgs){const r=mk("div","gu-dg-sg");const dot=mk("i");dot.style.background=DGN[sg.c].c;const cat=mk("button","gu-dg-sgcat",DGN[sg.c].n+" ▾");cat.type="button";cat.title="Cambiar la categoría";cat.onclick=()=>{cerrarPopC();popC=mk("div","gu-popc gu-popdg");popC.append(mk("div","k","¿Qué es «"+sg.txt+"»?"));for(const [k,n,c] of DG){const b=mk("button",null,"");b.type="button";const d=mk("i");d.style.background=c;b.append(d,document.createTextNode(n));b.onclick=()=>{cerrarPopC();aceptarSug(sg,k)};popC.append(b)}document.body.append(popC);const rc=cat.getBoundingClientRect();popC.style.left=Math.max(8,Math.min(innerWidth-238,rc.left))+"px";popC.style.top=Math.max(8,Math.min(innerHeight-popC.offsetHeight-8,rc.bottom+4))+"px"};
+        const ok=btn("gu-dg-si","✓",()=>aceptarSug(sg));ok.title="Sumarlo";const no=btn("gu-dg-no","×",()=>descartarSug(sg.txt));no.title="No va";const nm=mk("span","gu-dg-sgn",sg.txt);nm.title="Ver en el guion";nm.onclick=()=>{const p=ed.querySelector(`p[data-id="${CSS.escape(sg.pid)}"]`);if(p)irABloque(p)};r.append(dot,nm,cat,ok,no);box.append(r)}
+      w.append(box)}
+    if(!hay&&!sgs.length&&!lee){const v=mk("div","gu-dg-vacio");v.append(mk("b",null,"¿Qué hace falta para filmar esta escena?"),mk("span",null,"Marcá una palabra en el guion (una pecera, un auto, un disfraz) y tocá «🏷 Desglose»."));w.append(v)}
     if(!lee){const ad=mk("div","gu-dg-add");const abrirAd=btn("gu-dg-mas","+ Agregar algo que no está escrito",()=>{ad.replaceChildren();const sel=mk("select");for(const [k,n] of DG.slice(1)){const o=mk("option",null,n);o.value=k;sel.append(o)}const i=mk("input");i.placeholder="Ej: cuaderno de Paco";
         const ok=()=>{const v=i.value.trim();if(!v)return;agregarDesglose(e.p,sel.value,v,true)};i.onkeydown=ev=>{ev.stopPropagation();if(ev.key==="Enter"){ev.preventDefault();ok()}if(ev.key==="Escape"){ev.preventDefault();pintarTL()}};ad.append(sel,i,btn("gu-dg-ok","Agregar",ok));i.focus()});ad.append(abrirAd);w.append(ad)}}
   else{const datos=es.map(e=>({e,it:desgloseDe(e,todosPj)}));const pie=mk("div","gu-dg-pie");pie.append(mk("span",null,"Cada cosa y en qué escenas aparece."),btn("gu-dg-mas","Descargar planilla",()=>bajarDesglose(datos)));w.append(pie);
@@ -6089,7 +6162,7 @@ function moverEscena(de,a){/* mueve la escena «de» para que quede antes de la 
   const es=escenas(),E=es.find(x=>x.id===de);if(!E||de===a)return;const T=a?es.find(x=>x.id===a):null;if(a&&!T)return;marcar();
   const ref=T?T.p:null;for(const q of E.ps)ed.insertBefore(q,ref);cambio();toast("Escena movida.")}
 /* panel */
-let tl=null,tlTab="linea",tlZoom=60,tlModo={linea:"abajo",escaleta:"costado",desglose:"costado"},tlH=.42,tlW=.36;try{Object.assign(tlModo,JSON.parse(localStorage.getItem("gu_tlmodo")||"{}"));tlH=+localStorage.getItem("gu_tlh")||tlH;tlW=+localStorage.getItem("gu_tlw")||tlW}catch(_){}try{tlZoom=+localStorage.getItem("gu_tlz")||60}catch(_){}
+let tl=null,tlTab=(()=>{try{return localStorage.getItem("gu_tltab")||"escaleta"}catch(_){return "escaleta"}})(),tlZoom=60,tlModo={linea:"abajo",escaleta:"costado",desglose:"costado"},tlH=.42,tlW=.36;try{Object.assign(tlModo,JSON.parse(localStorage.getItem("gu_tlmodo")||"{}"));tlH=+localStorage.getItem("gu_tlh")||tlH;tlW=+localStorage.getItem("gu_tlw")||tlW}catch(_){}try{tlZoom=+localStorage.getItem("gu_tlz")||60}catch(_){}
 const modoTL=()=>tlTab==="linea"&&tlModo.linea==="costado"?"abajo":tlModo[tlTab];
 function ubicarTL(){const cu=raiz.querySelector(".gu-cuerpo");if(!tl||tl.hidden){cu.classList.remove("tl-abajo","tl-costado","tl-full");zoomAuto=true;pedirLayout();return}const m=modoTL();cu.classList.toggle("tl-abajo",m==="abajo");cu.classList.toggle("tl-costado",m==="costado");cu.classList.toggle("tl-full",m==="full");
   const r=cu.getBoundingClientRect();cu.style.setProperty("--tlh",Math.round(Math.max(150,Math.min(r.height-120,r.height*tlH)))+"px");cu.style.setProperty("--tlw",Math.round(Math.max(280,Math.min(r.width-300,r.width*tlW)))+"px");zoomAuto=true;pedirLayout()}
@@ -6101,10 +6174,10 @@ let tTL=0;function refrescarTL(){if(!tl||tl.hidden)return;if(tl.contains(documen
 function irAEscena(id){if(modoTL()==="full")cerrarTL();const p=ed.querySelector(`p[data-id="${CSS.escape(id)}"]`);if(p)irABloque(p)}
 function guardarHilos(h){G.doc.hilos=h;sucio=true;pintarEstado();guardarPronto(3000);if(V)empujar();pintarTL()}
 function pintarTL(){if(!tl||tl.hidden||!G)return;queueMicrotask(pintarMarcas);const sx=tl.querySelector(".gu-tl-cuerpo")?.scrollLeft||0,sy=tl.querySelector(".gu-tl-cuerpo")?.scrollTop||0;tl.replaceChildren();
-  const cab=mk("div","gu-tl-cab");const tabs=mk("div","gu-tl-tabs");for(const [k,t] of [["linea","Línea de tiempo"],["escaleta","Escaleta"],["desglose","Desglose"]]){const b=btn(k===tlTab?"on":null,t,()=>{tlTab=k;ubicarTL();pintarTL()});tabs.append(b)}cab.append(tabs,mk("span","gu-esp"));
+  const cab=mk("div","gu-tl-cab");const tabs=mk("div","gu-tl-tabs");for(const [k,t] of [["escaleta","Escaleta"],["linea","Línea de tiempo"],["desglose","Desglose"]]){const b=btn(k===tlTab?"on":null,t,()=>{tlTab=k;try{localStorage.setItem("gu_tltab",k)}catch(_){}ubicarTL();pintarTL()});tabs.append(b)}cab.append(tabs,mk("span","gu-esp"));
   if(tlTab==="linea"){const z=mk("div","gu-tl-zoom");z.append(btn(null,"−",()=>{tlZoom=Math.max(15,Math.round(tlZoom/1.4));try{localStorage.setItem("gu_tlz",tlZoom)}catch(_){}pintarTL()}),btn(null,"+",()=>{tlZoom=Math.min(400,Math.round(tlZoom*1.4));try{localStorage.setItem("gu_tlz",tlZoom)}catch(_){}pintarTL()}));cab.append(z)}
   {const m=modoTL(),o=mk("div","gu-tl-tabs gu-tl-modo");for(const [k,t,tt] of [["abajo","⬓","Abajo del guion"],["costado","◨","Al costado del guion"],["full","▣","Pantalla completa"]]){if(k==="costado"&&tlTab==="linea")continue;const b=btn(k===m?"on":null,t,()=>{tlModo[tlTab]=k;try{localStorage.setItem("gu_tlmodo",JSON.stringify(tlModo))}catch(_){}ubicarTL();pintarTL()});b.title=tt;b.setAttribute("aria-label",tt);o.append(b)}cab.append(o)}
-  cab.append(btn("gu-tl-x",modoTL()==="full"?"Volver al guion":"Cerrar",cerrarTL));tl.append(cab);
+  {const x=btn("gu-tl-x","×",cerrarTL);x.title=modoTL()==="full"?"Volver al guion":"Cerrar";x.setAttribute("aria-label","Cerrar");cab.append(x)}tl.append(cab);
   {const m=modoTL();if(m!=="full"){const c=mk("div","gu-tl-corte "+m);c.title="Arrastrá para agrandar o achicar";tl.append(c);c.onpointerdown=ev=>{ev.preventDefault();c.setPointerCapture(ev.pointerId);const cu=raiz.querySelector(".gu-cuerpo").getBoundingClientRect();
     c.onpointermove=e2=>{if(!c.hasPointerCapture(e2.pointerId))return;if(m==="abajo")tlH=Math.max(.2,Math.min(.8,(cu.bottom-e2.clientY)/cu.height));else tlW=Math.max(.2,Math.min(.7,(cu.right-e2.clientX)/cu.width));ubicarTL()};
     c.onpointerup=e2=>{c.releasePointerCapture(e2.pointerId);c.onpointermove=null;try{localStorage.setItem("gu_tlh",tlH);localStorage.setItem("gu_tlw",tlW)}catch(_){}}}}}
@@ -6168,7 +6241,7 @@ function arrastreEsc(h,f,e,l,hor){let y0=0,mov=false;const P=ev=>hor?ev.clientX:
 addEventListener("keydown",e=>{if(e.key==="Escape"&&tl&&!tl.hidden&&!raiz.hidden&&modal.hidden&&!popC&&(modoTL()==="full"||tl.contains(document.activeElement))){e.preventDefault();e.stopImmediatePropagation();cerrarTL()}},true);
 /* expuesto para pruebas */
 if(INV)setTimeout(()=>arrancarInvitado().catch(e=>console.error(e)),0);
-window.__guion={ponerColorEsc,escenas,abrirTL,conectarVivo,crearLinks,get V(){return V},apariciones,locPostits,entrar,salir,get G(){return G},leerDoc,aFDX,aFountain,deFDX,deTexto,maquetar,get lay(){return lay},guardarYa,pdf};
+window.__guion={sugerenciasDe,ponerColorEsc,escenas,abrirTL,conectarVivo,crearLinks,get V(){return V},apariciones,locPostits,entrar,salir,get G(){return G},leerDoc,aFDX,aFountain,deFDX,deTexto,maquetar,get lay(){return lay},guardarYa,pdf};
 })();
 
 /* ===== Google Calendar adentro de la web (por ahora en prueba, solo cuenta de Lenny) ===== */
