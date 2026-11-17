@@ -1556,13 +1556,17 @@ body.gu-foco .gu-herr-in{display:none!important}
 .gcal-p-tapa{position:absolute;inset:0;display:none}.gcal-p.moviendo .gcal-p-tapa{display:block}
 .gcal-p-esq{position:absolute;right:0;bottom:0;width:22px;height:22px;cursor:nwse-resize;touch-action:none;background:linear-gradient(135deg,transparent 50%,rgba(43,37,32,.35) 50% 58%,transparent 58% 70%,rgba(43,37,32,.35) 70% 78%,transparent 78%)}
 
-.gcal-conf{max-width:620px;overflow:auto}
-.gcal-intro{margin:0 0 14px;font-size:15px}
-.gcal-pasos{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
-.gcal-paso{background:#fff;border-radius:12px;padding:12px 14px;box-shadow:inset 0 0 0 1px rgba(43,37,32,.1);display:flex;flex-direction:column;gap:4px}
-.gcal-paso b{font:700 14.5px var(--ui)}.gcal-paso span,.gcal-paso li{font:500 13.5px/1.45 var(--ui)}
-.gcal-paso ol{margin:4px 0 6px;padding-left:20px}.gcal-paso a{font:600 13px var(--ui);color:var(--ink)}
-.gcal-nota{font:500 12.5px/1.4 var(--ui);color:var(--soft);margin-top:10px}
+.gcal.config .gcal-h{width:min(540px,100%);height:auto;max-height:100%}
+.gcal.config .gcal-cab{border-bottom:0;padding:16px 18px 0}
+.gcal-conf{max-width:none;padding:6px 18px 18px;overflow:auto;display:flex;flex-direction:column;gap:10px}
+.gcal-intro{margin:0;font:500 14px/1.45 var(--ui);color:var(--soft)}
+.gcal-op{display:flex;gap:12px;align-items:flex-start;background:#fff;border-radius:14px;padding:12px 14px;box-shadow:inset 0 0 0 1px rgba(43,37,32,.1)}
+.gcal-opn{flex:none;width:26px;height:26px;border-radius:50%;background:#ffe76a;font:800 13px var(--ui);display:flex;align-items:center;justify-content:center}
+.gcal-op b{display:block;font:700 14.5px var(--ui);margin:3px 0 2px}.gcal-op span:not(.gcal-opn){font:500 13.5px/1.4 var(--ui);color:var(--soft)}
+.gcal-steps{margin:6px 0 8px;padding-left:18px;font:500 13px/1.5 var(--ui);color:var(--ink)}
+.gcal-ir{display:inline-block;font:600 12.5px var(--ui);color:var(--ink);background:rgba(43,37,32,.07);border-radius:999px;padding:5px 11px;text-decoration:none}.gcal-ir:hover{background:var(--ink);color:var(--paper)}
+.gcal-fila{display:flex;gap:8px;margin-top:2px}.gcal-fila input{flex:1;min-width:0;margin:0!important}.gcal-fila .si{flex:none}
+.gcal-nota{margin:0;font:500 12px/1.4 var(--ui);color:var(--soft)}
 </style>
 <div class="cargando" id="cargando" hidden role="status"><span class="cg-punto"></span>Cargando tu plancha…</div>
 <div class="conectar" id="conectar" hidden>
@@ -3764,6 +3768,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:77,f:"16 de noviembre",it:[
+  ["Google Calendar: rediseñé la explicación de la primera vez. Ahora es una ventanita chica con las dos opciones, A y B, en vez de una pantalla casi vacía.",null,3]]},
  {n:76,f:"16 de noviembre",it:[
   ["*Google Calendar para todos:* en el ••• → «Google Calendar» lo traés a la web. La primera vez te explica paso a paso cómo hacerlo, incluso para ver todos tus calendarios con sus colores.",null,1],
   ["Con *📌 Ponerlo en la plancha* el calendario queda en la plancha como un post-it más. Lo movés agarrándolo de arriba y lo agrandás desde la esquina.",null,1],
@@ -6346,7 +6352,7 @@ async function leer(){if(typeof dbRef==="undefined"||!dbRef)return null;try{cons
 function urlEmb(u){try{const x=new URL(u);x.searchParams.set("mode",modo);if(!x.searchParams.get("hl"))x.searchParams.set("hl","es");if(!x.searchParams.get("ctz"))x.searchParams.set("ctz",tz);return x.href}catch(_){return u}}
 function sacarEmb(t){t=String(t||"").trim().replace(/&amp;/g,"&");const m=/https:\/\/calendar\.google\.com\/calendar\/embed\?[^"'\s<>]+/.exec(t);return m?m[0]:null}
 function url(src){return `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(src)}&ctz=${encodeURIComponent(tz)}&mode=${modo}&wkst=2&hl=es&showTitle=0&showPrint=0&showCalendars=0&showTz=0`}
-function pintar(){box.replaceChildren();const h=mk("div","gcal-h");box.append(h);const cab=mk("div","gcal-cab");h.append(cab);cab.append(mk("h3",null,"Google Calendar"));
+function pintar(){box.replaceChildren();box.classList.toggle("config",!(conf&&(conf.src||conf.emb)&&!conf.editar));const h=mk("div","gcal-h");box.append(h);const cab=mk("div","gcal-cab");h.append(cab);cab.append(mk("h3",null,"Google Calendar"));
   const b=(t,fn,pr)=>{const x=mk("button",null,t);x.type="button";x.onclick=fn;if(pr!=null)x.setAttribute("aria-pressed",String(pr));cab.append(x);return x};
   if(conf&&(conf.src||conf.emb)){for(const [m,t] of [["WEEK","Semana"],["MONTH","Mes"],["AGENDA","Agenda"]])b(t,()=>{modo=m;try{localStorage.setItem("gcal_modo",m)}catch(_){}pintar()},modo===m);
     cab.append(mk("span","gu-esp"));const a=mk("a",null,"Abrir en Google ↗");a.href="https://calendar.google.com/calendar/r";a.target="_blank";a.rel="noopener";cab.append(a);b(fijo?"Cambiar":"Cambiar calendario",()=>{conf={...conf,editar:true};pintar()});b(conf.plancha?"Ya está en la plancha":"📌 Ponerlo en la plancha",()=>{if(!conf.plancha)ponerEnPlancha()}).title="Que quede en la plancha, como un post-it";}
@@ -6355,16 +6361,16 @@ function pintar(){box.replaceChildren();const h=mk("div","gcal-h");box.append(h)
   if(false){const ag=mk("div","gcal-agarre");ag.title="Arrastrá para hacerlo más ancho o más angosto";h.append(ag);ag.onpointerdown=e=>{e.preventDefault();ag.setPointerCapture(e.pointerId);ag.onpointermove=ev=>{if(!ag.hasPointerCapture(ev.pointerId))return;anchoF=Math.round(Math.max(300,Math.min(innerWidth-200,innerWidth-12-ev.clientX)));document.body.style.setProperty("--gcalw",anchoF+"px")};ag.onpointerup=ev=>{ag.releasePointerCapture(ev.pointerId);ag.onpointermove=null;try{localStorage.setItem("gcal_w",anchoF)}catch(_){}}}}
   if(conf&&(conf.src||conf.emb)&&!conf.editar){const f=mk("iframe");f.src=conf.emb?urlEmb(conf.emb):url(conf.src);f.title="Google Calendar";f.setAttribute("loading","lazy");h.append(f);return}
   const c=mk("div","gcal-conf");h.append(c);
-  c.append(mk("p","gcal-intro","Traé tu Google Calendar a la web. Se ve con la cuenta de Google que tengas abierta en este navegador: no hace falta compartir nada ni hacerlo público."));
-  const pasos=mk("div","gcal-pasos");
-  const p1=mk("div","gcal-paso");p1.append(mk("b",null,"La forma rápida"),mk("span",null,"Pegá el mail de tu cuenta de Google (el que usás en Calendar). Vas a ver tu calendario principal."));
-  const p2=mk("div","gcal-paso");p2.append(mk("b",null,"Todos tus calendarios, con sus colores"));const ol2=mk("ol");
-  for(const t of ["Entrá a Google Calendar en la compu y tocá ⚙️ → Configuración.","A la izquierda, en «Configuración de mis calendarios», tocá uno de tus calendarios.","Bajá hasta «Integrar el calendario» y tocá «Personalizar».","Tildá todos los calendarios que querés ver y elegí el color de cada uno.","Copiá el código que aparece arriba (empieza con <iframe) y pegalo acá abajo."])ol2.append(mk("li",null,t));
-  const ab=mk("a",null,"Abrir la configuración de Google Calendar ↗");ab.href="https://calendar.google.com/calendar/r/settings";ab.target="_blank";ab.rel="noopener";p2.append(ol2,ab);
-  pasos.append(p1,p2);c.append(pasos);
-  const i=mk("input");i.type="text";i.placeholder="tunombre@gmail.com  ·  o el código <iframe src=…>";i.value=(conf&&(conf.emb||conf.src))||"";c.append(i);
-  const ok=mk("button","si","Ver mi calendario");ok.type="button";c.append(ok);
-  c.append(mk("p","gcal-nota","Si te aparece vacío o te pide permiso, el navegador está bloqueando a Google adentro de otras páginas (pasa en Safari y en modo incógnito). En Chrome anda."));
+  c.append(mk("p","gcal-intro","Traé tu calendario a la web. Se ve con la cuenta de Google que tengas abierta en este navegador; no hace falta hacer nada público."));
+  const op=(n,t,d)=>{const o=mk("div","gcal-op");const nn=mk("span","gcal-opn",n);const tx=mk("div");tx.append(mk("b",null,t));if(d)tx.append(mk("span",null,d));o.append(nn,tx);return o};
+  const o1=op("A","Rápido: tu calendario principal","Pegá el mail de tu cuenta de Google.");
+  const o2=op("B","Todos tus calendarios, con sus colores",null);const ol2=mk("ol","gcal-steps");
+  for(const t of ["En Google Calendar (en la compu): ⚙️ → Configuración.","A la izquierda, tocá uno de tus calendarios.","«Integrar el calendario» → «Personalizar».","Tildá todos y elegí el color de cada uno.","Copiá el código de arriba (empieza con <iframe) y pegalo acá."])ol2.append(mk("li",null,t));
+  const ab=mk("a","gcal-ir","Abrir la configuración de Google ↗");ab.href="https://calendar.google.com/calendar/r/settings";ab.target="_blank";ab.rel="noopener";o2.lastChild.append(ol2,ab);
+  c.append(o1,o2);
+  const fila=mk("div","gcal-fila");const i=mk("input");i.type="text";i.placeholder="tu mail de Google, o el código <iframe…>";i.value=(conf&&(conf.emb||conf.src))||"";
+  const ok=mk("button","si","Ver mi calendario");ok.type="button";fila.append(i,ok);c.append(fila);
+  c.append(mk("p","gcal-nota","¿Te aparece vacío? Safari y el modo incógnito bloquean a Google adentro de otras páginas. En Chrome anda."));
   ok.onclick=async()=>{const v=i.value.trim(),emb=sacarEmb(v);if(!emb&&!/^[^\s@]+@[^\s@]+$/.test(v)){toast("Eso no parece un mail ni el código de Google Calendar.");return}conf=emb?{emb,...(conf&&conf.plancha?{plancha:conf.plancha}:{})}:{src:v,...(conf&&conf.plancha?{plancha:conf.plancha}:{})};if(nodoP){nodoP.remove();nodoP=null}pintarEnPlancha();try{await dbRef.doc("config/gcal").set(conf)}catch(_){toast("No se pudo guardar, pero te lo muestro igual.")}pintar()};
   i.onkeydown=e=>{if(e.key==="Enter")ok.click()};setTimeout(()=>i.focus(),30)}
 function cerrarCal(){box.hidden=true}
