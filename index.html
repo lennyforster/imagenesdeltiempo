@@ -1472,6 +1472,9 @@ body.gu-foco .gu-salirfoco:hover{opacity:1}
 .gu-com-nuevo .acc{display:flex;gap:6px;justify-content:flex-end}.gu-com-nuevo .acc button{border:0;border-radius:999px;padding:6px 12px;font:600 12px var(--ui);cursor:pointer;background:rgba(43,37,32,.07);color:var(--ink)}.gu-com-nuevo .acc button.si{background:var(--ink);color:var(--paper)}
 body.gu-foco .gu-com-nuevo{display:none}
 .gu-com-nuevo .gu-com-in:focus{outline:none;border-color:#e0b800;box-shadow:0 0 0 2px rgba(255,224,102,.6)}.gu-com-nuevo{width:196px}
+
+::highlight(gu-vin){background-color:rgba(255,224,102,.6)}
+::highlight(gu-com){background-color:rgba(255,224,102,.35);text-decoration:underline dotted rgba(180,140,0,.8)}
 </style>
 <div class="cargando" id="cargando" hidden role="status"><span class="cg-punto"></span>Cargando tu plancha…</div>
 <div class="conectar" id="conectar" hidden>
@@ -3564,7 +3567,7 @@ const AYUDA=[
   [null,"A la izquierda tenés las escenas, los personajes y las locaciones, con buscador. Las locaciones se vuelven post-its adentro de la película solas."],
   [{chip:"Colores"},"En la lista de escenas, el circulito le pone color a cada escena."],
   [{chip:"▤ Línea de tiempo"},"La peli entera en el tiempo, con hilos narrativos y personajes. Al lado está la Escaleta, que se arma sola. Las podés ver abajo del guion, al costado (la escaleta) o en pantalla completa. Arrastrando escenas reordenás el guion. Con la × al lado de un personaje lo sacás de la línea."],
-  [{chip:"↗ Vincular"},"Marcás un pedazo y se crea un post-it con eso adentro de la película. Sin marcar nada, lo atás a un post-it que ya existe."],
+  [{chip:"↗ Vincular"},"Marcás un pedazo y se crea un post-it con eso adentro de la película; el pedazo queda resaltado en amarillo. Sin marcar nada, lo atás a un post-it que ya existe."],
   [{chip:"💬 Comentar"},"Deja un comentario al costado del renglón. Tocalo para editarlo o resolverlo. Si marcás más de una palabra, Comentar y Vincular te aparecen al costado de la hoja."],
   [{chip:"⤢"},"Modo foco: solo la hoja, sin nada alrededor. También con Ctrl+Shift+Enter. Esc para salir."],
   [null,"Ortografía: las palabras mal escritas quedan subrayadas en rojo (diccionario rioplatense, con voseo). Clic derecho para ver sugerencias o agregarla a tu diccionario. Se apaga en Archivo → Formato."],
@@ -3654,6 +3657,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:62,f:"16 de noviembre",it:[
+  ["Guion: lo que vinculás queda *resaltado en amarillo*, así sabés qué parte vinculaste. Lo comentado queda en un amarillo más suave.",null,2]]},
  {n:61,f:"16 de noviembre",it:[
   ["Saqué por ahora el botón de la «A» (versión texto). Si la tenías puesta, volvés a la versión normal.",null,3]]},
  {n:60,f:"16 de noviembre",it:[
@@ -5393,7 +5398,7 @@ function maquetar(){if(!G)return;const pg=PAGINAS[opc.pagina]||PAGINAS.a4,H=Math
   escala.style.transform=`scale(${zoom})`;const pw=pg.w*zoom;spacer.style.width=pw+"px";spacer.style.marginLeft=Math.max(12,(W-pw)/2)+"px";spacer.style.marginRight="0";spacer.style.height=alto*zoom+"px";Q("gu-zv").textContent=Math.round(zoom*100)+"%";zoomPintado=zoom;
   /* si cambió el zoom (botones, panel, mitad y mitad), quedarse en el mismo lugar de la hoja */
   if(Math.abs(zoom-z0)>.001&&!seguir&&scroller.scrollTop>0)scroller.scrollTop=Math.max(0,ancla*zoom+spacer.offsetTop-scroller.clientHeight*.3);
-  lay={ps,res,N,H,PASO};pintarChips();if(ORT.listo){pedirOrt();clearTimeout(ORT.tR);ORT.tR=setTimeout(ortRevisar,300)}else if(ORT.on)ortArrancar();pintarPie();marcarEscenaActual();if(seguir){seguir=false;verCaret()}}
+  lay={ps,res,N,H,PASO};pintarChips();pintarMarcas();if(ORT.listo){pedirOrt();clearTimeout(ORT.tR);ORT.tR=setTimeout(ortRevisar,300)}else if(ORT.on)ortArrancar();pintarPie();marcarEscenaActual();if(seguir){seguir=false;verCaret()}}
 function verCaret(){if(document.activeElement!==ed)return;const r=rango();if(!r)return;const rc=r.getClientRects()[0]||(actual()&&actual().getBoundingClientRect());if(!rc)return;const s=scroller.getBoundingClientRect();
   if(rc.bottom>s.bottom-40)scroller.scrollTop+=rc.bottom-s.bottom+s.height*0.35;else if(rc.top<s.top+20)scroller.scrollTop+=rc.top-s.top-s.height*0.3}
 function pedirLayout(){cancelAnimationFrame(tLay);tLay=requestAnimationFrame(maquetar)}
@@ -5771,7 +5776,7 @@ addEventListener("resize",()=>{if(!raiz.hidden&&G){zoomAuto=zoomAuto||innerWidth
 addEventListener("keydown",e=>{if(raiz.hidden)return;const tg=e.target;if(tg&&tg.closest&&tg.closest("#novedades,#ayuda,#gcal"))return;
   if(mitad&&modal.hidden&&(tg&&tg!==document.body?!raiz.contains(tg):ladoMitad==="plancha"))return;
   const c=e.ctrlKey||e.metaKey,l=(e.key||"").toLowerCase(),esInput=!!tg&&/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName);
-  if(e.key==="Escape"&&esInput&&tg.closest(".gu-per"))return;
+  if(e.key==="Escape"&&esInput&&tg.closest(".gu-per,.gu-com-nuevo"))return;
   if(esInput&&!(e.key==="Escape"||(c&&!e.altKey&&"fksp".includes(l)&&l.length===1&&!(!modal.hidden&&modal.contains(tg)))))return;
   if(e.key==="Escape"){if(!acBox.hidden){e.preventDefault();cerrarAC()}else if(!pop.hidden)cerrarPop();else if(!modal.hidden)cerrarModal();else if(!Q("gu-find").hidden)cerrarBuscar();else if(!Q("gu-m-archivo").hidden)Q("gu-m-archivo").hidden=true;e.stopPropagation();return}
   const enModal=!modal.hidden&&modal.contains(tg);
@@ -5936,6 +5941,17 @@ const salirFoco=mk("button","gu-salirfoco","Salir del modo foco · Esc");salirFo
 function modoFoco(v){if(v&&mitad)salirMitad(true);if(v&&tl&&!tl.hidden)cerrarTL();document.body.classList.toggle("gu-foco",v);zoomAuto=true;pedirLayout();volverAlTexto()}
 addEventListener("keydown",e=>{if(raiz.hidden)return;if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)&&e.shiftKey){e.preventDefault();e.stopImmediatePropagation();modoFoco(!document.body.classList.contains("gu-foco"));return}
   if(e.key==="Escape"&&document.body.classList.contains("gu-foco")&&modal.hidden&&acBox.hidden&&pop.hidden){e.preventDefault();e.stopImmediatePropagation();modoFoco(false)}},true);
+
+/* ---------- lo vinculado y lo comentado queda resaltado en amarillo (sin tocar el texto) ---------- */
+function rangoTexto(p,txt){const full=p.textContent;let i=full.indexOf(txt);if(i<0){const n=full.replace(/\s+/g," "),j=n.indexOf(txt);if(j<0)return null;let k=0,c=0;while(c<j&&k<full.length){if(/\s/.test(full[k])){while(k+1<full.length&&/\s/.test(full[k+1]))k++}k++;c++}i=k}
+  const ini=i,fin=i+txt.length;let pos=0,r=document.createRange(),ok1=false;const tw=document.createTreeWalker(p,NodeFilter.SHOW_TEXT);let tn;
+  while((tn=tw.nextNode())){const L=tn.data.length;if(!ok1&&ini<=pos+L){r.setStart(tn,ini-pos);ok1=true}if(ok1&&fin<=pos+L){r.setEnd(tn,fin-pos);return r}pos+=L}return null}
+function pintarMarcas(){if(!(window.CSS&&CSS.highlights&&window.Highlight))return;const vs=[],cs=[];
+  if(G&&!raiz.hidden)for(const p of ed.children){const m=meta.get(p.dataset.id);if(!m)continue;
+    for(const r of m.refs||[])if(r.txt&&!r.loc){const rg=rangoTexto(p,r.txt.trim());if(rg)vs.push(rg)}
+    if(!soloLee())for(const c of m.co||[])if(c.q){const rg=rangoTexto(p,c.q.trim());if(rg)cs.push(rg)}}
+  if(vs.length)CSS.highlights.set("gu-vin",new Highlight(...vs));else CSS.highlights.delete("gu-vin");
+  if(cs.length)CSS.highlights.set("gu-com",new Highlight(...cs));else CSS.highlights.delete("gu-com")}
 
 /* ---------- comentarios ---------- */
 function comentar(){if(soloLee())return;const r=rango();let p=r?bloqueDe(r.startContainer):null;if(!p)p=actual()||ultP;if(!p||!p.isConnected){toast("Poné el cursor en el renglón que querés comentar.");return}
