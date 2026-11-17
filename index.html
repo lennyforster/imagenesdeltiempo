@@ -3742,6 +3742,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:74,f:"16 de noviembre",mio:true,it:[
+  ["Google Calendar: ahora podés pegar el código de «Personalizar» de Google para ver todos tus calendarios, cada uno con su color.",null,2]]},
  {n:73,f:"16 de noviembre",it:[
   ["El «Más» de arriba ahora es una flechita al lado de Diario: abre las Frases, tus guiones y la línea de tiempo.",null,3],
   ["Borrar un guion ahora pregunta dos veces.",null,3]]},
@@ -6290,25 +6292,27 @@ const box=mk("div","gcal");box.id="gcal";box.hidden=true;box.setAttribute("role"
 let conf=null,modo="WEEK";
 const tz=(()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone||"America/Argentina/Buenos_Aires"}catch(_){return "America/Argentina/Buenos_Aires"}})();
 async function leer(){if(typeof dbRef==="undefined"||!dbRef)return null;try{const s=await dbRef.doc("config/gcal").get();return s.exists?s.data():null}catch(_){return null}}
+function urlEmb(u){try{const x=new URL(u);x.searchParams.set("mode",modo);if(!x.searchParams.get("hl"))x.searchParams.set("hl","es");if(!x.searchParams.get("ctz"))x.searchParams.set("ctz",tz);return x.href}catch(_){return u}}
+function sacarEmb(t){t=String(t||"").trim().replace(/&amp;/g,"&");const m=/https:\/\/calendar\.google\.com\/calendar\/embed\?[^"'\s<>]+/.exec(t);return m?m[0]:null}
 function url(src){return `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(src)}&ctz=${encodeURIComponent(tz)}&mode=${modo}&wkst=2&hl=es&showTitle=0&showPrint=0&showCalendars=0&showTz=0`}
 function pintar(){box.replaceChildren();const h=mk("div","gcal-h");box.append(h);const cab=mk("div","gcal-cab");h.append(cab);cab.append(mk("h3",null,"Google Calendar"));
   const b=(t,fn,pr)=>{const x=mk("button",null,t);x.type="button";x.onclick=fn;if(pr!=null)x.setAttribute("aria-pressed",String(pr));cab.append(x);return x};
-  if(conf&&conf.src){for(const [m,t] of [["WEEK","Semana"],["MONTH","Mes"],["AGENDA","Agenda"]])b(t,()=>{modo=m;pintar()},modo===m);
+  if(conf&&(conf.src||conf.emb)){for(const [m,t] of [["WEEK","Semana"],["MONTH","Mes"],["AGENDA","Agenda"]])b(t,()=>{modo=m;pintar()},modo===m);
     cab.append(mk("span","gu-esp"));const a=mk("a",null,"Abrir en Google ↗");a.href="https://calendar.google.com/calendar/r";a.target="_blank";a.rel="noopener";cab.append(a);b("Cambiar calendario",()=>{conf={...conf,editar:true};pintar()});}
   else cab.append(mk("span","gu-esp"));
   b("Cerrar",()=>{box.hidden=true});
-  if(conf&&conf.src&&!conf.editar){const f=mk("iframe");f.src=url(conf.src);f.title="Google Calendar";f.setAttribute("loading","lazy");h.append(f);return}
-  const c=mk("div","gcal-conf");h.append(c);c.append(mk("p",null,"Pegá el mail de tu cuenta de Google (el que usás en Calendar). Si querés ver otro calendario tuyo, pegá su «ID del calendario»."));
-  const i=mk("input");i.type="email";i.placeholder="tunombre@gmail.com";i.value=(conf&&conf.src)||"";c.append(i);
+  if(conf&&(conf.src||conf.emb)&&!conf.editar){const f=mk("iframe");f.src=conf.emb?urlEmb(conf.emb):url(conf.src);f.title="Google Calendar";f.setAttribute("loading","lazy");h.append(f);return}
+  const c=mk("div","gcal-conf");h.append(c);c.append(mk("p",null,"Pegá el mail de tu cuenta de Google, o el código de «Integrar calendario → Personalizar» de Google Calendar para ver todos tus calendarios con sus colores."));
+  const i=mk("input");i.type="text";i.placeholder="tunombre@gmail.com o <iframe src=…>";i.value=(conf&&(conf.emb||conf.src))||"";c.append(i);
   const ok=mk("button","si","Ver mi calendario");ok.type="button";c.append(ok);
-  const ol=mk("ol");for(const t of ["Se ve si en este navegador tenés abierta tu cuenta de Google. No hace falta compartir nada ni hacerlo público.","Si te aparece vacío o te pide permiso, probablemente el navegador bloquea las cookies de Google adentro de otras páginas (pasa en Safari y en modo incógnito). En Chrome normal anda.","El ID de otros calendarios está en Google Calendar → Configuración → (tu calendario) → Integrar el calendario → «ID del calendario»."])ol.append(mk("li",null,t));c.append(ol);
-  ok.onclick=async()=>{const v=i.value.trim();if(!/^[^\s@]+@[^\s@]+$/.test(v)){toast("Eso no parece un mail o un ID de calendario.");return}conf={src:v};try{await dbRef.doc("config/gcal").set({src:v})}catch(_){toast("No se pudo guardar, pero te lo muestro igual.")}pintar()};
+  const ol=mk("ol");for(const t of ["Se ve si en este navegador tenés abierta tu cuenta de Google. No hace falta compartir nada ni hacerlo público.","Si te aparece vacío o te pide permiso, probablemente el navegador bloquea las cookies de Google adentro de otras páginas (pasa en Safari y en modo incógnito). En Chrome normal anda.","Para ver todos tus calendarios con colores: Google Calendar → Configuración → (un calendario) → Integrar el calendario → «Personalizar». Tildá todos, elegí los colores, copiá el código de arriba y pegalo acá."])ol.append(mk("li",null,t));c.append(ol);
+  ok.onclick=async()=>{const v=i.value.trim(),emb=sacarEmb(v);if(!emb&&!/^[^\s@]+@[^\s@]+$/.test(v)){toast("Eso no parece un mail ni el código de Google Calendar.");return}conf=emb?{emb}:{src:v};try{await dbRef.doc("config/gcal").set(conf)}catch(_){toast("No se pudo guardar, pero te lo muestro igual.")}pintar()};
   i.onkeydown=e=>{if(e.key==="Enter")ok.click()};setTimeout(()=>i.focus(),30)}
 async function abrir(){document.body.classList.remove("barra-abierta");try{$("panel-menu").hidden=true}catch(_){}conf=conf||await leer();box.hidden=false;pintar()}
 box.addEventListener("pointerdown",e=>{if(e.target===box)box.hidden=true});
 addEventListener("keydown",e=>{if(e.key==="Escape"&&!box.hidden){box.hidden=true;e.stopPropagation()}},true);
 {const b=mk("button","btn","Google Calendar");b.type="button";b.id="btn-gcal";b.onclick=abrir;const t=document.getElementById("btn-tiempo");if(t)t.after(b);
- const m=document.querySelector('#panel-menu .menu-it[data-ir="btn-tiempo"]');if(m){const it=mk("button","menu-it","Google Calendar");it.type="button";it.setAttribute("role","menuitem");it.onclick=abrir;m.after(it)}}
+ const m=document.querySelector('#panel-menu .menu-it[data-ir="btn-cal"]');if(m){const it=mk("button","menu-it","Google Calendar");it.type="button";it.setAttribute("role","menuitem");it.onclick=abrir;m.after(it)}}
 window.__gcal={abrir};
 })();
 </script>
