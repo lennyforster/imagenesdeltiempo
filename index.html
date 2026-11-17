@@ -1567,6 +1567,14 @@ body.gu-foco .gu-herr-in{display:none!important}
 .gcal-ir{display:inline-block;font:600 12.5px var(--ui);color:var(--ink);background:rgba(43,37,32,.07);border-radius:999px;padding:5px 11px;text-decoration:none}.gcal-ir:hover{background:var(--ink);color:var(--paper)}
 .gcal-fila{display:flex;gap:8px;margin-top:2px}.gcal-fila input{flex:1;min-width:0;margin:0!important}.gcal-fila .si{flex:none}
 .gcal-nota{margin:0;font:500 12px/1.4 var(--ui);color:var(--soft)}
+
+.gu-pophilo{flex-direction:column;gap:2px;width:240px;padding:6px}
+.gu-pophilo .k{font:700 10px var(--mono);text-transform:uppercase;letter-spacing:.04em;color:var(--soft);padding:4px 8px 6px}
+.gu-pophilo button{display:flex;align-items:center;gap:8px;border:0;background:none;border-radius:8px;padding:7px 8px;font:600 13px var(--ui);color:var(--ink);cursor:pointer;text-align:left}
+.gu-pophilo button:hover{background:rgba(43,37,32,.07)}.gu-pophilo button.on{background:rgba(255,231,106,.45)}
+.gu-pophilo i{width:12px;height:12px;border-radius:50%;flex:none}.gu-pophilo .ok{margin-left:auto;font-weight:800}
+.gu-ph-nuevo{padding:4px}.gu-ph-nuevo input{width:100%;box-sizing:border-box;border:1px solid rgba(43,37,32,.18);border-radius:8px;padding:7px 9px;font:500 13px var(--ui);background:#fff;color:var(--ink)}
+.gu-ph-ayuda{margin:2px 8px 6px;font:500 12px/1.4 var(--ui);color:var(--soft)}
 </style>
 <div class="cargando" id="cargando" hidden role="status"><span class="cg-punto"></span>Cargando tu plancha…</div>
 <div class="conectar" id="conectar" hidden>
@@ -3675,7 +3683,7 @@ const AYUDA=[
   [{chip:"+ → Guion"},"Adentro del post-it de una película, con + o doble clic. Se arma un guion con formato profesional (A4, Courier) y queda en la tarjeta del post-it: «GUION · Abrir». Para otra versión, + → Guion → «+ Otro guion»."],
   [{chip:"Tab"},"Cambia el tipo de renglón: escena, acción, personaje, diálogo, paréntesis, transición. Enter pasa al que sigue. Cuando escribís un personaje y queda una sola opción, Enter lo completa."],
   [null,"A la izquierda tenés las escenas, los personajes y las locaciones, con buscador. Las locaciones se vuelven post-its adentro de la película solas."],
-  [{chip:"Colores"},"En la lista de escenas, el circulito le pone color a cada escena."],
+  [{chip:"Hilos"},"En la lista de escenas, el circulito te deja elegir a qué hilo narrativo pertenece la escena (o crear uno nuevo). Cada hilo tiene su color y la escena se pinta con ese color."],
   [{chip:"La peli"},"Arriba a la derecha. Tiene tres pestañas: Escaleta (se arma sola), Línea de tiempo (con hilos narrativos y personajes) y Desglose. Las ves abajo del guion, al costado o en pantalla completa. Arrastrando escenas reordenás el guion. Con la × al lado de un personaje lo sacás de la línea."],
   [{chip:"↗ Vincular"},"Marcás un pedazo, tocás Vincular en el cartelito del costado (o '+CMD+'+K) y se crea un post-it con eso adentro de la película; el pedazo queda resaltado en amarillo. Sin marcar nada, lo atás a un post-it que ya existe."],
   [{chip:"🏷 Desglose"},"Marcás una palabra (aunque sea una sola) y la clasificás: utilería, vestuario, extras, vehículos, efectos, etc. En La peli → Desglose ves la escena donde estás o toda la peli, y lo bajás como planilla. El elenco sale solo, y además te sugiere lo que encuentra leyendo cada escena (animales, utilería, vestuario…): lo sumás con ✓ o lo descartás con ×."],
@@ -3768,6 +3776,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:78,f:"17 de noviembre",it:[
+  ["Guion: ahora *el color de una escena es su hilo narrativo*. Tocás el circulito de la escena y elegís el hilo, o escribís uno nuevo. La escena queda pintada con su color, y en la línea de tiempo aparece en la fila de ese hilo. Los colores que ya tenías se convirtieron en hilos (ponéles nombre en la línea de tiempo).",null,1]]},
  {n:77,f:"16 de noviembre",it:[
   ["Google Calendar: rediseñé la explicación de la primera vez. Ahora es una ventanita chica con las dos opciones, A y B, en vez de una pantalla casi vacía.",null,3]]},
  {n:76,f:"16 de noviembre",it:[
@@ -5606,7 +5616,7 @@ function pintarSide(){const sc=Q("gu-sc");if(!G)return;pintarColoresEsc();if(typ
   const qv=(Q("gu-sq")&&Q("gu-sq").value)||"",qn=norm(qv);const pasa=t=>!qn||norm(t).includes(qn);
   {const sq=Q("gu-sq");sq.placeholder=ladoTab==="escenas"?"Buscar escena…":ladoTab==="personajes"?"Buscar personaje…":"Buscar locación…"}
   if(ladoTab==="escenas"){const esc=ps.filter(p=>p.dataset.t==="escena");if(!esc.length){sc.append(mk("div","gu-snota","Todavía no hay escenas. Empezá una con «INT.» o «EXT.» (o Tab hasta «Escena»)."));return}
-    let vis=0;esc.forEach((p,n)=>{if(!pasa(p.textContent))return;vis++;const b=btn("gu-it",null,()=>irABloque(p));b.dataset.id=p.dataset.id;{const c=(meta.get(p.dataset.id)||{}).c;if(c)b.style.setProperty("--ec",c);b.classList.toggle("con-c",!!c)}b.append(mk("span","gu-n",String(n+1)),mk("span","x",p.textContent.trim()||"(escena sin título)"));
+    let vis=0;esc.forEach((p,n)=>{if(!pasa(p.textContent))return;vis++;const b=btn("gu-it",null,()=>irABloque(p));b.dataset.id=p.dataset.id;{const c=colorEsc(p.dataset.id);if(c)b.style.setProperty("--ec",c);b.classList.toggle("con-c",!!c)}b.append(mk("span","gu-n",String(n+1)),mk("span","x",p.textContent.trim()||"(escena sin título)"));
       {const d=mk("span","gu-cdot");d.title="Color de la escena";d.setAttribute("role","button");d.onclick=e=>{e.stopPropagation();elegirColorEsc(p.dataset.id,d)};b.append(d)}
       const i=lay?lay.ps.indexOf(p):-1;if(i>=0&&lay.res[i])b.append(mk("span","p","p."+(lay.res[i].pag+1)));sc.append(b)});if(!vis)sc.append(mk("div","gu-snota","Ninguna escena con «"+qv+"»."));marcarEscenaActual()}
   else if(ladoTab==="personajes"){const m=personajesDe();const cnt=new Map();let cur=null;for(const p of ps){if(p.dataset.t==="personaje")cur=may(p.textContent.replace(/\(.*$/,"").trim());else if(p.dataset.t==="dialogo"&&cur)cnt.set(cur,(cnt.get(cur)||0)+1);else if(p.dataset.t!=="parentesis")cur=null}
@@ -5743,7 +5753,7 @@ function abrirGuion(g,scroll,irA){guardarYa();zoomManual=false;cerrarTL();G={id:
   Q("gu-lista").hidden=true;Q("gu-ed").hidden=false;
   if(V&&(!g.vivo||V.id!==g.vivo.e))desconectarVivo();if(g.vivo&&g.vivo.e&&(!V||V.id!==g.vivo.e))setTimeout(()=>{if(G&&G.id===g.id)conectarVivo(g.vivo.e,"e",miNombreVivo()).catch(e=>{console.error(e);toast("No pude conectar el guion en vivo. Lo que escribas igual se guarda.")})},50);
   setTimeout(()=>{if(!G||G.id!==g.id)return;const vieja=pilas.find(p=>p.id===G.doc.pilaLoc||(p.guion===G.id&&/^Locaciones · /.test(p.titulo||"")));if(vieja&&!G.doc.pilaLoc){G.doc.pilaLoc=vieja.id;sucio=true}
-    if(vieja){if(peli())sincLocaciones();else{ladoTab="locaciones";pintarSide();elegirPeli()}}},500);if(!mitad){let ab=false;try{ab=localStorage.getItem("gu_lado")==="1"}catch(_){}Q("gu-side").hidden=innerWidth<760||!ab}zoomAuto=true;cargarEnEditor(G.doc,irA);
+    if(vieja){if(peli())sincLocaciones();else{ladoTab="locaciones";pintarSide();elegirPeli()}}},500);if(!mitad){let ab=false;try{ab=localStorage.getItem("gu_lado")==="1"}catch(_){}Q("gu-side").hidden=innerWidth<760||!ab}zoomAuto=true;cargarEnEditor(G.doc,irA);migrarColores();
   requestAnimationFrame(()=>{if(scroll!=null)scroller.scrollTop=scroll;else if(!irA)scroller.scrollTop=opc.portada!==false&&lay?Math.max(0,lay.PASO*zoom-20):0;ed.focus({preventScroll:true});if(!irA&&scroll==null){const p=ed.firstElementChild;caret(p,"fin")}})}
 window.abrirGuiones=()=>{if(abierto){mitadCambia=true;try{cerrar()}finally{mitadCambia=false}}raiz.hidden=false;document.body.classList.add("en-guion");mostrarLista()};
 window.__nGuiones=()=>guiones.length;
@@ -6211,20 +6221,30 @@ function abrirComentario(pid,cid,ancla){const m=meta.get(pid),co=m&&(m.co||[]).f
 const COLS_ESC=["#ff8a80","#ffb74d","#ffe066","#9be37a","#5fd3c4","#74b9ff","#b39ddb","#f48fb1"];
 function metaDe(id){let m=meta.get(id);if(!m){m={};meta.set(id,m)}return m}
 function limpiarMeta(id){const m=meta.get(id);if(m&&!Object.keys(m).length)meta.delete(id)}
-function pintarColoresEsc(){for(const p of ed.children){if(p.dataset.t!=="escena"){if(p.dataset.ec){p.removeAttribute("data-ec");p.style.removeProperty("--ec")}continue}const c=(meta.get(p.dataset.id)||{}).c||"";
-  if((p.dataset.ec||"")!==c){if(c){p.dataset.ec="1";p.style.setProperty("--ec",c)}else{p.removeAttribute("data-ec");p.style.removeProperty("--ec")}}}}
-function ponerColorEsc(id,c){marcar();const m=metaDe(id);if(c)m.c=c;else delete m.c;limpiarMeta(id);cambio()}
+/* el color de una escena ES su hilo narrativo: la escena toma el color del (primer) hilo al que pertenece */
+/* antes el color de escena iba suelto: ahora cada color pasa a ser un hilo */
+function migrarColores(){let n=0;for(const [id,m] of meta){if(!m.c)continue;const h=hiloDeColor(m.c);const v=new Set(m.hl||[]);v.add(h.id);m.hl=[...v];delete m.c;n++}if(n){cambio()}}
+function hilosG(){return (G&&G.doc.hilos)||[]}
+function colorEsc(id){const m=meta.get(id);if(!m||!m.hl||!m.hl.length)return "";const hs=hilosG();for(const h of m.hl){const x=hs.find(z=>z.id===h);if(x)return x.c}return ""}
+function pintarColoresEsc(){for(const p of ed.children){if(p.dataset.t!=="escena"){if(p.dataset.ec){p.removeAttribute("data-ec");p.style.removeProperty("--ec")}continue}const c=colorEsc(p.dataset.id);
+  if((p.dataset.ec||"")!==c){if(c){p.dataset.ec=c;p.style.setProperty("--ec",c)}else{p.removeAttribute("data-ec");p.style.removeProperty("--ec")}}}}
+function alternarHilo(id,hid){marcar();const m=metaDe(id);const v=new Set(m.hl||[]);if(v.has(hid))v.delete(hid);else v.add(hid);if(v.size)m.hl=[...v];else delete m.hl;delete m.c;limpiarMeta(id);cambio();if(typeof pintarTL==="function")pintarTL()}
+function ponerColorEsc(id,c){/* compat: elegir un color = sumarla al hilo de ese color (lo crea si no existe) */const h=hiloDeColor(c);if(h)alternarHilo(id,h.id)}
+function hiloDeColor(c){if(!c)return null;let h=hilosG().find(x=>x.c===c);if(!h){h={id:rid(),n:"Hilo "+(hilosG().length+1),c};G.doc.hilos=[...hilosG(),h];sucio=true}return h}
+function nuevoHilo(nombre){const usados=new Set(hilosG().map(h=>h.c));const c=COLS_ESC.find(x=>!usados.has(x))||COLS_ESC[hilosG().length%COLS_ESC.length];const h={id:rid(),n:nombre,c};G.doc.hilos=[...hilosG(),h];sucio=true;pintarEstado();guardarPronto(3000);if(V)empujar();return h}
 let popC=null;
 function cerrarPopC(){if(popC){popC.remove();popC=null}}
-function elegirColorEsc(id,ancla){if(document.body.classList.contains("gu-lectura"))return;cerrarPopC();const act=(meta.get(id)||{}).c;popC=mk("div","gu-popc");
-  for(const c of COLS_ESC){const b=mk("button","gu-sw"+(c===act?" on":""));b.type="button";b.style.background=c;b.setAttribute("aria-label","Color");b.onclick=e=>{e.stopPropagation();cerrarPopC();ponerColorEsc(id,c)};popC.append(b)}
-  const n=mk("button","gu-sw gu-sw-no"+(act?"":" on"),"×");n.type="button";n.title="Sin color";n.onclick=e=>{e.stopPropagation();cerrarPopC();ponerColorEsc(id,null)};popC.append(n);
-  document.body.append(popC);const r=ancla.getBoundingClientRect();popC.style.left=Math.min(innerWidth-popC.offsetWidth-8,r.left)+"px";popC.style.top=(r.bottom+6+popC.offsetHeight>innerHeight?r.top-popC.offsetHeight-6:r.bottom+6)+"px"}
+function elegirColorEsc(id,ancla){if(document.body.classList.contains("gu-lectura"))return;cerrarPopC();const m=meta.get(id)||{};const mios=new Set(m.hl||[]);popC=mk("div","gu-popc gu-pophilo");
+  popC.append(mk("div","k","Hilo narrativo"));
+  for(const h of hilosG()){const b=mk("button",null,"");b.type="button";const d=mk("i");d.style.background=h.c;b.append(d,document.createTextNode(h.n));if(mios.has(h.id)){b.classList.add("on");b.append(mk("span","ok","✓"))}b.onclick=e=>{e.stopPropagation();cerrarPopC();alternarHilo(id,h.id)};popC.append(b)}
+  const fila=mk("div","gu-ph-nuevo");const i=mk("input");i.placeholder=hilosG().length?"+ Hilo nuevo…":"Nombre del hilo (ej: la trama de Marco)";const ok=()=>{const v=i.value.trim();if(!v)return;const h=nuevoHilo(v);cerrarPopC();alternarHilo(id,h.id)};i.onkeydown=e=>{e.stopPropagation();if(e.key==="Enter"){e.preventDefault();ok()}if(e.key==="Escape")cerrarPopC()};fila.append(i);popC.append(fila);
+  if(!hilosG().length)popC.append(mk("p","gu-ph-ayuda","Cada color es un hilo narrativo. Ponele nombre y la escena queda pintada con su color."));
+  document.body.append(popC);const r=ancla.getBoundingClientRect();popC.style.left=Math.max(8,Math.min(innerWidth-popC.offsetWidth-8,r.left))+"px";popC.style.top=(r.bottom+6+popC.offsetHeight>innerHeight?Math.max(8,r.top-popC.offsetHeight-6):r.bottom+6)+"px";if(!hilosG().length)setTimeout(()=>i.focus(),20)}
 document.addEventListener("pointerdown",e=>{if(popC&&!popC.contains(e.target))cerrarPopC()},true);
 /* las escenas, con lo que tienen adentro */
 function escenas(){const out=[];let cur=null;const ps=bloques();ps.forEach((p,i)=>{if(p.dataset.t==="escena"){cur={p,id:p.dataset.id,i,ps:[p]};out.push(cur)}else if(cur)cur.ps.push(p)});
   const H=lay?lay.H:1000;
-  for(let k=0;k<out.length;k++){const e=out[k];e.n=k+1;const m=meta.get(e.id)||{};e.c=m.c||"";e.hl=m.hl||[];e.s=m.s||"";e.tit=e.p.textContent.trim();
+  for(let k=0;k<out.length;k++){const e=out[k];e.n=k+1;const m=meta.get(e.id)||{};e.c=colorEsc(e.id);e.hl=m.hl||[];e.s=m.s||"";e.tit=e.p.textContent.trim();
     const pj=new Set();for(const q of e.ps)if(q.dataset.t==="personaje"){const nm=may(q.textContent.replace(/\(.*$/,"").trim());if(nm)pj.add(nm)}e.pj=[...pj];
     e.auto=(e.ps.find(q=>q.dataset.t==="accion"&&q.textContent.trim())||{textContent:""}).textContent.trim().replace(/\s+/g," ");
     let largo=0;if(lay){const a=lay.ps.indexOf(e.p),ult=e.ps[e.ps.length-1],b=lay.ps.indexOf(ult);if(a>=0&&b>=0&&lay.res[a]&&lay.res[b]){const ini=lay.res[a].pag*H+lay.res[a].y,sig=out[k+1]&&lay.ps.indexOf(out[k+1].p),fin=sig>=0&&sig!==undefined&&lay.res[sig]?lay.res[sig].pag*H+lay.res[sig].y:lay.res[b].pag*H+lay.res[b].y+lay.res[b].h;largo=Math.max(0,fin-ini)/H}}
@@ -6245,7 +6265,7 @@ function cerrarTL(){if(tl){tl.hidden=true;ubicarTL();pintarMarcas()}Q("gu-ed").q
 let tTL=0;function refrescarTL(){if(!tl||tl.hidden)return;if(tl.contains(document.activeElement)&&document.activeElement.tagName==="INPUT")return;cancelAnimationFrame(tTL);tTL=requestAnimationFrame(pintarTL)}
 
 function irAEscena(id){if(modoTL()==="full")cerrarTL();const p=ed.querySelector(`p[data-id="${CSS.escape(id)}"]`);if(p)irABloque(p)}
-function guardarHilos(h){G.doc.hilos=h;sucio=true;pintarEstado();guardarPronto(3000);if(V)empujar();pintarTL()}
+function guardarHilos(h){G.doc.hilos=h;sucio=true;pintarEstado();guardarPronto(3000);if(V)empujar();pintarTL();pedirSide()}
 function pintarTL(){if(!tl||tl.hidden||!G)return;queueMicrotask(pintarMarcas);const sx=tl.querySelector(".gu-tl-cuerpo")?.scrollLeft||0,sy=tl.querySelector(".gu-tl-cuerpo")?.scrollTop||0;tl.replaceChildren();
   const cab=mk("div","gu-tl-cab");const tabs=mk("div","gu-tl-tabs");for(const [k,t] of [["escaleta","Escaleta"],["linea","Línea de tiempo"],["desglose","Desglose"]]){const b=btn(k===tlTab?"on":null,t,()=>{tlTab=k;try{localStorage.setItem("gu_tltab",k)}catch(_){}ubicarTL();pintarTL()});tabs.append(b)}cab.append(tabs,mk("span","gu-esp"));
   if(tlTab==="linea"){const z=mk("div","gu-tl-zoom");z.append(btn(null,"−",()=>{tlZoom=Math.max(15,Math.round(tlZoom/1.4));try{localStorage.setItem("gu_tlz",tlZoom)}catch(_){}pintarTL()}),btn(null,"+",()=>{tlZoom=Math.min(400,Math.round(tlZoom*1.4));try{localStorage.setItem("gu_tlz",tlZoom)}catch(_){}pintarTL()}));cab.append(z)}
