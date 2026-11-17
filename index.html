@@ -15,6 +15,15 @@
 <meta name="robots" content="noindex">
 <style>html,body{margin:0}body{font:14px/1.4 system-ui,-apple-system,sans-serif}img{max-width:100%}[hidden]{display:none!important}
 ::selection{background:#ffe066;color:#2b2520}
+
+/* Frases solo se ve como pestaña cuando estás adentro; si no, está en «Más ▾» */
+#tab-frases[aria-selected="false"]{display:none}
+.mas-menu{position:fixed;z-index:30;display:flex;flex-direction:column;gap:1px;background:var(--chip-bg);border-radius:14px;padding:5px;box-shadow:0 4px 14px rgba(0,0,0,.3);min-width:190px}
+.mas-menu[hidden]{display:none}
+.mas-menu button{display:flex;align-items:center;gap:10px;border:0;background:none;border-radius:9px;padding:9px 12px;font:600 .88rem var(--ui);color:var(--ink);cursor:pointer;text-align:left;white-space:nowrap}
+.mas-menu button:hover{background:rgba(43,37,32,.1)}
+.mas-menu svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.mas-menu .n{margin-left:auto;font:500 .75rem var(--mono);color:var(--muted)}
 </style>
 </head>
 <body>
@@ -1857,6 +1866,12 @@ window.claude={use:async n=>{if(INVITADO&&n==="db"){if(!listo)listo=conectar();r
     <button class="tab" id="tab-ideas" role="tab" type="button" aria-selected="true">Ideas <span class="n" id="n-ideas"></span></button>
     <button class="tab" id="tab-frases" role="tab" type="button" aria-selected="false">Frases <span class="n" id="n-frases"></span></button>
     <button class="tab" id="tab-diario" role="tab" type="button" aria-selected="false">Diario <span class="n" id="n-diario"></span></button>
+    <button class="tab" id="tab-mas" type="button" aria-haspopup="true" aria-expanded="false" title="Frases, guiones y línea de tiempo">Más ▾</button>
+  </div>
+  <div class="mas-menu" id="mas-menu" hidden role="menu">
+    <button type="button" data-mas="frases" role="menuitem"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 4.5h4v4H5c0 1.5.7 2.5 2 3M9 4.5h4v4h-2c0 1.5.7 2.5 2 3"/></svg>Frases <span class="n" id="n-frases-m"></span></button>
+    <button type="button" data-mas="guiones" role="menuitem"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="2" width="10" height="12" rx="1"/><path d="M5.5 5.5h5M5.5 8h5M5.5 10.5h3"/></svg>Guiones <span class="n" id="n-guiones-m"></span></button>
+    <button type="button" data-mas="tiempo" role="menuitem"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 8h13"/><circle cx="4" cy="8" r="1.6"/><circle cx="8.5" cy="8" r="1.6"/><circle cx="13" cy="8" r="1.6"/></svg>Línea de tiempo</button>
   </div>
   <span class="sep"></span>
   <input type="search" class="buscar" id="buscar" placeholder="Buscar en todo…" aria-label="Buscar en todo, también adentro de los post-its">
@@ -1882,7 +1897,6 @@ window.claude={use:async n=>{if(INVITADO&&n==="db"){if(!listo)listo=conectar();r
     <div class="menu-fila"><button type="button" class="menu-ic" data-mm="undo" aria-label="Deshacer">↶<small>Deshacer</small></button><button type="button" class="menu-ic" data-mm="redo" aria-label="Rehacer">↷<small>Rehacer</small></button><button type="button" class="menu-ic" data-mm="sel">⬚<small>Elegir</small></button><button type="button" class="menu-ic" data-mm="flecha">↗<small>Flechas</small></button></div>
     <div class="menu-sep"></div>
     <button type="button" class="menu-it" data-ir="btn-cal" role="menuitem"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="11" rx="2"/><path d="M2 6.5h12M5.5 1.5v3M10.5 1.5v3"/></svg>Calendario</button>
-    <button type="button" class="menu-it" data-ir="btn-tiempo" role="menuitem"><svg viewBox="0 0 16 16"><path d="M1.5 8h13"/><circle cx="4" cy="8" r="1.6"/><circle cx="8.5" cy="8" r="1.6"/><circle cx="13" cy="8" r="1.6"/></svg>Línea de tiempo</button>
     <button type="button" class="menu-it" data-ir="mezclar" role="menuitem"><svg viewBox="0 0 16 16"><path d="M2 4h3l6 8h3M2 12h3l2-2.7M9 6.7 11 4h3M12.5 2.5 14 4l-1.5 1.5M12.5 10.5 14 12l-1.5 1.5"/></svg>Mezclar dos al azar</button>
     <div class="menu-sep"></div>
     <div class="menu-orden"><span class="menu-lbl">Ordenar la plancha</span><div class="menu-seg"><button type="button" class="seg" data-o2="num">N.º</button><button type="button" class="seg" data-o2="cat">Categoría</button><button type="button" class="seg" data-o2="grid">Grilla</button></div></div>
@@ -2508,6 +2522,14 @@ function setVista(v){
   if(!encuadrado[v]&&data[v].length){lzMain.encuadrar(lzMain.limites());encuadrado[v]=true}
 }
 $("tab-ideas").onclick=()=>setVista("ideas");$("tab-frases").onclick=()=>setVista("frases");
+/* «Más ▾»: frases, guiones y línea de tiempo (arriba quedan Ideas y Diario) */
+{const bt=$("tab-mas"),mn=$("mas-menu");const cerrarMas=()=>{mn.hidden=true;bt.setAttribute("aria-expanded","false")};
+  bt.onclick=e=>{e.stopPropagation();if(!mn.hidden){cerrarMas();return}$("n-frases-m").textContent=data.frases.length||"";$("n-guiones-m").textContent=window.__nGuiones?(window.__nGuiones()||""):"";
+    $("n-guiones-m").parentNode.hidden=!window.abrirGuiones;const r=bt.getBoundingClientRect();mn.style.left=r.left+"px";mn.style.top=(r.bottom+6)+"px";mn.hidden=false;bt.setAttribute("aria-expanded","true")};
+  mn.onclick=e=>{const b=e.target.closest("[data-mas]");if(!b)return;cerrarMas();const k=b.dataset.mas;
+    if(k==="frases"){if(enDiario||vista!=="frases")setVista("frases")}else if(k==="guiones"){window.abrirGuiones&&window.abrirGuiones()}else if(k==="tiempo"){if(enDiario)setVista("ideas");abrirTiempo()}};
+  document.addEventListener("pointerdown",e=>{if(!mn.hidden&&!mn.contains(e.target)&&e.target!==bt)cerrarMas()},true);
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!mn.hidden)cerrarMas()})}
 $("buscar").addEventListener("input",e=>{q=e.target.value;pintarMain()});
 /* Composer */
 function coloresUI(cont,actual,onPick){cont.replaceChildren(...cats.map(c=>{const b=el("button","cchip");b.type="button";b.style.setProperty("--c",c.color);b.setAttribute("aria-pressed",c.id===actual);b.append(el("i"),c.nombre||"Sin nombre");b.onclick=()=>onPick(c.id);return b}))}
@@ -3241,7 +3263,9 @@ crearLateral(lzMain);crearLateral(lzHoja);pintarPaletas();
     for(const [id,t,c] of OPC){if(punto&&id==="h-hilo")continue;const o=$(id);if(!o||o.hidden)continue;const b=el("button",c||null,t);b.type="button";b.setAttribute("role","menuitem");if(id==="h-hilo")b.setAttribute("aria-pressed",o.getAttribute("aria-pressed"));
       b.onclick=()=>{cerrarM();if(punto&&TIPOS_CREAR.includes(id.slice(4))&&o.onclick){o.onclick({_p:punto});return}if(punto)puntoNuevo=punto;o.click()};menu.append(b)}};
   window.menuCrearHoja=(cx,cy,punto)=>{if(!menu.hidden)cerrarM();armar(punto);menu.style.left=(cx+6)+"px";menu.style.top=cy+"px";menu.hidden=false;
-    requestAnimationFrame(()=>{const m=menu.getBoundingClientRect();if(m.right>innerWidth-8)menu.style.left=(cx-m.width-6)+"px";if(m.top<8)menu.style.top=(parseFloat(menu.style.top)+8-m.top)+"px";if(m.bottom>innerHeight-8)menu.style.top=(parseFloat(menu.style.top)-(m.bottom-innerHeight+8))+"px"});
+    /* si la hoja está corrida (guion mitad y mitad), «fixed» se mide desde la hoja: corregir */
+    const m0=menu.getBoundingClientRect(),dx=m0.left-(cx+6),dy=m0.top-cy;if(Math.abs(dx)>1||Math.abs(dy)>1){menu.style.left=(cx+6-dx)+"px";menu.style.top=(cy-dy)+"px"}
+    requestAnimationFrame(()=>{const m=menu.getBoundingClientRect();if(m.right>innerWidth-8)menu.style.left=(cx-m.width-6-dx)+"px";if(m.top<8)menu.style.top=(parseFloat(menu.style.top)+8-m.top)+"px";if(m.bottom>innerHeight-8)menu.style.top=(parseFloat(menu.style.top)-(m.bottom-innerHeight+8))+"px"});
     setTimeout(()=>document.addEventListener("pointerdown",fuera,true),0)};
   mas.onclick=()=>{if(!menu.hidden){cerrarM();return}armar(null);
     const r=mas.getBoundingClientRect();menu.style.left=(r.right+14)+"px";menu.style.top=(r.top+r.height/2)+"px";menu.hidden=false;mas.setAttribute("aria-expanded","true");
@@ -3546,8 +3570,8 @@ const MAC=/Mac|iPhone|iPad/.test(navigator.platform||navigator.userAgent||""),CM
 const CAL_IC='<svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3" width="12" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M2 6.5h12M5.5 1.5v3M10.5 1.5v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
 const AYUDA=[
  {t:"Lo básico",it:[
-  [null,"Hay tres secciones, arriba a la izquierda: Ideas, Frases y Diario."],
-  [{h:'<span class="ay-seg"><b>Ideas</b><span>Frases</span><span>Diario</span></span>'},"Cambiás de sección."],
+  [null,"Arriba a la izquierda: Ideas y Diario. En «Más ▾» están las Frases, todos tus guiones y la línea de tiempo."],
+  [{h:'<span class="ay-seg"><b>Ideas</b><span>Diario</span><span>Más ▾</span></span>'},"Cambiás de sección."],
   [{chip:"+ Nueva idea",c:"amarillo"},"Escribís una idea nueva y elegís su categoría. Con "+CMD+"+Enter la pegás."],
   ["Doble clic en el fondo","Escribís un post-it ahí mismo. Enter lo pega, Esc lo cancela. En el celu es doble toque."],
   [{h:'<span class="ay-post"></span>'},"Tocá un post-it para abrirlo: adentro tenés una hoja entera para desarrollar la idea. Arrastralo para moverlo."],
@@ -3559,11 +3583,14 @@ const AYUDA=[
   [{chip:"Ctrl + G"},"Con varias cosas seleccionadas (Shift + arrastrar en el fondo), las agrupa: después se mueven juntas. Ctrl + Shift + G las separa. También está el botón «Agrupar» en la barra de arriba. Funciona en la plancha y adentro de los post-its."],
   [null,"En el modo «Grilla», si arrastrás un post-it los demás se corren para hacerle lugar, y queda ese orden."],
   [{chip:"⌟"},"Adentro de un post-it, la esquinita de abajo a la derecha de los post-its chiquitos los hace más grandes o más chicos."]]},
+ {t:"Más ▾",it:[
+  [{chip:"Frases"},"Citas, cosas que leíste o escuchaste y no querés perder. Mientras estás ahí, aparece como pestaña."],
+  [{chip:"Guiones"},"Todos tus guiones juntos: abrirlos, cambiarles el nombre, borrarlos o importar uno."],
+  [{chip:"Línea de tiempo"},"Tus ideas (o frases) en el orden en que las fuiste anotando."]]},
  {t:"Menú •••",it:[
   [{chip:"•••"},"Arriba a la derecha: abre una fila con todo lo que sigue."],
   [{h:'<span class="ay-chip ay-busca">⌕ Buscar en todo…</span>'},"Busca en todo, también adentro de los post-its."],
   [{h:'<span class="ay-chip">'+CAL_IC+' Calendario</span>'},"Todas las fechas de tus ideas en un calendario (está en Ideas)."],
-  [{chip:"Línea de tiempo"},"Tus ideas en el orden en que las fuiste anotando."],
   [{chip:"Mezclar"},"Junta dos ideas al azar para ver qué sale. Podés filtrar qué entra en la mezcla."],
   [{h:'<span class="ay-seg"><b>N.º</b><span>Categoría</span><span>Grilla</span></span>'},"Cómo se ordenan los post-its."],
   [{chip:"Cómo se usa?"},"Esta guía."],
@@ -3714,6 +3741,9 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:72,f:"16 de noviembre",it:[
+  ["Arriba ahora quedan *Ideas* y *Diario*. Al lado está *Más ▾*, donde encontrás las *Frases*, *todos tus guiones* juntos y la *línea de tiempo*.",null,1],
+  ["Guion: con la plancha al lado, el doble clic vuelve a abrir el menú para crear cosas, justo donde hiciste clic.",null,3]]},
  {n:71,f:"16 de noviembre",it:[
   ["La línea de tiempo de la plancha ya no muestra los post-its de locaciones que arma el guion. Además, en la línea de tiempo del guion las escenas vuelven a mostrar su locación.",null,3]]},
  {n:70,f:"16 de noviembre",it:[
@@ -5675,6 +5705,8 @@ function abrirGuion(g,scroll,irA){guardarYa();zoomManual=false;cerrarTL();G={id:
   setTimeout(()=>{if(!G||G.id!==g.id)return;const vieja=pilas.find(p=>p.id===G.doc.pilaLoc||(p.guion===G.id&&/^Locaciones · /.test(p.titulo||"")));if(vieja&&!G.doc.pilaLoc){G.doc.pilaLoc=vieja.id;sucio=true}
     if(vieja){if(peli())sincLocaciones();else{ladoTab="locaciones";pintarSide();elegirPeli()}}},500);if(!mitad){let ab=false;try{ab=localStorage.getItem("gu_lado")==="1"}catch(_){}Q("gu-side").hidden=innerWidth<760||!ab}zoomAuto=true;cargarEnEditor(G.doc,irA);
   requestAnimationFrame(()=>{if(scroll!=null)scroller.scrollTop=scroll;else if(!irA)scroller.scrollTop=opc.portada!==false&&lay?Math.max(0,lay.PASO*zoom-20):0;ed.focus({preventScroll:true});if(!irA&&scroll==null){const p=ed.firstElementChild;caret(p,"fin")}})}
+window.abrirGuiones=()=>{if(abierto){mitadCambia=true;try{cerrar()}finally{mitadCambia=false}}raiz.hidden=false;document.body.classList.add("en-guion");mostrarLista()};
+window.__nGuiones=()=>guiones.length;
 function mostrarLista(){guardarYa();salirMitad(true);desconectarVivo();G=null;try{localStorage.removeItem("guion_ult")}catch(_){}Q("gu-ed").hidden=true;Q("gu-lista").hidden=false;pintarLista()}
 function pintarLista(){const c=Q("gu-cards");c.replaceChildren();
   if(!guiones.length){c.append(mk("p","gu-vacio","Acá van tus guiones, con el formato de siempre: Courier, A4, márgenes de industria. Escribís y se acomoda solo. Tocá «+ Guion nuevo» o traé uno de Final Draft."));return}
@@ -6323,7 +6355,7 @@ if(window.__demo){(function(){
    {tit:"Quedó anotado en tu diario",txt:"Cada tarea que tachás se escribe sola en el diario de hoy, con la hora («Terminé: …»). Así, sin hacer nada, te queda registro de lo que fuiste haciendo. Si la destachás, se borra.",boton:"Qué bueno",
     objetivo:()=>document.querySelector("#capa-hoja .btar")},
    {tit:"Volvé a la plancha",txt:"Este botón siempre te devuelve a donde estabas.",hacer:"Tocá «← Volver»",objetivo:()=>$("volver"),listo:()=>!abierto},
-   {tit:"Ideas, Frases y Diario",txt:"Arriba tenés las tres partes de la web. <b>Frases</b> es para citas, cosas que leíste o escuchaste y no querés perder.",hacer:"Tocá «Frases»",objetivo:()=>$("tab-frases"),listo:()=>vista==="frases"&&!enDiario},
+   {tit:"Ideas, Diario y «Más»",txt:"Arriba tenés las ideas y el diario. En <b>Más ▾</b> están las <b>Frases</b> (citas, cosas que leíste o escuchaste y no querés perder), tus guiones y la línea de tiempo.",hacer:"Tocá «Más» y después «Frases»",objetivo:()=>$("mas-menu").hidden?$("tab-mas"):$("mas-menu").querySelector('[data-mas="frases"]'),listo:()=>vista==="frases"&&!enDiario},
    {tit:"Las frases",txt:"Funcionan igual que las ideas: doble clic para crear una, arrastrar para acomodar. También las podés poner adentro de un post-it con «Vínculo».",hacer:"Tocá «Diario»",objetivo:()=>$("tab-diario"),listo:()=>enDiario},
    {tit:"Tu diario",txt:"Un día por página. Escribís directo, sin abrir nada, y cada renglón queda con su hora. Con la barra de abajo pegás post-its, notas, imágenes o links, y arriba está el <b>Calendario</b> para saltar a otro día.<br><br>¿Ves «Terminé: …»? Eso lo anotó solo tu lista de tareas.",boton:"Seguir",libre:1},
    {tit:"Volvé a las ideas",txt:"Ya casi estamos.",hacer:"Tocá «Ideas»",objetivo:()=>$("tab-ideas"),listo:()=>vista==="ideas"&&!enDiario},
