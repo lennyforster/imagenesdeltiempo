@@ -1340,6 +1340,7 @@ body.gu-mitad #vp-hoja{background-color:#1f6b4a!important;background-image:linea
 /* división arrastrable */
 .gu-corte{display:none;position:fixed;top:0;bottom:0;left:var(--gu-corte,50%);width:14px;margin-left:-7px;z-index:48;cursor:col-resize;touch-action:none}
 body.gu-mitad .gu-corte{display:block}
+.gu-bcand{display:none}body.gu-mitad .gu-bcand{display:inline-block}.gu-bcand svg{display:block;margin:auto}
 .gu-corte::before{content:"";position:absolute;left:6px;top:0;bottom:0;width:2px;background:rgba(255,253,246,.25);transition:background .15s,width .15s,left .15s}
 .gu-corte::after{content:"";position:absolute;left:3px;top:50%;width:8px;height:44px;margin-top:-22px;border-radius:999px;background:#fffdf6;box-shadow:0 2px 8px rgba(0,0,0,.35)}
 .gu-corte:hover::before,.gu-corte.on::before{background:#ffe76a;width:4px;left:5px}
@@ -3728,6 +3729,7 @@ const AYUDA=[
   [null,"A la izquierda tenés las escenas, los personajes y las locaciones, con buscador. Las locaciones se vuelven post-its adentro de la película solas."],
   [{chip:"Hilos"},"En la lista de escenas, el circulito te deja elegir a qué hilo narrativo pertenece la escena (o crear uno nuevo). Cada hilo tiene su color y la escena se pinta con ese color."],
   [{chip:"La peli"},"Arriba a la derecha. Tiene tres pestañas: Escaleta (se arma sola), Línea de tiempo (con hilos narrativos y personajes) y Desglose. Las ves abajo del guion, al costado o en pantalla completa. Arrastrando escenas reordenás el guion. Con la × al lado de un personaje lo sacás de la línea."],
+  [{chip:"◧ y candado"},"◧ pone la plancha de la película al lado del guion, mitad y mitad. El candadito de al lado une el scroll: bajás en el guion y la plancha baja con vos. Tocalo de nuevo para soltarlo."],
   [{chip:"↗ Vincular"},"Marcás un pedazo, tocás Vincular en el cartelito del costado (o Ctrl+K, ⌘+K en Mac) y se crea un post-it con eso adentro de la película; el pedazo queda resaltado en amarillo. Sin marcar nada, lo atás a un post-it que ya existe."],
   [{chip:"🏷 Desglose"},"Marcás una palabra (aunque sea una sola) y la clasificás: utilería, vestuario, extras, vehículos, efectos, etc. En La peli → Desglose ves la escena donde estás o toda la peli, y lo bajás como planilla. El elenco sale solo, y además te sugiere lo que encuentra leyendo cada escena (animales, utilería, vestuario…): lo sumás con ✓ o lo descartás con ×."],
   [{chip:"💬 Comentar"},"Marcás algo y tocás Comentar en el cartelito del costado (o Ctrl+Alt+M): queda un comentario al costado del renglón. Tocalo para editarlo, responderlo o resolverlo: las respuestas quedan abajo, como una charla, sean tuyas o de otro. Cuando marcás texto, Comentar, Vincular y Desglose te aparecen al costado de la hoja."],
@@ -3823,6 +3825,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:87,f:"17 de noviembre",it:[
+  ["En el guion mitad y mitad hay *un candadito* arriba, al lado del ◧. Si lo cerrás, el scroll queda unido: bajás en el guion y la plancha baja con vos. Lo volvés a tocar y cada lado se mueve por su cuenta.",null,2]]},
  {n:86,f:"17 de noviembre",it:[
   ["Al ensanchar una lista de tareas, los renglones se acomodan solos y ya no quedan huecos entre las tareas.",null,3]]},
  {n:85,f:"17 de noviembre",it:[
@@ -5220,6 +5224,7 @@ raiz.innerHTML=`
     <span class="gu-estado" id="gu-estado"></span><span class="gu-gente" id="gu-gente" hidden></span>
     <span class="gu-esp"></span>
     
+    <button type="button" class="gu-b gu-ic gu-bcand" data-a="candado" aria-pressed="false" title="Unir el scroll del guion con la plancha"></button>
     <button type="button" class="gu-b gu-ic solo-ancho gu-bmitad" data-a="mitad" title="Plancha de la película al lado (mitad y mitad)">◧</button>
     <button type="button" class="gu-b solo-ancho gu-blapeli" data-a="linea" title="Escaleta, línea de tiempo y desglose"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><rect x="2.5" y="3" width="15" height="3.2" rx="1.2" fill="currentColor"/><rect x="2.5" y="8.4" width="9" height="3.2" rx="1.2" fill="currentColor"/><rect x="2.5" y="13.8" width="12" height="3.2" rx="1.2" fill="currentColor"/></svg> <span class="gu-lbl">La peli</span></button>
     <button type="button" class="gu-b gu-compartir solo-duenio" data-a="compartir" title="Links para editar con otros o para que lo lean">Compartir</button>
@@ -5546,6 +5551,18 @@ function salirMitad(cerrarHoja){if(!mitad)return;mitad=false;Q("gu-side").hidden
 function alternarMitad(){if(mitad){salirMitad(true);return}if(!G)return;const pid=G.doc.postit;if(pid&&itemDe("ideas",pid)){guardarYa();abrirEnMitad("ideas",pid);return}
   elegirPeli();esperandoMitad=true}
 let esperandoMitad=false;
+/* candado: en el mitad y mitad, al scrollear el guion se mueve también la plancha */
+let candado=false;try{candado=localStorage.getItem("gu_candado")==="1"}catch(_){}
+let scrollAntes=0,guToca=false,guToque=0;
+const ICO_CAND=c=>`<svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><path d="${c?"M6.5 9V6.5a3.5 3.5 0 0 1 7 0V9":"M6.5 9V6.5a3.5 3.5 0 0 1 6.8-1.2"}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="4.5" y="9" width="11" height="8" rx="1.6" fill="currentColor"/></svg>`;
+function pintarCandado(){const b=Q("gu-ed").querySelector('[data-a="candado"]');if(!b)return;b.setAttribute("aria-pressed",candado?"true":"false");b.title=candado?"Scroll unido: el guion mueve la plancha (tocá para soltarlo)":"Unir el scroll del guion con la plancha";b.innerHTML=ICO_CAND(candado)}
+function alternarCandado(){candado=!candado;scrollAntes=scroller.scrollTop;try{localStorage.setItem("gu_candado",candado?"1":"0")}catch(_){}pintarCandado();toast(candado?"Scroll unido: si bajás en el guion, baja también la plancha.":"Scroll suelto: cada lado se mueve por su cuenta.")}
+/* solo cuando el que scrollea sos vos (rueda, dedo, teclado o la barra), no cuando la web reacomoda el guion */
+const guMarca=()=>{guToque=performance.now()};
+for(const t of ["wheel","touchmove","keydown"])scroller.addEventListener(t,guMarca,{passive:true});
+scroller.addEventListener("pointerdown",()=>{guToca=true},{passive:true});addEventListener("pointerup",()=>{if(guToca){guToca=false;guMarca()}},true);addEventListener("pointercancel",()=>{guToca=false},true);
+scroller.addEventListener("scroll",()=>{const y=scroller.scrollTop,d=y-scrollAntes;scrollAntes=y;if(!candado||!mitad||!abierto||!d)return;if(!guToca&&performance.now()-guToque>700)return;guMarca();lzHoja.ty-=d;lzHoja.apply()},{passive:true});
+try{pintarCandado()}catch(_){}
 addEventListener("pointerdown",e=>{if(mitad)ladoMitad=e.clientX<corteX()?"guion":"plancha"},true);
 /* la división se arrastra: más lugar para el guion o para la plancha */
 let corteFr=.5;try{const v=parseFloat(localStorage.getItem("gu_corte"));if(v>.15&&v<.85)corteFr=v}catch(_){}
@@ -6071,7 +6088,7 @@ raiz.addEventListener("click",e=>{const b=e.target.closest("[data-a],[data-lado]
   if(b.dataset.lado){if(ladoTab!==b.dataset.lado)Q("gu-sq").value="";ladoTab=b.dataset.lado;pintarSide();return}
   const a=b.dataset.a,m=Q("gu-m-archivo");if(a!=="archivo")m.hidden=true;
   ({salir,versiones:()=>abrirVersiones(),mis:mostrarLista,nuevo:()=>nuevo(),importar:()=>Q("gu-file").click(),lado:()=>{const s=Q("gu-side");s.hidden=!s.hidden;if(innerWidth>=760)try{localStorage.setItem("gu_lado",s.hidden?"0":"1")}catch(_){}zoomAuto=true;pedirLayout()},
-    mitad:alternarMitad,foco:()=>modoFoco(true),comentar:()=>comentar(),linea:()=>{if(tl&&!tl.hidden)cerrarTL();else abrirTL()},b:()=>formato("b"),i:()=>formato("i"),u:()=>formato("u"),vincular,buscar:abrirBuscar,archivo:()=>{m.hidden=!m.hidden},
+    mitad:alternarMitad,candado:alternarCandado,foco:()=>modoFoco(true),comentar:()=>comentar(),linea:()=>{if(tl&&!tl.hidden)cerrarTL();else abrirTL()},b:()=>formato("b"),i:()=>formato("i"),u:()=>formato("u"),vincular,buscar:abrirBuscar,archivo:()=>{m.hidden=!m.hidden},
     volverp:()=>{const pe=peli();if(!pe){mostrarLista();return}guardarYa();salir();setTimeout(()=>abrir("ideas",pe.id),0)},compartir:compartirUI,portada,opciones,pdf:exportarPDF,fdx:()=>{bajar(nombreArchivo("fdx"),aFDX(),"application/xml");toast("Exportado para Final Draft.")},fountain:()=>bajar(nombreArchivo("fountain"),aFountain(),"text/plain"),atajos,borrar:borrarGuion,
     zauto:()=>{zoomManual=false;zoomAuto=true;maquetar()},zm:()=>{zoomAuto=false;zoomManual=true;zoom=Math.max(.4,Math.round((zoom-.1)*10)/10);maquetar()},zp:()=>{zoomAuto=false;zoomManual=true;zoom=Math.min(2,Math.round((zoom+.1)*10)/10);maquetar()},
     "f-ant":()=>irHall(-1),"f-sig":()=>irHall(1),"f-cerrar":cerrarBuscar,"f-uno":()=>reemplazar(false),"f-todo":()=>reemplazar(true)}[a]||(()=>{}))()});
