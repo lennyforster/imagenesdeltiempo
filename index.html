@@ -456,7 +456,9 @@ body.en-diario .mostrar-ui{color:var(--ink)}
 html.plano .mostrar-ui{color:#333!important}
 .agregar-menu{position:fixed;z-index:12;display:flex;flex-direction:column;gap:1px;background:var(--chip-bg);border-radius:14px;padding:5px;box-shadow:0 4px 14px rgba(0,0,0,.3);transform:translateY(-50%)}
 .agregar-menu button{border:0;background:none;border-radius:9px;padding:8px 14px;font:600 .85rem var(--ui);color:var(--ink);cursor:pointer;text-align:left;white-space:nowrap}
-.agregar-menu button:hover{background:rgba(43,37,32,.1)}
+#h-mas[aria-expanded="true"]{background:var(--ink);color:var(--paper)}
+.agregar-menu button:hover,.agregar-menu button.kb{background:rgba(43,37,32,.1)}
+.agregar-menu button.am.kb{box-shadow:inset 0 0 0 2px var(--ink)}
 .agregar-menu button.am{background:var(--p-corto)}
 .agregar-menu button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
 /* en compu, «Agregar» vive en el + de la barra izquierda; la barra de abajo queda solo para «A Ideas» */
@@ -1296,6 +1298,8 @@ body.barra-abierta .barra-extra.h-extra:not(.abierta){display:none}
 body.gu-mitad #guion{right:calc(100% - var(--gu-corte,50%))}
 body.gu-mitad #detalle{left:var(--gu-corte,50%);transform:translateZ(0);box-shadow:-6px 0 22px rgba(0,0,0,.35)}
 body.gu-mitad .panel{left:calc((100% + var(--gu-corte,50%)) / 2)!important;width:min(420px,calc(100vw - var(--gu-corte,50%) - 24px))!important}
+/* los paneles que viven adentro de la hoja ya se miden desde la hoja (que está corrida): van centrados en ella */
+body.gu-mitad #detalle .panel{left:50%!important;width:min(420px,calc(100% - 24px))!important}
 @media (max-width:900px){.gu-top [data-a="mitad"]{display:none}}
 .gu-pilaloc .acc{display:flex;gap:6px;flex-wrap:wrap}.gu-pilaloc .gu-sec{background:rgba(43,37,32,.12);color:var(--ink)}
 .gu-mh>input{margin-top:12px}
@@ -3056,6 +3060,13 @@ function menuCrearMain(cx,cy,p){let m=$("menu-main");if(!m){m=el("div","agregar-
   m.replaceChildren(...op.map(([t,c,fn])=>{const b=el("button",c,t);b.type="button";b.setAttribute("role","menuitem");b.onclick=()=>{cerrarM();fn()};return b}));
   m.style.left=(cx+6)+"px";m.style.top=cy+"px";m.hidden=false;requestAnimationFrame(()=>{const r=m.getBoundingClientRect();if(r.right>innerWidth-8)m.style.left=(cx-r.width-6)+"px";if(r.bottom>innerHeight-8)m.style.top=(parseFloat(m.style.top)-(r.bottom-innerHeight+8))+"px"});
   setTimeout(()=>document.addEventListener("pointerdown",fuera,true),0);document.addEventListener("keydown",function k(e){if(e.key==="Escape"){cerrarM();document.removeEventListener("keydown",k)}})}
+/* los menús de «agregar» también se manejan con el teclado: ↑↓ para elegir, Enter o Tab para crear, Esc para cerrar */
+addEventListener("keydown",e=>{if(e.isComposing||e.ctrlKey||e.metaKey||e.altKey)return;
+  const m=[...document.querySelectorAll(".agregar-menu")].find(x=>!x.hidden&&x.offsetParent!==null&&!x.closest("#guion"));if(!m)return;
+  const bs=[...m.querySelectorAll("button")].filter(b=>!b.hidden);if(!bs.length)return;const i=bs.findIndex(b=>b.classList.contains("kb")),k=e.key;
+  if(k==="ArrowDown"||k==="ArrowUp"){e.preventDefault();e.stopPropagation();const n=i<0?(k==="ArrowDown"?0:bs.length-1):(i+(k==="ArrowDown"?1:-1)+bs.length)%bs.length;bs.forEach((b,j)=>b.classList.toggle("kb",j===n));bs[n].scrollIntoView({block:"nearest"});return}
+  if((k==="Enter"||k==="Tab")&&!e.shiftKey){e.preventDefault();e.stopPropagation();(bs[i<0?0:i]).click();return}
+  if(k==="Escape"){e.preventDefault();e.stopPropagation();m.hidden=true;bs.forEach(b=>b.classList.remove("kb"))}},true);
 /* adentro de un post-it, el doble clic crea lo mismo que agregaste la última vez */
 const TIPOS_CREAR=["post","txt","tx","link","img","cal","esc"];let ultCreado="post",puntoNuevo=null;try{const u=localStorage.getItem("ult_creado");if(TIPOS_CREAR.includes(u))ultCreado=u}catch(_){}
 function centroNuevo(){const p=puntoNuevo||lzHoja.centro();puntoNuevo=null;return p}
@@ -3350,6 +3361,7 @@ crearLateral(lzMain);crearLateral(lzHoja);pintarPaletas();
     setTimeout(()=>document.addEventListener("pointerdown",fuera,true),0)};
   mas.onclick=()=>{if(!menu.hidden){cerrarM();return}armar(null);
     const r=mas.getBoundingClientRect();menu.style.left=(r.right+14)+"px";menu.style.top=(r.top+r.height/2)+"px";menu.hidden=false;mas.setAttribute("aria-expanded","true");
+    {const m0=menu.getBoundingClientRect(),dx=m0.left-(r.right+14);if(Math.abs(dx)>1)menu.style.left=(r.right+14-dx)+"px"} /* en el mitad y mitad la hoja está corrida */
     requestAnimationFrame(()=>{const m=menu.getBoundingClientRect();if(m.top<8)menu.style.top=(parseFloat(menu.style.top)+8-m.top)+"px";if(m.bottom>innerHeight-8)menu.style.top=(parseFloat(menu.style.top)-(m.bottom-innerHeight+8))+"px"});
     document.addEventListener("pointerdown",fuera,true)};
   document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!menu.hidden){cerrarM()}})}
@@ -3728,11 +3740,11 @@ const AYUDA=[
   [{chip:"A Ideas",c:"amarillo"},"Marcá un pedazo de texto y mandalo como idea nueva a tu plancha."]]},
  {t:"Guion",it:[
   [{chip:"+ → Guion"},"Adentro del post-it de una película, con + o doble clic. Se arma un guion con formato profesional (A4, Courier) y queda en la tarjeta del post-it: «GUION · Abrir». Para otra versión, + → Guion → «+ Otro guion»."],
-  [{chip:"Tab"},"Cambia el tipo de renglón: escena, acción, personaje, diálogo, paréntesis, transición. Enter pasa al que sigue. Cuando escribís un personaje y queda una sola opción, Enter lo completa."],
+  [{chip:"Tab"},"Cambia el tipo de renglón: escena, acción, personaje, diálogo, paréntesis, transición. Enter pasa al que sigue. Cuando escribís un personaje, Tab lo completa con la primera sugerencia; si bajás con la flechita a otro, Tab confirma ese."],
   [null,"A la izquierda tenés las escenas, los personajes y las locaciones, con buscador. Las locaciones se vuelven post-its adentro de la película solas."],
   [{chip:"Hilos"},"En la lista de escenas, el circulito te deja elegir a qué hilo narrativo pertenece la escena (o crear uno nuevo). Cada hilo tiene su color y la escena se pinta con ese color."],
   [{chip:"La peli"},"Arriba a la derecha. Tiene tres pestañas: Escaleta (se arma sola), Línea de tiempo (con hilos narrativos y personajes) y Desglose. Las ves abajo del guion, al costado o en pantalla completa. Arrastrando escenas reordenás el guion. Con la × al lado de un personaje lo sacás de la línea."],
-  [{chip:"◧ y candado"},"◧ pone la plancha de la película al lado del guion, mitad y mitad. El candadito de al lado une el scroll: guion y plancha suben y bajan juntos, muevas el que muevas. Tocalo de nuevo para soltarlo."],
+  [{chip:"◧ y candado"},"◧ pone la plancha de la película al lado del guion, mitad y mitad. El candadito de al lado une el scroll: guion y plancha suben y bajan juntos, muevas el que muevas (con el candado puesto, la rueda sobre la plancha la mueve en vez de hacer zoom; para el zoom, Ctrl + rueda). Tocalo de nuevo para soltarlo."],
   [{chip:"↗ Vincular"},"Marcás un pedazo, tocás Vincular en el cartelito del costado (o Ctrl+K, ⌘+K en Mac) y se crea un post-it con eso adentro de la película; el pedazo queda resaltado en amarillo. Sin marcar nada, lo atás a un post-it que ya existe."],
   [{chip:"🏷 Desglose"},"Marcás una palabra (aunque sea una sola) y la clasificás: utilería, vestuario, extras, vehículos, efectos, etc. En La peli → Desglose ves la escena donde estás o toda la peli, y lo bajás como planilla. El elenco sale solo, y además te sugiere lo que encuentra leyendo cada escena (animales, utilería, vestuario…): lo sumás con ✓ o lo descartás con ×."],
   [{chip:"💬 Comentar"},"Marcás algo y tocás Comentar en el cartelito del costado (o Ctrl+Alt+M): queda un comentario al costado del renglón. Tocalo para editarlo, responderlo o resolverlo: las respuestas quedan abajo, como una charla, sean tuyas o de otro. Cuando marcás texto, Comentar, Vincular y Desglose te aparecen al costado de la hoja."],
@@ -3828,6 +3840,9 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:89,f:"19 de noviembre",it:[
+  ["Con el candadito puesto en el mitad y mitad, *la rueda del mouse sobre la plancha ahora la sube y la baja* (y el guion la sigue), en vez de hacer zoom. Para el zoom: Ctrl + rueda, o pellizcando.",null,2],
+  ["En el mitad y mitad, el menú del + de la plancha ya no se va afuera de la pantalla.",null,3]]},
  {n:88,f:"18 de noviembre",it:[
   ["El candadito del mitad y mitad ahora anda para los dos lados: si movés la plancha para arriba o para abajo, el guion la sigue.",null,2],
   ["En el mitad y mitad, los avisos que aparecen ya no quedan tapados por el guion.",null,3]]},
@@ -4935,9 +4950,9 @@ $("m-pegar").onclick=async()=>{
   const cerrarPop=()=>{const p=$("panel-mas");p.hidden=true;p.classList.remove("pop");p.style.left=p.style.top="";p.querySelectorAll(".pop-sec").forEach(x=>x.classList.remove("pop-sec"))};
   const pop=(sec,b)=>{const p=$("panel-mas"),ya=!p.hidden&&$(sec).classList.contains("pop-sec");cerrarPop();if(ya)return;$(sec).classList.add("pop-sec");p.classList.add("pop");p.hidden=false;
     const r=b.getBoundingClientRect();p.style.left=Math.max(8,Math.min(innerWidth-p.offsetWidth-8,r.left))+"px";p.style.top=(r.bottom+8)+"px"};
-  const cerrarBarra=()=>{bar.classList.remove("abierta");cerrarPop()};window.cerrarBarraHoja=cerrarBarra;
-  $("h-mas").onclick=()=>{if(!movido){movido=true;bar.append(pc,pe,...$("panel-mas").querySelectorAll(".mas-fila>*,.mas-pie>*"),cx)}
-    const ab=!bar.classList.contains("abierta");cerrarBarra();if(ab){bar.classList.add("abierta");pintarPills()}for(const x of ["panel-claude","panel-export","panel-compartir","linkform"])$(x).hidden=true};
+  const cerrarBarra=()=>{bar.classList.remove("abierta");$("h-mas").setAttribute("aria-expanded","false");cerrarPop()};window.cerrarBarraHoja=cerrarBarra;
+  $("h-mas").onclick=()=>{if(!movido){movido=true;bar.append(pc,pe,...$("panel-mas").querySelectorAll(".mas-fila>*,.mas-pie>*"))}
+    const ab=!bar.classList.contains("abierta");cerrarBarra();if(ab){bar.classList.add("abierta");$("h-mas").setAttribute("aria-expanded","true");pintarPills()}for(const x of ["panel-claude","panel-export","panel-compartir","linkform"])$(x).hidden=true};
   cx.onclick=cerrarBarra;pc.onclick=()=>pop("mas-cat",pc);pe.onclick=()=>pop("mas-est",pe);
   bar.addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b===pc||b===pe||b===cx||b.id==="h-del")return;setTimeout(cerrarBarra,0)});
   for(const id of ["h-colores","h-estados"])$(id).addEventListener("click",()=>setTimeout(()=>{pintarPills();cerrarPop()},60));
@@ -5455,6 +5470,7 @@ function tecla(e){
     if(k==="ArrowDown"||k==="ArrowUp"){e.preventDefault();moverAC(k==="ArrowDown"?1:-1);return}
     if(k==="Enter"&&!e.shiftKey&&acSel>=0){e.preventDefault();aceptarAC(acSel);return}
     if(k==="Escape"){e.preventDefault();cerrarAC();return}
+    if(k==="Tab"&&!e.shiftKey){const pp=actual(),n=acSel>=0?acSel:(pp&&pp.dataset.t==="personaje"?0:-1);if(n>=0){e.preventDefault();aceptarAC(n);return}}
     if(k==="Tab")cerrarAC()}
   if(k==="Tab"){e.preventDefault();const p=actual();if(!p)return;marcar();ciclar(p,e.shiftKey?-1:1);pintarTipoUI();sugerir();return}
   if(k==="Enter"){enter(e);sugerir();return}
@@ -5521,7 +5537,7 @@ function sugerir(){const p=actual();if(!p||document.activeElement!==ed){cerrarAC
   if(!items.length){cerrarAC();return}
   acItems=items.slice(0,10);/* Enter solo completa si ya escribiste algo que coincide (o si elegiste con las flechas); en personajes, solo con flechas */
   const escrito=t==="escena"?(txt.match(RX_PREF)?txt.slice(txt.match(RX_PREF)[0].length).split(/\s+[-–—]\s+/).pop().trim():txt.trim()):txt.trim();
-  acSel=((t!=="personaje"||txt.includes("("))&&escrito)||(t==="personaje"&&escrito&&acItems.length===1)?0:-1;acBox.dataset.p=p.dataset.id;acBox.replaceChildren(...acItems.map((it,n)=>{const b=mk("button",n===acSel?"on":"");b.type="button";b.append(it.txt);if(it.tag)b.append(mk("small",null,it.tag));b.onpointerdown=ev=>{ev.preventDefault();aceptarAC(n)};return b}),mk("div","gu-acpie",acSel>=0?"Enter para usar · ↑↓ elegir otra · Esc cerrar":"↓ para elegir · Esc cerrar"));
+  acSel=((t!=="personaje"||txt.includes("("))&&escrito)||(t==="personaje"&&escrito&&acItems.length===1)?0:-1;acBox.dataset.p=p.dataset.id;acBox.replaceChildren(...acItems.map((it,n)=>{const b=mk("button",n===acSel?"on":"");b.type="button";b.append(it.txt);if(it.tag)b.append(mk("small",null,it.tag));b.onpointerdown=ev=>{ev.preventDefault();aceptarAC(n)};return b}),mk("div","gu-acpie",acSel>=0?"Enter o Tab para usar · ↑↓ elegir otra · Esc cerrar":t==="personaje"?"Tab usa la primera · ↓ para elegir · Esc cerrar":"↓ para elegir · Esc cerrar"));
   acBox.hidden=false;const rr=rango(),rc=(rr&&rr.getClientRects()[0])||p.getBoundingClientRect();let x=rc.left,y=rc.bottom+6;const w=acBox.offsetWidth,h=acBox.offsetHeight;if(x+w>innerWidth-8)x=innerWidth-w-8;if(y+h>innerHeight-8)y=rc.top-h-6;acBox.style.left=Math.max(8,x)+"px";acBox.style.top=Math.max(8,y)+"px"}
 function moverAC(d){acSel=(acSel+d+acItems.length)%acItems.length;[...acBox.querySelectorAll("button")].forEach((b,n)=>b.classList.toggle("on",n===acSel));acBox.querySelectorAll("button")[acSel]?.scrollIntoView({block:"nearest"})}
 function aceptarAC(n){const it=acItems[n];if(!it)return;marcar();cerrarAC();it.aplicar();cambio();setTimeout(sugerir,0)}
@@ -5571,7 +5587,10 @@ scroller.addEventListener("scroll",()=>{const y=scroller.scrollTop,d=y-scrollAnt
 /* y al revés: si movés la plancha para arriba o para abajo, el guion la sigue */
 let desdeGuion=false,plToca=false,plToque=0,tyAntes=lzHoja.ty,sAntes=lzHoja.s;
 {const vp=lzHoja.vp,marca=()=>{plToque=performance.now()};
-  vp.addEventListener("wheel",marca,{passive:true,capture:true});vp.addEventListener("pointerdown",()=>{plToca=true},true);
+  vp.addEventListener("wheel",marca,{passive:true,capture:true});
+  /* con el candado puesto, la rueda (o dos dedos en el trackpad) sube y baja la plancha en vez de hacer zoom; Ctrl + rueda o pellizcar sigue siendo zoom */
+  vp.addEventListener("wheel",e=>{if(!candado||!mitad||!abierto||e.ctrlKey||e.metaKey)return;const ta=e.target.closest&&e.target.closest("textarea");if(ta&&ta.scrollHeight>ta.clientHeight)return;
+    e.preventDefault();e.stopImmediatePropagation();const k=e.deltaMode===1?16:e.deltaMode===2?innerHeight:1;marca();lzHoja.tx-=e.deltaX*k;lzHoja.ty-=e.deltaY*k;lzHoja.apply()},{passive:false,capture:true});vp.addEventListener("pointerdown",()=>{plToca=true},true);
   addEventListener("pointerup",()=>{if(plToca){plToca=false;marca()}},true);addEventListener("pointercancel",()=>{plToca=false},true);
   const ap=lzHoja.apply;lzHoja.apply=function(){const d=this.ty-tyAntes,mismoZoom=this.s===sAntes;tyAntes=this.ty;sAntes=this.s;const r=ap.apply(this,arguments);
     if(d&&mismoZoom&&!desdeGuion&&candado&&mitad&&abierto&&(plToca||performance.now()-plToque<700)){scroller.scrollTop-=d;scrollAntes=scroller.scrollTop}
@@ -5954,7 +5973,7 @@ function opciones(){abrirModal(m=>{m.append(mk("h3",null,"Formato y página"));
   m.append(mk("p","gu-nota","Márgenes de industria: 1,5\" a la izquierda, 1\" arriba, abajo y a la derecha. Courier 12 a 6 líneas por pulgada (≈ 1 página por minuto)."));
   const acc=mk("div","acc");acc.append(btn(null,"Cancelar",cerrarModal),btn("si","Listo",()=>{marcar();Object.assign(opc,{pagina:pa.value,fuente:fu.value,lineasEscena:+le.value,numEscenas:ne.value,trasDialogo:td.value,negritaEscena:ng.checked,subrayarEscena:sb.checked,numPaginas:np.checked,contd:ct.checked,contdTxt:cx.value.trim()||"(CONT.)"});if(oc.checked!==ORT.on)ortPrender(oc.checked);zoomAuto=true;cerrarModal();cambio()}));m.append(acc)})}
 function atajos(){abrirModal(m=>{m.append(mk("h3",null,"Atajos de teclado"));const t=mk("table","gu-atajos");
-  for(const [a,b] of [["Tab","Cambia el tipo de la línea: Escena → Acción → Personaje → Paréntesis → Diálogo → Transición → Plano → Texto"],["Shift+Tab","Lo mismo, para atrás"],["Enter","Línea nueva del tipo que sigue (Escena→Acción, Personaje→Diálogo, Diálogo→Acción, Transición→Escena)"],["Enter en línea vacía","La vuelve Acción"],["Shift+Enter","Línea nueva del mismo tipo"],[`${CTRL}+Shift+1…8`,"Escena, Acción, Personaje, Paréntesis, Diálogo, Transición, Plano, Texto"],["(","En una línea vacía de diálogo o personaje, empieza un paréntesis"],["↑ ↓ y Enter","Elegir una sugerencia (lugares, momentos del día, personajes, transiciones)"],[`${CTRL}+B / I / U`,"Negrita, itálica, subrayado"],[`${CTRL}+Z / ${CTRL}+Shift+Z`,"Deshacer / rehacer"],[`${CTRL}+F`,"Buscar y reemplazar"],[`${CTRL}+K`,"Vincular un post-it o frase a la escena"],[`${CTRL}+S`,"Guardar ya (igual se guarda solo)"],[`${CTRL}+P`,"Exportar PDF"],["Esc","Cerrar sugerencias y ventanas"]]){const tr=mk("tr");tr.append(mk("td",null,a),mk("td",null,b));t.append(tr)}
+  for(const [a,b] of [["Tab","Cambia el tipo de la línea: Escena → Acción → Personaje → Paréntesis → Diálogo → Transición → Plano → Texto"],["Shift+Tab","Lo mismo, para atrás"],["Enter","Línea nueva del tipo que sigue (Escena→Acción, Personaje→Diálogo, Diálogo→Acción, Transición→Escena)"],["Enter en línea vacía","La vuelve Acción"],["Shift+Enter","Línea nueva del mismo tipo"],[`${CTRL}+Shift+1…8`,"Escena, Acción, Personaje, Paréntesis, Diálogo, Transición, Plano, Texto"],["(","En una línea vacía de diálogo o personaje, empieza un paréntesis"],["↑ ↓ y Enter o Tab","Elegir una sugerencia (lugares, momentos del día, personajes, transiciones)"],["Tab en un personaje","Completa el nombre con la primera sugerencia (o la que elegiste con las flechas)"],[`${CTRL}+B / I / U`,"Negrita, itálica, subrayado"],[`${CTRL}+Z / ${CTRL}+Shift+Z`,"Deshacer / rehacer"],[`${CTRL}+F`,"Buscar y reemplazar"],[`${CTRL}+K`,"Vincular un post-it o frase a la escena"],[`${CTRL}+S`,"Guardar ya (igual se guarda solo)"],[`${CTRL}+P`,"Exportar PDF"],["Esc","Cerrar sugerencias y ventanas"]]){const tr=mk("tr");tr.append(mk("td",null,a),mk("td",null,b));t.append(tr)}
   m.append(t,mk("p","gu-nota","Escribir «int.» o «ext.» al principio de una acción y apretar Enter la convierte en escena."));const acc=mk("div","acc");acc.append(btn("si","Listo",cerrarModal));m.append(acc)})}
 function elegirItem({titulo,sub,crear,tipos,onElegir,excluir,peliPrimero}){abrirModal(m=>{m.append(mk("h3",null,titulo));if(sub)m.append(mk("p","gu-nota",sub));
     const fil=mk("div","gu-fil");let filtro="todo";const ops=[["todo","Todo"],["ideas","Post-its"],["frases","Frases"],["loc","Locaciones"]].filter(([v])=>!tipos||tipos.includes(v));
