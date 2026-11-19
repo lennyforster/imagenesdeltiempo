@@ -599,6 +599,7 @@ body.en-diario #vp-main,body.en-diario .composer,body.en-diario>.lateral,body.en
 .barrita-dia .bd-col{min-width:26px;padding:0;display:flex;align-items:center;justify-content:center}
 .barrita-dia .bd-col i{display:block;width:16px;height:16px;border-radius:50%;background:var(--c);box-shadow:0 0 0 2px rgba(255,255,255,.85)}
 .dpag-capa{position:absolute;inset:0;pointer-events:none}
+.tramo .dpag-txt{overflow:visible}.dtxt-huecos{pointer-events:none;user-select:none;-webkit-user-select:none}.dtxt-huecos i{display:block;float:left;clear:both}.dtxt-huecos i.hd{float:right;clear:none}
 .dblq{position:absolute;pointer-events:auto;transform:rotate(var(--r,0deg));transition:box-shadow .15s}
 .dblq.arrastrando{z-index:5;transform:rotate(0) scale(1.02)}
 .dblq-grip{height:20px;cursor:grab;touch-action:none;background:repeating-linear-gradient(90deg,rgba(43,37,32,.28) 0 2px,transparent 2px 6px) center/36px 6px no-repeat}
@@ -3733,6 +3734,7 @@ const AYUDA=[
   [{h:'<span class="ay-margen"><em>14:50</em><i></i><span>volví del rental…</span></span>'},"Cada bloque horario es un cuadro aparte. Pasá el mouse pegado a la línea roja y hacé clic: arranca un bloque nuevo con la hora. Clic sobre la hora para sacarla."],
   [{h:'<span class="ay-margen"><em>01:00</em><i></i><span>escribo de nuevo…</span></span>'},"Si volvés a escribir después de 15 minutos sin tocar el diario, lo nuevo arranca solo en un bloque nuevo con la hora."],
   [{h:'<span class="ay-grip"></span>'},"En la compu, pasá el mouse por un bloque: con la manija de la izquierda lo movés y arrastrando su borde derecho lo hacés más ancho o más angosto."],
+  [{chip:"Fotos y texto"},"En la compu, el texto rodea solo lo que pegás en el día (fotos, post-its, notas, links): si ponés una foto sobre el texto, el texto se corre y la bordea. Arrastrás la foto y el texto se reacomoda."],
   [["Borrar"],"Al principio de un bloque, lo une con el de arriba."],
   [{h:'<span class="ay-barrita"><b>B</b><i>I</i><u>U</u><s></s><em style="--c:#2b2520"></em><em style="--c:#c2462a"></em><em style="--c:#2a4fb8"></em><em style="--c:#2f7d4f"></em><em style="--c:#8a4fbf"></em></span>'},"Marcá un pedazo de texto y aparece esta barrita: negrita, itálica, subrayado y color. También "+CMD+"+B, "+CMD+"+I y "+CMD+"+U."],
   [{h:'<span class="ay-link"><b>Video del corto</b><span>youtube.com ↗</span></span>'},"Pegá un link y aparece como tarjeta, sin tocar ningún botón. Arriba le podés escribir un título."],
@@ -3840,6 +3842,9 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:90,f:"19 de noviembre",it:[
+  ["En el diario, *el texto ahora rodea las fotos*. Ponés una foto arriba del texto y ya no lo tapa: el texto se corre y la bordea, y si la movés, se reacomoda solo. Pasa lo mismo con los post-its, notas y links que pegás en el día.",null,1],
+  ["Acordate que el ancho del texto lo podés cambiar: pasás el mouse por el bloque de texto y arrastrás su borde derecho.",null,3]]},
  {n:89,f:"19 de noviembre",it:[
   ["Con el candadito puesto en el mitad y mitad, *la rueda del mouse sobre la plancha ahora la sube y la baja* (y el guion la sigue), en vez de hacer zoom. Para el zoom: Ctrl + rueda, o pellizcando.",null,2],
   ["En el mitad y mitad, el menú del + de la plancha ya no se va afuera de la pantalla.",null,3]]},
@@ -4316,14 +4321,31 @@ function refrescarPagina(p,forzar){if(!forzar&&(feed.pend.has(p.k)||p.el.contain
   const srv=entradaDia(p.k);const sig=srv?firmaDia(srv):firmaDia({texto:"",bloques:[]});if(sig===p.sig)return;
   p.e=entradaLocal(p.k);p.sig=sig;cacheFilas=null;pintarTramos(p);pintarBloquesPag(p);ajustarPagina(p)}
 const esCompu=()=>{try{return matchMedia("(pointer:fine)").matches}catch(_){return true}};
+/* el texto rodea lo pegado: franjas de «huecos» flotantes a la izquierda y a la derecha del renglón, de arriba a abajo */
+function rodearTexto(x,L,Wd,top,excl){const MIN=130;
+  const rs=excl.map(e=>({l:e.l-L,r:e.r-L,t:e.t-top,b:e.b-top})).filter(e=>e.r>0&&e.l<Wd&&e.b>0);
+  let hu=x.w._hu;if(!rs.length){if(hu){hu.remove();x.w._hu=null;try{cacheFilas=null}catch(_){}}return}
+  if(!hu){hu=el("div","dtxt-huecos");hu.setAttribute("aria-hidden","true");x.w.insertBefore(hu,x.ed);x.w._hu=hu}
+  for(const e of rs){e.t=Math.max(0,e.t);const c=(Math.max(0,e.l)+Math.min(Wd,e.r))/2;e.izq=c<Wd/2}
+  const ys=[...new Set([0,...rs.flatMap(e=>[e.t,e.b])])].sort((a,b)=>a-b),fr=[];
+  for(let i=0;i<ys.length-1;i++){const y0=ys[i],y1=ys[i+1],m=(y0+y1)/2;let a=0,d=0;
+    for(const e of rs)if(e.t<=m&&e.b>m){if(e.izq)a=Math.max(a,Math.min(Wd,e.r));else d=Math.max(d,Wd-Math.max(0,e.l))}
+    if(a+d>Wd-MIN){a=Wd;d=0}fr.push([y1-y0,a,d])}
+  const firma=Wd+"|"+fr.map(f=>f.map(Math.round).join(",")).join(";");if(hu._f===firma)return;hu._f=firma;try{cacheFilas=null}catch(_){}
+  hu.replaceChildren(...fr.flatMap(([h,a,d])=>{const i=el("i","hz");i.style.cssText=`width:${a}px;height:${h}px`;if(!d)return [i];const j=el("i","hd");j.style.cssText=`width:${d}px;height:${h}px`;return [i,j]}))}
 function ajustarPagina(p){const rl=RL(),W=p.cuerpo.clientWidth||ANCHO_REF,angosto=W<560,libre=!angosto&&esCompu();p.cuerpo.classList.toggle("angosto",angosto);
   const c=$("diario"),margenRel=c.getBoundingClientRect().left+(parseFloat(getComputedStyle(c).getPropertyValue("--margen"))||72)-p.cuerpo.getBoundingClientRect().left,sep=innerWidth<=760?6:8;
   const puestos=[];let fondo=0;
+  /* lo pegado (fotos, post-its, notas, links): primero se ubica, y después el texto lo rodea */
+  const excl=[];if(!angosto){for(const n of p.capa.children){const b=n._b;if(!b)continue;
+    if(!n.classList.contains("arrastrando")){const fx=typeof b.fx==="number"?b.fx:(b.x||0)/ANCHO_REF;if(n._w0)n.style.width=n._w0;n.style.left=Math.max(0,Math.min(W-n.offsetWidth,fx*W))+"px";n.style.top=(b.y||0)+"px"}
+    const l=parseFloat(n.style.left)||0,tp=parseFloat(n.style.top)||0,w=n.offsetWidth,h=n.offsetHeight;if(w>20&&h>24)excl.push({l:l-16,r:l+w+16,t:tp-4,b:tp+h+10})}}
   for(const x of p.tr){const t=x.t,fx=libre?Math.max(0,Math.min(.9,+t.fx||0)):0,fw=libre?Math.max(.15,Math.min(1-fx,+t.fw||1)):1,L=Math.round(fx*W),Wd=Math.round(fw*W);
-    x.w.style.left=L+"px";x.w.style.width=Wd+"px";x.ed.style.height="auto";const h=Math.max(rl,Math.ceil(x.ed.scrollHeight/rl)*rl);x.ed.style.height=h+"px";
+    x.w.style.left=L+"px";x.w.style.width=Wd+"px";
     let top=libre&&typeof t.y==="number"?t.y:(puestos.length?0:0);const solapa=puestos.filter(q=>L<q.r&&L+Wd>q.l);
     if(!(libre&&typeof t.y==="number")&&puestos.length)top=Math.max(0,...puestos.map(q=>q.b+rl));
-    for(const q of solapa)top=Math.max(top,q.b+rl);top=Math.ceil(top/rl)*rl;x.w.style.top=top+"px";puestos.push({l:L,r:L+Wd,b:top+h});fondo=Math.max(fondo,top+h);
+    for(const q of solapa)top=Math.max(top,q.b+rl);top=Math.ceil(top/rl)*rl;x.w.style.top=top+"px";
+    rodearTexto(x,L,Wd,top,excl);x.ed.style.height="auto";const h=Math.max(rl,Math.ceil(x.ed.scrollHeight/rl)*rl);x.ed.style.height=h+"px";puestos.push({l:L,r:L+Wd,b:top+h});fondo=Math.max(fondo,top+h);
     x.hb.hidden=!t.h;x.hb.textContent=t.h||"";x.hb.style.left=(L<40?margenRel-L-sep:-10)+"px";x.mover.hidden=x.ancho.hidden=!libre;
     if(libre&&t.h&&L>=40)x.mover.style.marginLeft=(-30-(x.hb.offsetWidth||40)-6)+"px";else x.mover.style.marginLeft=""}
   let h=fondo;
@@ -4366,7 +4388,7 @@ function nodoBloqueDia(p,b){
     p.e.bloques=p.e.bloques.filter(z=>z!==b);n.remove();ajustarPagina(p);guardarDiaFeed(p);guardarDiaYaFeed(p)};n.append(x);
   g.addEventListener("pointerdown",e=>{if(e.pointerType==="mouse"&&e.button!==0)return;e.preventDefault();try{g.setPointerCapture(e.pointerId)}catch(_){}
     const x0=e.clientX,y0=e.clientY,l0=parseFloat(n.style.left)||0,t0=parseFloat(n.style.top)||0;n.classList.add("arrastrando");
-    const mv=ev=>{const W=p.cuerpo.clientWidth;n.style.left=Math.max(-30,Math.min(W-n.offsetWidth+30,l0+ev.clientX-x0))+"px";n.style.top=Math.max(0,t0+ev.clientY-y0)+"px"};
+    let rq=0;const mv=ev=>{const W=p.cuerpo.clientWidth;n.style.left=Math.max(-30,Math.min(W-n.offsetWidth+30,l0+ev.clientX-x0))+"px";n.style.top=Math.max(0,t0+ev.clientY-y0)+"px";if(!rq)rq=requestAnimationFrame(()=>{rq=0;ajustarPagina(p)})};
     const up=()=>{g.removeEventListener("pointermove",mv);g.removeEventListener("pointerup",up);g.removeEventListener("pointercancel",up);n.classList.remove("arrastrando");
       const W=p.cuerpo.clientWidth||ANCHO_REF;b.fx=Math.round(Math.max(0,parseFloat(n.style.left)||0)/W*1000)/1000;b.x=Math.round(b.fx*ANCHO_REF);b.y=Math.round(parseFloat(n.style.top)||0);ajustarPagina(p);guardarDiaFeed(p)};
     g.addEventListener("pointermove",mv);g.addEventListener("pointerup",up);g.addEventListener("pointercancel",up)});
