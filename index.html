@@ -1340,6 +1340,9 @@ body.gu-mitad #vp-hoja{background-color:#1f6b4a!important;background-image:linea
 /* división arrastrable */
 .gu-corte{display:none;position:fixed;top:0;bottom:0;left:var(--gu-corte,50%);width:14px;margin-left:-7px;z-index:48;cursor:col-resize;touch-action:none}
 body.gu-mitad .gu-corte{display:block}
+/* en el mitad y mitad, los avisos salen arriba de todo, centrados en el lado que estás usando */
+body.gu-mitad .toast{z-index:49;left:calc((100% + var(--gu-corte,50%)) / 2);max-width:calc(100vw - var(--gu-corte,50%) - 32px)}
+body.gu-mitad.gu-lado-guion .toast{left:calc(var(--gu-corte,50%) / 2);max-width:calc(var(--gu-corte,50%) - 32px)}
 .gu-bcand{display:none}body.gu-mitad .gu-bcand{display:inline-block}.gu-bcand svg{display:block;margin:auto}
 .gu-corte::before{content:"";position:absolute;left:6px;top:0;bottom:0;width:2px;background:rgba(255,253,246,.25);transition:background .15s,width .15s,left .15s}
 .gu-corte::after{content:"";position:absolute;left:3px;top:50%;width:8px;height:44px;margin-top:-22px;border-radius:999px;background:#fffdf6;box-shadow:0 2px 8px rgba(0,0,0,.35)}
@@ -3729,7 +3732,7 @@ const AYUDA=[
   [null,"A la izquierda tenés las escenas, los personajes y las locaciones, con buscador. Las locaciones se vuelven post-its adentro de la película solas."],
   [{chip:"Hilos"},"En la lista de escenas, el circulito te deja elegir a qué hilo narrativo pertenece la escena (o crear uno nuevo). Cada hilo tiene su color y la escena se pinta con ese color."],
   [{chip:"La peli"},"Arriba a la derecha. Tiene tres pestañas: Escaleta (se arma sola), Línea de tiempo (con hilos narrativos y personajes) y Desglose. Las ves abajo del guion, al costado o en pantalla completa. Arrastrando escenas reordenás el guion. Con la × al lado de un personaje lo sacás de la línea."],
-  [{chip:"◧ y candado"},"◧ pone la plancha de la película al lado del guion, mitad y mitad. El candadito de al lado une el scroll: bajás en el guion y la plancha baja con vos. Tocalo de nuevo para soltarlo."],
+  [{chip:"◧ y candado"},"◧ pone la plancha de la película al lado del guion, mitad y mitad. El candadito de al lado une el scroll: guion y plancha suben y bajan juntos, muevas el que muevas. Tocalo de nuevo para soltarlo."],
   [{chip:"↗ Vincular"},"Marcás un pedazo, tocás Vincular en el cartelito del costado (o Ctrl+K, ⌘+K en Mac) y se crea un post-it con eso adentro de la película; el pedazo queda resaltado en amarillo. Sin marcar nada, lo atás a un post-it que ya existe."],
   [{chip:"🏷 Desglose"},"Marcás una palabra (aunque sea una sola) y la clasificás: utilería, vestuario, extras, vehículos, efectos, etc. En La peli → Desglose ves la escena donde estás o toda la peli, y lo bajás como planilla. El elenco sale solo, y además te sugiere lo que encuentra leyendo cada escena (animales, utilería, vestuario…): lo sumás con ✓ o lo descartás con ×."],
   [{chip:"💬 Comentar"},"Marcás algo y tocás Comentar en el cartelito del costado (o Ctrl+Alt+M): queda un comentario al costado del renglón. Tocalo para editarlo, responderlo o resolverlo: las respuestas quedan abajo, como una charla, sean tuyas o de otro. Cuando marcás texto, Comentar, Vincular y Desglose te aparecen al costado de la hoja."],
@@ -3825,6 +3828,9 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:88,f:"18 de noviembre",it:[
+  ["El candadito del mitad y mitad ahora anda para los dos lados: si movés la plancha para arriba o para abajo, el guion la sigue.",null,2],
+  ["En el mitad y mitad, los avisos que aparecen ya no quedan tapados por el guion.",null,3]]},
  {n:87,f:"17 de noviembre",it:[
   ["En el guion mitad y mitad hay *un candadito* arriba, al lado del ◧. Si lo cerrás, el scroll queda unido: bajás en el guion y la plancha baja con vos. Lo volvés a tocar y cada lado se mueve por su cuenta.",null,2]]},
  {n:86,f:"17 de noviembre",it:[
@@ -5555,15 +5561,23 @@ let esperandoMitad=false;
 let candado=false;try{candado=localStorage.getItem("gu_candado")==="1"}catch(_){}
 let scrollAntes=0,guToca=false,guToque=0;
 const ICO_CAND=c=>`<svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><path d="${c?"M6.5 9V6.5a3.5 3.5 0 0 1 7 0V9":"M6.5 9V6.5a3.5 3.5 0 0 1 6.8-1.2"}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="4.5" y="9" width="11" height="8" rx="1.6" fill="currentColor"/></svg>`;
-function pintarCandado(){const b=Q("gu-ed").querySelector('[data-a="candado"]');if(!b)return;b.setAttribute("aria-pressed",candado?"true":"false");b.title=candado?"Scroll unido: el guion mueve la plancha (tocá para soltarlo)":"Unir el scroll del guion con la plancha";b.innerHTML=ICO_CAND(candado)}
-function alternarCandado(){candado=!candado;scrollAntes=scroller.scrollTop;try{localStorage.setItem("gu_candado",candado?"1":"0")}catch(_){}pintarCandado();toast(candado?"Scroll unido: si bajás en el guion, baja también la plancha.":"Scroll suelto: cada lado se mueve por su cuenta.")}
+function pintarCandado(){const b=Q("gu-ed").querySelector('[data-a="candado"]');if(!b)return;b.setAttribute("aria-pressed",candado?"true":"false");b.title=candado?"Scroll unido: guion y plancha se mueven juntos (tocá para soltarlo)":"Unir el scroll del guion con la plancha";b.innerHTML=ICO_CAND(candado)}
+function alternarCandado(){candado=!candado;scrollAntes=scroller.scrollTop;try{localStorage.setItem("gu_candado",candado?"1":"0")}catch(_){}pintarCandado();toast(candado?"Scroll unido: guion y plancha suben y bajan juntos.":"Scroll suelto: cada lado se mueve por su cuenta.")}
 /* solo cuando el que scrollea sos vos (rueda, dedo, teclado o la barra), no cuando la web reacomoda el guion */
 const guMarca=()=>{guToque=performance.now()};
 for(const t of ["wheel","touchmove","keydown"])scroller.addEventListener(t,guMarca,{passive:true});
 scroller.addEventListener("pointerdown",()=>{guToca=true},{passive:true});addEventListener("pointerup",()=>{if(guToca){guToca=false;guMarca()}},true);addEventListener("pointercancel",()=>{guToca=false},true);
-scroller.addEventListener("scroll",()=>{const y=scroller.scrollTop,d=y-scrollAntes;scrollAntes=y;if(!candado||!mitad||!abierto||!d)return;if(!guToca&&performance.now()-guToque>700)return;guMarca();lzHoja.ty-=d;lzHoja.apply()},{passive:true});
+scroller.addEventListener("scroll",()=>{const y=scroller.scrollTop,d=y-scrollAntes;scrollAntes=y;if(!candado||!mitad||!abierto||!d)return;if(!guToca&&performance.now()-guToque>700)return;guMarca();lzHoja.ty-=d;desdeGuion=true;try{lzHoja.apply()}finally{desdeGuion=false}},{passive:true});
+/* y al revés: si movés la plancha para arriba o para abajo, el guion la sigue */
+let desdeGuion=false,plToca=false,plToque=0,tyAntes=lzHoja.ty,sAntes=lzHoja.s;
+{const vp=lzHoja.vp,marca=()=>{plToque=performance.now()};
+  vp.addEventListener("wheel",marca,{passive:true,capture:true});vp.addEventListener("pointerdown",()=>{plToca=true},true);
+  addEventListener("pointerup",()=>{if(plToca){plToca=false;marca()}},true);addEventListener("pointercancel",()=>{plToca=false},true);
+  const ap=lzHoja.apply;lzHoja.apply=function(){const d=this.ty-tyAntes,mismoZoom=this.s===sAntes;tyAntes=this.ty;sAntes=this.s;const r=ap.apply(this,arguments);
+    if(d&&mismoZoom&&!desdeGuion&&candado&&mitad&&abierto&&(plToca||performance.now()-plToque<700)){scroller.scrollTop-=d;scrollAntes=scroller.scrollTop}
+    return r}}
 try{pintarCandado()}catch(_){}
-addEventListener("pointerdown",e=>{if(mitad)ladoMitad=e.clientX<corteX()?"guion":"plancha"},true);
+addEventListener("pointerdown",e=>{if(mitad){ladoMitad=e.clientX<corteX()?"guion":"plancha";document.body.classList.toggle("gu-lado-guion",ladoMitad==="guion")}},true);
 /* la división se arrastra: más lugar para el guion o para la plancha */
 let corteFr=.5;try{const v=parseFloat(localStorage.getItem("gu_corte"));if(v>.15&&v<.85)corteFr=v}catch(_){}
 const corteX=()=>Math.round(Math.max(320,Math.min(innerWidth-320,innerWidth*corteFr)));
