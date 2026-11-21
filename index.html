@@ -1141,6 +1141,7 @@ body.barra-abierta .barra-extra.h-extra:not(.abierta){display:none}
 .gu-sel-w{position:relative;display:inline-flex}.gu-sel-menu{position:absolute;top:calc(100% + 6px);left:0;z-index:60;background:#fffdf6;border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.22);padding:5px;display:flex;flex-direction:column;min-width:150px}.gu-sel-menu[hidden]{display:none}.gu-sel-menu button{border:0;background:none;text-align:left;font:600 13px var(--ui);color:var(--ink);padding:7px 10px;border-radius:8px;cursor:pointer}.gu-sel-menu button:hover{background:rgba(43,37,32,.07)}.gu-sel-menu button.on{background:#ffe76a}
 .gu-sel{white-space:nowrap;border:0;border-radius:999px;background:#ffe76a;color:var(--ink);font:700 13px var(--ui);padding:7px 10px;cursor:pointer}
 .gu-ic{width:32px;padding:7px 0;text-align:center}
+@media (hover:hover) and (pointer:fine){.herr .solo-tactil{display:none}}
 .gu-mw{position:relative}
 /* versiones del guion: V1, V2, V3… */
 .gu-bver{font:700 12.5px var(--mono);letter-spacing:.05em;padding-left:10px;padding-right:10px;white-space:nowrap}
@@ -2903,7 +2904,7 @@ function nodoBloque(b){
   else if(b.t==="tar"){pintarBloqueTar(n,b);n.addEventListener("pointerdown",e=>{if(!e.target.closest(".tr-cab")||e.target.closest("input,button"))e.stopPropagation()})}
   else if(b.t==="link"){let host=b.url;try{host=new URL(b.url).hostname.replace(/^www\./,"")}catch(_){}
     const a=el("a",null,"Abrir ↗");a.href=b.url;a.target="_blank";a.rel="noopener noreferrer";const tb=el("b",null,b.titulo||host);tb.title="Doble clic para cambiar el título";
-    tb.addEventListener("dblclick",e=>{e.stopPropagation();editarTituloLink(n,b,host)});n.append(tb,el("span",null,b.url),a)}
+    n.addEventListener("dblclick",e=>{if(e.target.closest("a,button,input,.asa,.herr"))return;e.stopPropagation();e.preventDefault();editarTituloLink(n,b,host)});n.append(tb,el("span",null,b.url),a)}
   else{const im=el("img");im.alt=b.alt||"Imagen";im.draggable=false;im.onload=()=>pintarHilos();im.onerror=()=>im.replaceWith(el("div","roto","No se pudo cargar esta imagen."));cargarImg(im,b.a);n.append(im)}
   const herr=el("div","herr");const q=el("button","peligro",borrarB===b.id?"¿Seguro? Tocá de nuevo":"Quitar");q.type="button";
   if(b.t==="post")for(const col of PALETA.slice(0,8)){const s=el("button","sw");s.type="button";s.style.setProperty("--c",col);s.setAttribute("aria-label","Color "+col);s.onclick=()=>{b.c=col;n.style.setProperty("--c",col);guardarBloques()};herr.append(s)}
@@ -2930,7 +2931,7 @@ function nodoBloque(b){
   if(b.t==="txt"||b.t==="tx"){const asa=el("div","asa lado");asa.title="Arrastrá para cambiar el ancho";n.append(asa);const ta=n.querySelector("textarea");
     if(b.t==="txt")n.style.minHeight=n.style.width;
     redimensionable(asa,lzHoja,{inicio:()=>parseFloat(n.style.width),mover:w=>{n.style.width=Math.max(120,w)+"px";if(b.t==="txt")n.style.minHeight=n.style.width;if(ta)autosize(ta);pintarHilos()},soltar:()=>{b.w=Math.round(parseFloat(n.style.width));guardarBloques()}})}
-  if(b.t==="link"){let host=b.url;try{host=new URL(b.url).hostname.replace(/^www\./,"")}catch(_){}const tt=el("button",null,"Título");tt.type="button";tt.title="Cambiarle el título al link";tt.onclick=()=>editarTituloLink(n,b,host);herr.prepend(tt);
+  if(b.t==="link"){let host=b.url;try{host=new URL(b.url).hostname.replace(/^www\./,"")}catch(_){}const tt=el("button","solo-tactil","Título");tt.type="button";tt.title="Cambiarle el título al link";tt.onclick=()=>editarTituloLink(n,b,host);herr.prepend(tt);
     const asa=el("div","asa lado");asa.title="Arrastrá para achicarlo o agrandarlo";n.append(asa);redimensionable(asa,lzHoja,{inicio:()=>parseFloat(n.style.width),mover:w=>{n.style.width=Math.max(150,Math.min(900,w))+"px";pintarHilos()},soltar:()=>{b.w=Math.round(parseFloat(n.style.width));guardarBloques()}})}
   if(b.t==="tar"){const asa=el("div","asa lado");asa.title="Arrastrá para ensanchar o angostar la lista";n.append(asa);
     redimensionable(asa,lzHoja,{inicio:()=>parseFloat(n.style.width),mover:w=>{n.style.width=Math.max(200,Math.min(900,w))+"px";n.querySelectorAll(".tr-v").forEach(autosize);pintarHilos()},soltar:()=>{b.w=Math.round(parseFloat(n.style.width));n.querySelectorAll(".tr-v").forEach(autosize);guardarBloques()}})}
@@ -2943,7 +2944,7 @@ function nodoBloque(b){
   return n;
 }
 function editarTituloLink(n,b,host){const tb=n.querySelector(":scope>b");if(!tb)return;const i=el("input","link-tit");i.type="text";i.value=b.titulo||"";i.placeholder=host||"Título";i.setAttribute("aria-label","Título del link");tb.replaceWith(i);
-  let hecho=false;const fin=ok=>{if(hecho)return;hecho=true;if(ok){const v=i.value.trim();if(v)b.titulo=v;else delete b.titulo;guardarBloques()}const nb=el("b",null,b.titulo||host);nb.title="Doble clic para cambiar el título";nb.addEventListener("dblclick",e=>{e.stopPropagation();editarTituloLink(n,b,host)});i.replaceWith(nb);pintarHilos()};
+  let hecho=false;const fin=ok=>{if(hecho)return;hecho=true;if(ok){const v=i.value.trim();if(v)b.titulo=v;else delete b.titulo;guardarBloques()}const nb=el("b",null,b.titulo||host);nb.title="Doble clic para cambiar el título";i.replaceWith(nb);pintarHilos()};
   i.onkeydown=e=>{e.stopPropagation();if(e.key==="Enter"){e.preventDefault();fin(true)}else if(e.key==="Escape"){e.preventDefault();fin(false)}};i.onblur=()=>fin(true);requestAnimationFrame(()=>{i.focus();i.select()})}
 /* ---------- Pilas adentro de un post-it: un bloque «pila» junta otros bloques (los de adentro quedan con en=<id de la pila>) ---------- */
 let hpPila=null,tHpTit=null;
@@ -3734,7 +3735,7 @@ const AYUDA=[
   [{chip:"Entrar ↗"},"Los post-its de adentro también tienen su propio adentro: tocá uno y después «Entrar ↗» (o tocalo dentro de una pila). Pasa a ser un post-it de verdad que vive acá adentro, no en la plancha, con su color y su número. «← Volver» te trae de nuevo."],
   [null,"Lo último que tocás o movés queda arriba de todo, así podés acomodar las cosas unas encima de otras como quieras."],
   [{chip:"Doble clic"},"En el fondo abre el menú para crear (post-it, nota, link, vínculo, tareas, pila, imagen…) justo en ese lugar. En la plancha de ideas: post-it, lista de tareas o pila."],
-  [{chip:"Link"},"Tocá dos veces el título (o «Título» arriba) para cambiarlo, así no queda «youtube.com». Con la manija del costado lo achicás o agrandás."],
+  [{chip:"Link"},"Doble clic en el link para cambiarle el título, así no queda «youtube.com» (en el celu, también con «Título» arriba). Con la manija del costado lo achicás o agrandás."],
   [null,"— Pilas adentro de un post-it —"],
   [null,"La forma más fácil: arrastrá una cosa y soltala encima de otra, igual que en la plancha. Se arma la pila."],
   [{chip:"Pila"},"También con doble clic en el fondo (o el «+») → «Pila»: crea una pila vacía para ir metiéndole cosas."],
@@ -3869,6 +3870,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:96,f:"20 de noviembre",it:[
+  ["Para cambiarle el título a un link, *doble clic en el link* y escribís. Ya no hace falta el botón «Título».",null,2]]},
  {n:95,f:"20 de noviembre",it:[
   ["Si estás escribiendo bastante en una *versión vieja* del guion, la web te avisa, por si no te diste cuenta y estás laburando al pedo. Te deja ir a la última o seguir donde estás.",null,2]]},
  {n:94,f:"20 de noviembre",it:[
