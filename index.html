@@ -1137,7 +1137,7 @@ body.barra-abierta .barra-extra.h-extra:not(.abierta){display:none}
 .gu-sel{white-space:nowrap;border:0;border-radius:999px;background:#ffe76a;color:var(--ink);font:700 13px var(--ui);padding:7px 10px;cursor:pointer}
 .gu-ic{width:32px;padding:7px 0;text-align:center}
 .gu-mw{position:relative}
-/* versiones del guion: B1, B2, B3… */
+/* versiones del guion: V1, V2, V3… */
 .gu-bver{font:700 12.5px var(--mono);letter-spacing:.05em;padding-left:10px;padding-right:10px;white-space:nowrap}
 .gu-bver.vieja{background:#b8892e;color:#fff}
 .gu-verw .gu-menu{left:0;right:auto;min-width:300px}.gu-verw .gu-menu span,.gu-verw .gu-menu small{white-space:nowrap}
@@ -3757,7 +3757,7 @@ const AYUDA=[
   [{chip:"A Ideas",c:"amarillo"},"Marcá un pedazo de texto y mandalo como idea nueva a tu plancha."]]},
  {t:"Guion",it:[
   [{chip:"+ → Guion"},"Adentro del post-it de una película, con + o doble clic. Se arma un guion con formato profesional (A4, Courier) y queda en la tarjeta del post-it: «GUION · Abrir»."],
-  [{chip:"B3 ▾"},"Las versiones del guion, al lado del título. «+ Nueva versión» arranca la B siguiente como copia de la que tenés abierta, y la anterior queda guardada tal cual. Desde ahí abrís cualquiera; desde el post-it siempre se abre la última."],
+  [{chip:"V3 ▾"},"Las versiones del guion, al lado del título. «+ Nueva versión» arranca la V siguiente como copia de la que tenés abierta, y la anterior queda guardada tal cual. Desde ahí abrís cualquiera; desde el post-it siempre se abre la última."],
   [{chip:"Tab"},"Cambia el tipo de renglón: escena, acción, personaje, diálogo, paréntesis, transición. Enter pasa al que sigue. Cuando escribís un personaje, Tab lo completa con la primera sugerencia; si bajás con la flechita a otro, Tab confirma ese."],
   [null,"A la izquierda tenés las escenas, los personajes y las locaciones, con buscador. Las locaciones se vuelven post-its adentro de la película solas."],
   [{chip:"Hilos"},"En la lista de escenas, el circulito te deja elegir a qué hilo narrativo pertenece la escena (o crear uno nuevo). Cada hilo tiene su color y la escena se pinta con ese color."],
@@ -3859,6 +3859,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:93,f:"20 de noviembre",it:[
+  ["Las versiones del guion ahora se llaman *V1, V2, V3…* (de versión). Funcionan igual: botón al lado del título, y desde el post-it siempre se abre la última.",null,2]]},
  {n:92,f:"20 de noviembre",it:[
   ["Guion: *ahora tiene versiones, B1, B2, B3…* Al lado del título tocás *B1 ▾ → + Nueva versión* y arranca la B2 como copia, y la B1 queda guardada tal cual. Desde ese mismo botón abrís la que quieras. Desde el post-it de la peli siempre se abre la última.",null,1],
   ["Si ya tenías más de un guion en la misma película, ahora son sus versiones, en el orden en que los creaste.",null,2],
@@ -5296,7 +5298,7 @@ raiz.innerHTML=`
     <button type="button" class="gu-b" data-a="volverp" title="Volver al post-it de la película">← Volver</button>
     <button type="button" class="gu-b gu-ic" data-a="lado" title="Escenas, personajes y locaciones">☰</button>
     <input class="gu-titulo" id="gu-titulo" placeholder="Sin título" maxlength="120" aria-label="Título del guion">
-    <div class="gu-mw gu-verw solo-duenio"><button type="button" class="gu-b gu-bver" id="gu-bver" data-a="vers" title="Versiones de este guion" hidden>B1 ▾</button><div class="gu-menu" id="gu-m-vers" hidden></div></div>
+    <div class="gu-mw gu-verw solo-duenio"><button type="button" class="gu-b gu-bver" id="gu-bver" data-a="vers" title="Versiones de este guion" hidden>V1 ▾</button><div class="gu-menu" id="gu-m-vers" hidden></div></div>
     <button type="button" class="gu-vieja solo-duenio" id="gu-vieja" hidden></button>
     <span class="gu-estado" id="gu-estado"></span><span class="gu-gente" id="gu-gente" hidden></span>
     <span class="gu-esp"></span>
@@ -5414,7 +5416,7 @@ const tab=mk("button","tab","Guion");tab.type="button";tab.id="tab-guion";tab.se
 /* ya no es una pestaña: el guion vive adentro del post-it de la película (+ → Guion) */
 {const t=$("add-esc");const b=mk("button","tool","Guion");b.type="button";b.id="add-guion";b.title="Guion de esta película";b.onclick=()=>guionDePostit();if(t)t.after(b);else document.body.append(b)}
 const guionesDe=pid=>guiones.filter(g=>g.postit===pid).sort((a,b)=>(a.creado||0)-(b.creado||0)||String(a.id).localeCompare(b.id));
-/* versiones (B1, B2, B3…): los guiones de una misma película son versiones; siempre se abre la última */
+/* versiones (V1, V2, V3…): los guiones de una misma película son versiones; siempre se abre la última */
 const grupoDe=g=>g.postit?"p:"+g.postit:"s:"+(g.serie||g.id);
 function versionesDe(g){if(!g)return[];const k=grupoDe(g);let n=0;
   return guiones.filter(x=>grupoDe(x)===k).sort((a,b)=>(a.creado||0)-(b.creado||0)||String(a.id).localeCompare(b.id)).map(x=>{n=Math.max(n+1,+x.ver||0);return{g:x,n}})}
@@ -5426,18 +5428,18 @@ const principalDe=pid=>{const gs=guionesDe(pid);return gs.length?gs[gs.length-1]
 const fechaCorta=t=>t?new Date(t).toLocaleDateString("es-AR",{day:"numeric",month:"short"}):"";
 function pintarVer(){const b=Q("gu-bver"),av=Q("gu-vieja");if(!b)return;const yo=G&&guiones.find(x=>x.id===G.id);if(!yo){b.hidden=true;av.hidden=true;return}
   const vs=versionesDe(yo),n=numVer(yo),ult=vs[vs.length-1],vieja=!!ult&&ult.g.id!==yo.id;
-  b.hidden=false;b.textContent="B"+n+" ▾";b.classList.toggle("vieja",vieja);b.title=vieja?`Estás en la B${n}. La última es la B${ult.n}.`:(vs.length>1?`B${n}: la última de ${vs.length} versiones`:"Versiones de este guion");
-  av.hidden=!vieja;if(vieja){av.textContent=`No es la última · ir a la B${ult.n} →`;av.onclick=()=>irVersion(ult.g.id)}}
+  b.hidden=false;b.textContent="V"+n+" ▾";b.classList.toggle("vieja",vieja);b.title=vieja?`Estás en la V${n}. La última es la V${ult.n}.`:(vs.length>1?`V${n}: la última de ${vs.length} versiones`:"Versiones de este guion");
+  av.hidden=!vieja;if(vieja){av.textContent=`No es la última · ir a la V${ult.n} →`;av.onclick=()=>irVersion(ult.g.id)}}
 function menuVer(){const m=Q("gu-m-vers");if(!m.hidden){m.hidden=true;return}const yo=G&&guiones.find(x=>x.id===G.id);if(!yo)return;
   const vs=versionesDe(yo),ult=vs[vs.length-1];m.replaceChildren();
   for(const v of vs.slice().reverse()){const nE=(v.g.bloques||[]).filter(b=>b.t==="escena"&&(b.h||"").trim()).length;const bt=mk("button");bt.type="button";if(v.g.id===yo.id)bt.classList.add("on");
-    bt.append(mk("span",null,"B"+v.n+(v===ult?" · la última":"")),mk("small",null,(nE===1?"1 esc.":nE+" esc.")+" · "+fechaCorta(v.g.editado||v.g.creado)));bt.onclick=()=>{m.hidden=true;irVersion(v.g.id)};m.append(bt)}
-  if(!soloLee()){m.append(mk("hr"));const nb=mk("button","gu-ver-nueva");nb.type="button";nb.append(mk("span",null,`+ Nueva versión (B${ult.n+1})`),mk("small",null,"copia de la B"+numVer(yo)));nb.onclick=()=>{m.hidden=true;nuevaVersion()};m.append(nb)}
+    bt.append(mk("span",null,"V"+v.n+(v===ult?" · la última":"")),mk("small",null,(nE===1?"1 esc.":nE+" esc.")+" · "+fechaCorta(v.g.editado||v.g.creado)));bt.onclick=()=>{m.hidden=true;irVersion(v.g.id)};m.append(bt)}
+  if(!soloLee()){m.append(mk("hr"));const nb=mk("button","gu-ver-nueva");nb.type="button";nb.append(mk("span",null,`+ Nueva versión (V${ult.n+1})`),mk("small",null,"copia de la V"+numVer(yo)));nb.onclick=()=>{m.hidden=true;nuevaVersion()};m.append(nb)}
   m.hidden=false}
 function irVersion(id){if(G&&G.id===id)return;const g=guiones.find(x=>x.id===id);if(!g){toast("Esa versión ya no existe.");return}abrirGuion(g)}
 async function nuevaVersion(){if(!G||soloLee())return;await guardarYa();const yo=guiones.find(x=>x.id===G.id);const de=yo?numVer(yo):1;
   const d=JSON.parse(JSON.stringify(leerDoc()));delete d.vivo;delete d.peliNueva;delete d.ver;if(!d.postit)d.serie=G.doc.serie||G.id;
-  await nuevo(d);if(G&&G.doc&&G.doc.ver)toast(`Arrancaste la B${G.doc.ver}, una copia de la B${de}. La B${de} queda guardada tal cual.`)}
+  await nuevo(d);if(G&&G.doc&&G.doc.ver)toast(`Arrancaste la V${G.doc.ver}, una copia de la V${de}. La V${de} queda guardada tal cual.`)}
 document.addEventListener("pointerdown",e=>{const m=Q("gu-m-vers");if(m&&!m.hidden&&!e.target.closest(".gu-verw"))m.hidden=true},true);
 function abrirGuionDesdeHoja(id){vuelveGuion=null;if(abierto){mitadCambia=true;try{cerrar()}finally{mitadCambia=false}}entrar(id)}
 function guionDePostit(){if(!abierto||abierto.k!=="ideas")return;const pid=abierto.id,it=itemDe("ideas",pid);const gs=guionesDe(pid);
@@ -5716,7 +5718,7 @@ function pintarEnGuion(){{const b=$("add-guion");if(b)b.hidden=!abierto||abierto
     if(!g){if(gb)gb.remove()}else{if(!gb){gb=mk("button","gu-princ");gb.type="button";gb.addEventListener("pointerdown",e=>e.stopPropagation());p.append(gb)}
       const nE=(g.bloques||[]).filter(b=>b.t==="escena"&&(b.h||"").trim()).length;gb.title="Abrir el guion";gb.onclick=e=>{e.stopPropagation();abrirGuionDesdeHoja(g.id)};
       {const gs=guionesDe(abierto.id),bl=abierto.doc.bloques,k=bl.findIndex(b=>b.t==="link"&&!b.en&&gs.some(x=>(b.url||"").includes("#guion="+x.id)));if(k>=0){const id=bl[k].id;bl.splice(k,1);sinHistoria();guardarBloques();nodoHoja(id)?.remove();try{pintarHilos()}catch(_){}}}
-      const nV=guionesDe(abierto.id).length;gb.replaceChildren(mk("i","gu-pag"),mk("b",null,"GUION"),mk("small",null,(nV>1?"B"+numVer(g)+" · ":"")+(nE===1?"1 escena":nE+" escenas")),mk("span","gu-princ-ir","Abrir →"))}}
+      const nV=guionesDe(abierto.id).length;gb.replaceChildren(mk("i","gu-pag"),mk("b",null,"GUION"),mk("small",null,(nV>1?"V"+numVer(g)+" · ":"")+(nE===1?"1 escena":nE+" escenas")),mk("span","gu-princ-ir","Abrir →"))}}
   for(const n of document.querySelectorAll("#capa-hoja .pieza.blink")){const a=n.querySelector('a[href*="#guion="]');n.classList.toggle("gu-tapa",!!a);if(a&&!n.querySelector(".gu-tapa-lbl"))n.prepend(mk("span","gu-tapa-lbl","Guion"))}let a=p.querySelector(".aparece.ap-guion");
   const l=apariciones(abierto.k,abierto.id);if(!l.length){if(a)a.remove();return}
   if(!a){a=mk("div","aparece ap-guion");p.append(a)}
@@ -5875,7 +5877,7 @@ async function sincLocaciones(extra){if(!G||!cols.ideas||sincEnCurso)return;cons
     const locs=[...new Set([...data.ideas.filter(i=>i.dentro===pe.id&&!i.anidado&&!borrar.has(i.id)).map(i=>i.id),...idsNuevos,...migrados])];
     editarPeli(bl=>{let cambio=false;
       /* el guion (su última versión) se abre desde la tarjeta del post-it */
-      const esPrin=true;/* B1, B2…: todas se abren desde la tarjeta del post-it (con el botón de versión), ninguna deja tapita */let lk=bl.find(b=>b.t==="link"&&(b.url||"").includes("#guion="+GG.id));
+      const esPrin=true;/* V1, V2…: todas se abren desde la tarjeta del post-it (con el botón de versión), ninguna deja tapita */let lk=bl.find(b=>b.t==="link"&&(b.url||"").includes("#guion="+GG.id));
       if(esPrin){if(lk){const k=bl.indexOf(lk);const ref={x:lk.x,y:lk.y};bl.splice(k,1);lk=ref;cambio=true}}
       else if(!lk){const p0=lugarLibreEn(bl);lk={id:bid(),t:"link",url,titulo:titulo,x:p0.x,y:p0.y,w:200};bl.push(lk);cambio=true}
       else if(lk.titulo!==titulo||lk.url!==url){lk.titulo=titulo;lk.url=url;cambio=true}
@@ -5959,7 +5961,7 @@ async function verVersion(v,m,ls,volver){ls.replaceChildren(mk("p","gu-snota","T
     mk("span",null,`${cv.esc} escenas · ${cv.ren} renglones (ahora: ${ch.esc} escenas · ${ch.ren} renglones)`),mk("span",null,dist?(dist===1?"1 renglón distinto a lo que tenés ahora.":`${dist} renglones distintos a lo que tenés ahora.`):"Es igual a lo que tenés ahora."));
   const pv=mk("div","gu-ver-pv");for(const b of (d.bloques||[]).slice(0,40)){const x=mk("p",null,b.h||"");x.dataset.t=b.t;pv.append(x)}c.append(pv);
   const acc=mk("div","acc");acc.append(btn("gu-dg-mas","← Volver a la lista",volver),
-    btn(null,"Abrirla como versión nueva",async()=>{const n={...d};delete n.vivo;delete n.peliNueva;if(G.doc.postit)n.postit=G.doc.postit;else{delete n.postit;n.serie=G.doc.serie||G.id}cerrarModal();await guardarYa();await nuevo(n);if(G&&G.doc.ver)toast("Quedó como la B"+G.doc.ver+".")}),
+    btn(null,"Abrirla como versión nueva",async()=>{const n={...d};delete n.vivo;delete n.peliNueva;if(G.doc.postit)n.postit=G.doc.postit;else{delete n.postit;n.serie=G.doc.serie||G.id}cerrarModal();await guardarYa();await nuevo(n);if(G&&G.doc.ver)toast("Quedó como la V"+G.doc.ver+".")}),
     btn("si","Volver a esta versión",async()=>{if(!await confirmar("¿Volver a esta versión?","Lo que tenés ahora no se pierde: queda como una versión más en esta lista.","Volver a esta versión"))return;
       cerrarModal();const n={...d,vivo:G.doc.vivo,postit:G.doc.postit||d.postit};G.doc=n;cargarEnEditor(n);cerrarConflicto();cambio();guardarYa();toast("Volviste a la versión de las "+f.toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit",hourCycle:"h23"})+".")}));
   c.append(acc);ls.append(c)}
@@ -6000,7 +6002,7 @@ window.__nGuiones=()=>guiones.filter(esUltima).length;
 function mostrarLista(){guardarYa();salirMitad(true);desconectarVivo();G=null;try{localStorage.removeItem("guion_ult")}catch(_){}Q("gu-ed").hidden=true;Q("gu-lista").hidden=false;pintarLista()}
 function pintarLista(){const c=Q("gu-cards");c.replaceChildren();
   if(!guiones.length){c.append(mk("p","gu-vacio","Acá van tus guiones, con el formato de siempre: Courier, A4, márgenes de industria. Escribís y se acomoda solo. Tocá «+ Guion nuevo» o traé uno de Final Draft."));return}
-  for(const g of guiones.filter(esUltima).sort((a,b)=>(b.editado||0)-(a.editado||0))){const b=mk("button","gu-card");b.type="button";const pp=g.portada||{};const vs=versionesDe(g),bv=vs.length>1?"B"+numVer(g):"";
+  for(const g of guiones.filter(esUltima).sort((a,b)=>(b.editado||0)-(a.editado||0))){const b=mk("button","gu-card");b.type="button";const pp=g.portada||{};const vs=versionesDe(g),bv=vs.length>1?"V"+numVer(g):"";
     b.append(mk("div","t",g.titulo||"Sin título"),mk("div","a",pp.autor?"Escrito por\n"+pp.autor:""),mk("div","m",`${bv?bv+" · ":""}${(g.bloques||[]).filter(x=>x.t==="escena").length} escenas · ${fechaCorta(g.editado)}`));b.onclick=()=>abrirGuion(g);
     const ed2=mk("span","gu-card-ed","✎");ed2.title="Cambiarle el título";ed2.setAttribute("role","button");ed2.setAttribute("aria-label","Cambiarle el título");
     ed2.onclick=e=>{e.stopPropagation();abrirModal(m=>{m.append(mk("h3",null,"Título del guion"));const i=mk("input");i.type="text";i.value=g.titulo||"";m.append(i);const ok=async()=>{const t=i.value.trim();cerrarModal();if(t===(g.titulo||""))return;const todas=versionesDe(g).map(v=>v.g);for(const x of todas)x.titulo=t;pintarLista();try{await Promise.all(todas.map(x=>col.doc(x.id).update({titulo:t})))}catch(_){toast("No se pudo cambiar el título.")}};
@@ -6013,10 +6015,10 @@ async function nuevo(doc){if(!col)return;const ahora=Date.now();const d=doc||{ti
 /* borrar un guion pregunta dos veces: es mucho laburo para perderlo por un clic */
 async function confirmarBorrarGuion(t){t=t||"Sin título";if(!await confirmar(`¿Borrar «${t}»?`,"Se borra el guion entero, con sus comentarios, colores y desglose.","Borrar"))return false;
   return await confirmar("¿Seguro, seguro?",`«${t}» no se puede recuperar después.`,"Sí, borrarlo para siempre")}
-async function borrarGuion(){if(!G)return;const g=G;const yo=guiones.find(x=>x.id===g.id);const vs=yo?versionesDe(yo):[];const bv=vs.length>1?"B"+numVer(yo):"";
+async function borrarGuion(){if(!G)return;const g=G;const yo=guiones.find(x=>x.id===g.id);const vs=yo?versionesDe(yo):[];const bv=vs.length>1?"V"+numVer(yo):"";
   const ok=await confirmarBorrarGuion((Q("gu-titulo").value||"Sin título")+(bv?" ("+bv+")":""));if(!ok)return;sucio=false;clearTimeout(tGuardar);
   try{await col.doc(g.id).delete();guiones=guiones.filter(x=>x.id!==g.id);const resto=vs.filter(v=>v.g.id!==g.id);
-    if(resto.length){const u=resto[resto.length-1];G=null;abrirGuion(u.g);toast(`Borré la ${bv}. Estás en la B${u.n}.`)}else{mostrarLista();toast("Guion borrado.")}}catch(_){toast("No se pudo borrar.")}}
+    if(resto.length){const u=resto[resto.length-1];G=null;abrirGuion(u.g);toast(`Borré la ${bv}. Estás en la V${u.n}.`)}else{mostrarLista();toast("Guion borrado.")}}catch(_){toast("No se pudo borrar.")}}
 
 /* datos */
 (function esperar(){if(typeof dbRef==="undefined"||!dbRef){setTimeout(esperar,300);return}
