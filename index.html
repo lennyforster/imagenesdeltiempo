@@ -1151,6 +1151,11 @@ body.barra-abierta .barra-extra.h-extra:not(.abierta){display:none}
 .gu-vieja{border:0;background:none;color:#e9c46a;font:600 12px var(--ui);cursor:pointer;white-space:nowrap;padding:4px 2px}
 .gu-vieja:hover{text-decoration:underline}
 @media (max-width:760px){.gu-vieja{display:none}}
+.gu-avisov{position:fixed;top:64px;left:50%;transform:translateX(-50%);z-index:60;background:#fffdf6;color:var(--ink);border-radius:12px;padding:12px 14px 12px 16px;box-shadow:0 12px 30px rgba(0,0,0,.4);border-left:5px solid #b8892e;display:flex;align-items:center;gap:12px;max-width:min(560px,calc(100vw - 24px));font:500 13.5px/1.4 var(--ui)}
+.gu-avisov b{font-weight:700}
+.gu-avisov button{border:0;border-radius:999px;padding:7px 12px;font:600 12.5px var(--ui);cursor:pointer;white-space:nowrap;background:rgba(43,37,32,.08);color:var(--ink)}
+.gu-avisov button.si{background:var(--ink);color:#fffdf6}
+@media (max-width:600px){.gu-avisov{flex-wrap:wrap;top:58px}}
 .gu-menu{position:absolute;right:0;top:calc(100% + 6px);z-index:5;background:#fffdf6;border-radius:12px;padding:6px;min-width:250px;box-shadow:0 12px 30px rgba(0,0,0,.45);display:grid}
 .gu-menu[hidden]{display:none}
 .gu-menu button{border:0;background:none;text-align:left;font:500 14px var(--ui);padding:9px 12px;border-radius:8px;cursor:pointer;color:var(--ink);display:flex;justify-content:space-between;gap:16px}
@@ -3762,7 +3767,7 @@ const AYUDA=[
   [{chip:"A Ideas",c:"amarillo"},"Marcá un pedazo de texto y mandalo como idea nueva a tu plancha."]]},
  {t:"Guion",it:[
   [{chip:"+ → Guion"},"Adentro del post-it de una película, con + o doble clic. Se arma un guion con formato profesional (A4, Courier) y queda en la tarjeta del post-it: «GUION · Abrir»."],
-  [{chip:"V3 ▾"},"Las versiones del guion, al lado del título. «+ Nueva versión» arranca la V siguiente como copia de la que tenés abierta, y la anterior queda guardada tal cual. Desde ahí abrís cualquiera; desde el post-it siempre se abre la última."],
+  [{chip:"V3 ▾"},"Las versiones del guion, al lado del título. «+ Nueva versión» arranca la V siguiente como copia de la que tenés abierta, y la anterior queda guardada tal cual. Desde ahí abrís cualquiera; desde el post-it siempre se abre la última. Si escribís bastante en una vieja, la web te avisa por las dudas."],
   [{chip:"Tab"},"Cambia el tipo de renglón: escena, acción, personaje, diálogo, paréntesis, transición. Enter pasa al que sigue. Cuando escribís un personaje, Tab lo completa con la primera sugerencia; si bajás con la flechita a otro, Tab confirma ese."],
   [null,"A la izquierda tenés las escenas, los personajes y las locaciones, con buscador. Las locaciones se vuelven post-its adentro de la película solas."],
   [{chip:"Hilos"},"En la lista de escenas, el circulito te deja elegir a qué hilo narrativo pertenece la escena (o crear uno nuevo). Cada hilo tiene su color y la escena se pinta con ese color."],
@@ -3864,6 +3869,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:95,f:"20 de noviembre",it:[
+  ["Si estás escribiendo bastante en una *versión vieja* del guion, la web te avisa, por si no te diste cuenta y estás laburando al pedo. Te deja ir a la última o seguir donde estás.",null,2]]},
  {n:94,f:"20 de noviembre",it:[
   ["En *Más ▾ → Guiones* cada tapa muestra sus versiones, *V1, V2, V3…*: tocás la que quieras. Si tocás la tapa, se abre la última.",null,2]]},
  {n:93,f:"20 de noviembre",it:[
@@ -5447,6 +5454,14 @@ function irVersion(id){if(G&&G.id===id)return;const g=guiones.find(x=>x.id===id)
 async function nuevaVersion(){if(!G||soloLee())return;await guardarYa();const yo=guiones.find(x=>x.id===G.id);const de=yo?numVer(yo):1;
   const d=JSON.parse(JSON.stringify(leerDoc()));delete d.vivo;delete d.peliNueva;delete d.ver;if(!d.postit)d.serie=G.doc.serie||G.id;
   await nuevo(d);if(G&&G.doc&&G.doc.ver)toast(`Arrancaste la V${G.doc.ver}, una copia de la V${de}. La V${de} queda guardada tal cual.`)}
+/* si alguien escribe bastante en una versión que no es la última, se le avisa (una vez por versión) */
+let tecleoVieja=0,tecleoEn="";const yaAvisadaVieja=new Set();
+function avisoVieja(){const yo=G&&guiones.find(x=>x.id===G.id);if(!yo||soloLee()||yaAvisadaVieja.has(yo.id))return;const vs=versionesDe(yo),ult=vs[vs.length-1];if(!ult||ult.g.id===yo.id)return;
+  if(tecleoEn!==yo.id){tecleoEn=yo.id;tecleoVieja=0}if(++tecleoVieja<40)return;yaAvisadaVieja.add(yo.id);
+  document.querySelector(".gu-avisov")?.remove();const a=mk("div","gu-avisov");a.setAttribute("role","alert");const t=mk("span");t.innerHTML=`Che, fijate que estás escribiendo en la <b>V${numVer(yo)}</b>, que es una versión vieja. La última es la <b>V${ult.n}</b>.`;
+  const ir=btn("si","Ir a la V"+ult.n,()=>{a.remove();irVersion(ult.g.id)}),qu=btn(null,"Sigo acá",()=>{a.remove();ed.focus({preventScroll:true})});
+  for(const b of [ir,qu])b.addEventListener("pointerdown",e=>e.preventDefault());a.append(t,ir,qu);document.body.append(a);setTimeout(()=>a.remove(),20000)}
+ed.addEventListener("input",()=>{try{avisoVieja()}catch(_){}});
 document.addEventListener("pointerdown",e=>{const m=Q("gu-m-vers");if(m&&!m.hidden&&!e.target.closest(".gu-verw"))m.hidden=true},true);
 function abrirGuionDesdeHoja(id){vuelveGuion=null;if(abierto){mitadCambia=true;try{cerrar()}finally{mitadCambia=false}}entrar(id)}
 function guionDePostit(){if(!abierto||abierto.k!=="ideas")return;const pid=abierto.id,it=itemDe("ideas",pid);const gs=guionesDe(pid);
@@ -5996,13 +6011,13 @@ function entrar(gid,scroll,irA){if(!col){toast("Todavía se están cargando tus 
   raiz.hidden=false;document.body.classList.add("en-guion");tab.setAttribute("aria-selected","true");try{localStorage.setItem("pestana","guion")}catch(_){}
   let id=gid;if(id===undefined){try{id=localStorage.getItem("guion_ult")}catch(_){}}
   let g=id&&guiones.find(x=>x.id===id);if(g&&gid===undefined)g=ultimaDe(g);if(g)abrirGuion(g,scroll,irA);else mostrarLista()}
-function ocultar(){cerrarAC();cerrarPop();cerrarComposer();salirMitad(true);raiz.hidden=true;document.body.classList.remove("en-guion","gu-foco");tab.setAttribute("aria-selected","false")}
+function ocultar(){document.querySelector(".gu-avisov")?.remove();cerrarAC();cerrarPop();cerrarComposer();salirMitad(true);raiz.hidden=true;document.body.classList.remove("en-guion","gu-foco");tab.setAttribute("aria-selected","false")}
 function salir(){guardarYa();vuelveGuion=null;ocultar();desconectarVivo();try{localStorage.setItem("pestana","")}catch(_){}}
 function abrirGuion(g,scroll,irA){guardarYa();zoomManual=false;cerrarTL();G={id:g.id,doc:JSON.parse(JSON.stringify(g))};delete G.doc.id;miEditado=g.editado||0;if(conflicto)cerrarConflicto();try{localStorage.setItem("guion_ult",g.id)}catch(_){}
   Q("gu-lista").hidden=true;Q("gu-ed").hidden=false;
   if(V&&(!g.vivo||V.id!==g.vivo.e))desconectarVivo();if(g.vivo&&g.vivo.e&&(!V||V.id!==g.vivo.e))setTimeout(()=>{if(G&&G.id===g.id)conectarVivo(g.vivo.e,"e",miNombreVivo()).catch(e=>{console.error(e);toast("No pude conectar el guion en vivo. Lo que escribas igual se guarda.")})},50);
   setTimeout(()=>{if(!G||G.id!==g.id)return;const vieja=pilas.find(p=>p.id===G.doc.pilaLoc||(p.guion===G.id&&/^Locaciones · /.test(p.titulo||"")));if(vieja&&!G.doc.pilaLoc){G.doc.pilaLoc=vieja.id;sucio=true}
-    if(vieja){if(peli())sincLocaciones();else{ladoTab="locaciones";pintarSide();elegirPeli()}}},500);if(!mitad){let ab=false;try{ab=localStorage.getItem("gu_lado")==="1"}catch(_){}Q("gu-side").hidden=innerWidth<760||!ab}zoomAuto=true;cargarEnEditor(G.doc,irA);migrarColores();pintarVer();
+    if(vieja){if(peli())sincLocaciones();else{ladoTab="locaciones";pintarSide();elegirPeli()}}},500);if(!mitad){let ab=false;try{ab=localStorage.getItem("gu_lado")==="1"}catch(_){}Q("gu-side").hidden=innerWidth<760||!ab}zoomAuto=true;cargarEnEditor(G.doc,irA);migrarColores();pintarVer();document.querySelector(".gu-avisov")?.remove();
   requestAnimationFrame(()=>{if(scroll!=null)scroller.scrollTop=scroll;else if(!irA)scroller.scrollTop=opc.portada!==false&&lay?Math.max(0,lay.PASO*zoom-20):0;ed.focus({preventScroll:true});if(!irA&&scroll==null){const p=ed.firstElementChild;caret(p,"fin")}})}
 window.abrirGuiones=()=>{if(abierto){mitadCambia=true;try{cerrar()}finally{mitadCambia=false}}raiz.hidden=false;document.body.classList.add("en-guion");mostrarLista()};
 window.__nGuiones=()=>guiones.filter(esUltima).length;
