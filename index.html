@@ -1028,6 +1028,18 @@ html:not(.plano).fondo-cuad #vp-main{background-color:#1a5a3e;--mat-major:transp
 .blink .link-tit:focus{outline:none}
 
 .barra-sel .bs-agrupar,.barra-sel .bs-apilar{background:var(--paper);color:var(--ink)}
+/* Ordenar: alinear, distribuir y acomodar (como en Illustrator) */
+.bs-ordw{position:relative;display:flex}
+.bs-ord-m{position:absolute;top:calc(100% + 10px);left:50%;transform:translateX(-50%);background:var(--paper);color:var(--ink);border-radius:14px;padding:10px;box-shadow:0 12px 30px rgba(0,0,0,.35);display:grid;gap:8px;min-width:236px;z-index:2}
+.bs-ord-m[hidden]{display:none}
+.bs-ord-m .bo-lbl{font:600 10px var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--soft);padding:0 2px}
+.bs-ord-m .bo-fila{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}
+.barra-sel .bs-ord-m button{background:rgba(43,37,32,.07);color:var(--ink);border-radius:8px;padding:0;height:34px;display:flex;align-items:center;justify-content:center}
+.barra-sel .bs-ord-m button:hover{background:rgba(43,37,32,.16)}
+.barra-sel .bs-ord-m button svg{width:20px;height:20px}
+.bs-ord-m .bo-anchos{grid-template-columns:repeat(2,1fr)}
+.barra-sel .bs-ord-m .bo-anchos button{justify-content:flex-start;gap:8px;padding:0 10px;font:600 12.5px var(--ui);white-space:nowrap}
+.alineando{transition:left .28s cubic-bezier(.2,.7,.2,1),top .28s cubic-bezier(.2,.7,.2,1)!important}
 
 #panel-pref{z-index:25}
 .pv-nota{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
@@ -2375,7 +2387,21 @@ function barraSel(lz){
     const borrar=el("button","bs-borrar","Borrar");borrar.type="button";const listo=el("button","bs-listo","Listo");listo.type="button";
     const agr=el("button","bs-agrupar","Agrupar");agr.type="button";agr.title="Que se muevan juntos (Ctrl+G)";agr.onclick=()=>{const ns=selNodos(lz);if(agr.dataset.modo==="des")desagrupar(lz,ns);else agrupar(lz,ns)};
     const api=el("button","bs-apilar","Apilar");api.type="button";api.title="Juntarlos en una pila adentro de este post-it";api.hidden=true;api.onclick=()=>{const ns=selNodos(lz);if(lz.onApilarSel)lz.onApilarSel(ns)};
-    b.append(t,agr,api,dup,borrar,listo);b.hidden=true;lz.vp.parentElement.append(b);lz._barra=b;lz._bsTxt=t;lz._bsBorrar=borrar;lz._bsAgr=agr;lz._bsApi=api;
+    const ordW=el("div","bs-ordw"),ord=el("button","bs-ordenar","Ordenar ▾");ord.type="button";ord.title="Alinear, distribuir o acomodar en grilla";const om=el("div","bs-ord-m");om.hidden=true;om.setAttribute("role","menu");
+    const IC={izq:'<path d="M3 2v16" stroke-width="1.6"/><rect x="5" y="4" width="11" height="4" rx="1"/><rect x="5" y="11" width="7" height="4" rx="1"/>',chor:'<path d="M10 2v16" stroke-width="1.6"/><rect x="3.5" y="4" width="13" height="4" rx="1"/><rect x="6" y="11" width="8" height="4" rx="1"/>',der:'<path d="M17 2v16" stroke-width="1.6"/><rect x="4" y="4" width="11" height="4" rx="1"/><rect x="8" y="11" width="7" height="4" rx="1"/>',
+      arr:'<path d="M2 3h16" stroke-width="1.6"/><rect x="4" y="5" width="4" height="11" rx="1"/><rect x="11" y="5" width="4" height="7" rx="1"/>',cver:'<path d="M2 10h16" stroke-width="1.6"/><rect x="4" y="3.5" width="4" height="13" rx="1"/><rect x="11" y="6" width="4" height="8" rx="1"/>',aba:'<path d="M2 17h16" stroke-width="1.6"/><rect x="4" y="4" width="4" height="11" rx="1"/><rect x="11" y="8" width="4" height="7" rx="1"/>',
+      dh:'<path d="M2 3v14M18 3v14" stroke-width="1.4"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="12" y="6" width="3" height="8" rx="1"/>',dv:'<path d="M3 2h14M3 18h14" stroke-width="1.4"/><rect x="6" y="5" width="8" height="3" rx="1"/><rect x="6" y="12" width="8" height="3" rx="1"/>',
+      grilla:'<rect x="3" y="3" width="6" height="6" rx="1"/><rect x="11" y="3" width="6" height="6" rx="1"/><rect x="3" y="11" width="6" height="6" rx="1"/><rect x="11" y="11" width="6" height="6" rx="1"/>',fila:'<rect x="2" y="7" width="4.5" height="6" rx="1"/><rect x="7.75" y="7" width="4.5" height="6" rx="1"/><rect x="13.5" y="7" width="4.5" height="6" rx="1"/>',
+      col:'<rect x="7" y="2" width="6" height="4.5" rx="1"/><rect x="7" y="7.75" width="6" height="4.5" rx="1"/><rect x="7" y="13.5" width="6" height="4.5" rx="1"/>'};
+    const svg=k=>'<svg viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" stroke-width="0" aria-hidden="true">'+IC[k]+'</svg>';
+    const ob=(k,tit,txt)=>{const x=el("button");x.type="button";x.title=tit;x.setAttribute("aria-label",tit);x.setAttribute("role","menuitem");x.innerHTML=svg(k)+(txt?"<span></span>":"");if(txt)x.lastChild.textContent=txt;x.onclick=e=>{e.stopPropagation();om.hidden=true;ordenarSel(lz,k)};return x};
+    const f1=el("div","bo-fila");[["izq","Alinear a la izquierda"],["chor","Centrar horizontalmente"],["der","Alinear a la derecha"],["arr","Alinear arriba"],["cver","Centrar verticalmente"],["aba","Alinear abajo"]].forEach(([k,t])=>f1.append(ob(k,t)));
+    const f2=el("div","bo-fila bo-anchos");f2.append(ob("dh","Mismo espacio entre cada uno, a lo ancho","Repartir ↔"),ob("dv","Mismo espacio entre cada uno, a lo alto","Repartir ↕"));
+    const f3=el("div","bo-fila bo-anchos");f3.append(ob("grilla","Acomodarlos en una grilla prolija","En grilla"),ob("fila","Ponerlos uno al lado del otro","En fila"),ob("col","Ponerlos uno abajo del otro","En columna"));
+    om.append(el("span","bo-lbl","Alinear"),f1,el("span","bo-lbl","Repartir"),f2,el("span","bo-lbl","Acomodar"),f3);
+    ord.onclick=e=>{e.stopPropagation();om.hidden=!om.hidden};document.addEventListener("pointerdown",e=>{if(!om.hidden&&!ordW.contains(e.target))om.hidden=true},true);
+    ordW.append(ord,om);lz._bsOrd=ordW;lz._bsOrdM=om;
+    b.append(t,ordW,agr,api,dup,borrar,listo);b.hidden=true;lz.vp.parentElement.append(b);lz._barra=b;lz._bsTxt=t;lz._bsBorrar=borrar;lz._bsAgr=agr;lz._bsApi=api;
     let seguro=false,tm;borrar.onclick=()=>{const ns=selNodos(lz);if(!ns.length)return;
       if(!seguro){seguro=true;const tot=ns.reduce((a,n)=>a+(n._pila&&typeof itemsPila==="function"?itemsPila(n._pila).length:1),0);borrar.textContent=`¿Borrar ${tot}? Tocá de nuevo`;borrar.classList.add("sure");clearTimeout(tm);tm=setTimeout(()=>{seguro=false;borrar.textContent="Borrar";borrar.classList.remove("sure")},4000);return}
       seguro=false;borrar.textContent="Borrar";borrar.classList.remove("sure");selLimpiar(lz);lz.onBorrarSel&&lz.onBorrarSel(ns)};
@@ -2383,7 +2409,32 @@ function barraSel(lz){
   const ns=selNodos(lz),n=ns.length;lz._barra.hidden=!n||!!lz._autoGrupo;lz._bsTxt.textContent=n===1?"1 seleccionado":`${n} seleccionados`;
   {const gs=ns.map(x=>x.dataset.g||""),todos=n>1&&gs[0]&&gs.every(g=>g===gs[0]),ok=ns.filter(agrupable).length;lz._bsAgr.dataset.modo=todos?"des":"";lz._bsAgr.textContent=todos?"Desagrupar":"Agrupar";lz._bsAgr.hidden=!(todos||ok>=2);
     lz._bsApi.hidden=!(lz.onApilarSel&&ns.filter(x=>x.dataset.bid&&!x.classList.contains("bpila")).length>=2)}
+  {const enG=lz!==(typeof lzHoja!=="undefined"&&lzHoja)&&typeof enGrilla==="function"&&enGrilla(vista);lz._bsOrd.hidden=n<2||enG;if(lz._bsOrd.hidden)lz._bsOrdM.hidden=true}
 }
+/* Ordenar lo seleccionado: alinear, repartir y acomodar. Trabaja con la caja que se ve (contando zoom, escala y giro) */
+function ordenarSel(lz,modo){const ns=selNodos(lz).filter(n=>n._arr);if(ns.length<2)return;
+  const cajas=ns.map(n=>{const r=n.getBoundingClientRect(),a=lz.aMundo(r.left,r.top),b=lz.aMundo(r.right,r.bottom),x0=parseFloat(n.style.left)||0,y0=parseFloat(n.style.top)||0;return {n,x:a.x,y:a.y,w:b.x-a.x,h:b.y-a.y,x0,y0,nx:a.x,ny:a.y}});
+  const L=Math.min(...cajas.map(c=>c.x)),T=Math.min(...cajas.map(c=>c.y)),R=Math.max(...cajas.map(c=>c.x+c.w)),B=Math.max(...cajas.map(c=>c.y+c.h));
+  const ESP=24;
+  if(modo==="izq")cajas.forEach(c=>c.nx=L);else if(modo==="der")cajas.forEach(c=>c.nx=R-c.w);else if(modo==="chor")cajas.forEach(c=>c.nx=(L+R)/2-c.w/2);
+  else if(modo==="arr")cajas.forEach(c=>c.ny=T);else if(modo==="aba")cajas.forEach(c=>c.ny=B-c.h);else if(modo==="cver")cajas.forEach(c=>c.ny=(T+B)/2-c.h/2);
+  else if(modo==="dh"||modo==="dv"){const hor=modo==="dh",o=cajas.slice().sort((a,b)=>hor?a.x-b.x:a.y-b.y);
+    /* mismo espacio entre cada uno; si están encimados, se separan con un espacio fijo */
+    const total=o.reduce((s,c)=>s+(hor?c.w:c.h),0),hueco=Math.max(ESP*(((hor?R-L:B-T)-total)<0?1:0),((hor?R-L:B-T)-total)/(o.length-1));let p=hor?L:T;
+    for(const c of o){if(hor)c.nx=p;else c.ny=p;p+=(hor?c.w:c.h)+hueco}}
+  else{/* grilla, fila o columna: en orden de lectura, arrancando arriba a la izquierda */
+    const o=cajas.slice().sort((a,b)=>Math.abs(a.y-b.y)>Math.min(a.h,b.h)/2?a.y-b.y:a.x-b.x);
+    const cols=modo==="fila"?o.length:modo==="col"?1:Math.ceil(Math.sqrt(o.length*1.4));
+    const anchos=[],altos=[];o.forEach((c,i)=>{const cc=i%cols,f=Math.floor(i/cols);anchos[cc]=Math.max(anchos[cc]||0,c.w);altos[f]=Math.max(altos[f]||0,c.h)});
+    o.forEach((c,i)=>{const cc=i%cols,f=Math.floor(i/cols);let x=L,y=T;for(let k=0;k<cc;k++)x+=anchos[k]+ESP;for(let k=0;k<f;k++)y+=altos[k]+ESP;c.nx=x;c.ny=y})}
+  const mov=cajas.filter(c=>Math.abs(c.nx-c.x)>.5||Math.abs(c.ny-c.y)>.5);if(!mov.length){toast("Ya estaban así.");return}
+  for(const c of mov){c.n.classList.add("alineando");c.fx=Math.round(c.x0+(c.nx-c.x));c.fy=Math.round(c.y0+(c.ny-c.y));c.n._arr.mover(c.fx,c.fy)}
+  const t0=performance.now();const seguir=()=>{if(lz===lzHoja){try{pintarHilos()}catch(_){}}else{try{pedirFlechas()}catch(_){}}if(performance.now()-t0<340)requestAnimationFrame(seguir)};requestAnimationFrame(seguir);
+  setTimeout(()=>mov.forEach(c=>c.n.classList.remove("alineando")),360);
+  try{if(lz===lzHoja){marcarPilaHoja(null);marcarListaLinks(null)}else limpiarDestino()}catch(_){}
+  /* guardar: adentro de un post-it, un solo guardado; en la plancha, cada cosa la suya (sin meterla en pilas ni grillas) */
+  if(lz===lzHoja){if(!abierto)return;for(const c of mov){const b=abierto.doc.bloques.find(x=>x.id===c.n.dataset.bid);if(b){b.x=c.fx;b.y=c.fy}}guardarBloques()}
+  else for(const c of mov){const n=c.n;if(n._k&&n._id&&cols[n._k]){const k=n._k;fijarSinPosicion(k,n._id);if(k===vista&&ordenActual[k])recordarOrden(null);const it=data[k].find(z=>z.id===n._id);if(it){it.x=c.fx;it.y=c.fy}escribir(cols[k],n._id,{x:c.fx,y:c.fy})}else n._arr.soltar()}}
 /* Grupos: lo agrupado se mueve junto. En la plancha guarda «g» en cada post-it; adentro de un post-it, en cada bloque */
 const agrupable=n=>!!(n.dataset.bid||(n._k&&n._id));
 function agrupar(lz,ns){ns=ns.filter(agrupable);if(ns.length<2)return;const g=bid();
@@ -3837,6 +3888,7 @@ const AYUDA=[
   [null,"La forma más fácil: arrastrá una cosa y soltala encima de otra, igual que en la plancha. Se arma la pila."],
   [{chip:"Pila"},"También con doble clic en el fondo (o el «+») → «Pila»: crea una pila vacía para ir metiéndole cosas."],
   [{chip:"Apilar"},"O seleccioná dos o más cosas (Shift + arrastrar en el fondo) y tocá «Apilar» en la barra de arriba."],
+  [{chip:"Ordenar ▾"},"Con dos o más cosas seleccionadas (Shift + arrastrar en el fondo), en la barra de arriba: alinear (izquierda, centro, derecha, arriba, medio, abajo), repartir con el mismo espacio, o acomodar en grilla, en fila o en columna. Anda en la plancha y adentro de los post-its."],
   [null,"Para meter algo más, arrastralo encima de la pila. Para ver lo que hay adentro, tocala."],
   [{chip:"Sacar ↗"},"Adentro de la pila, vuelve esa cosa a la hoja. «Deshacer pila» saca todo. Si borrás la pila, lo de adentro no se borra: vuelve a la hoja."],
   [null,"La tapa muestra la primera foto que haya adentro (o el primer texto). Adentro también podés reordenar arrastrando."],
@@ -3967,6 +4019,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:98,f:"20 de noviembre",it:[
+  ["*Ordenar, como en Illustrator.* Seleccionás varias cosas (Shift + arrastrar en el fondo) y arriba aparece *Ordenar ▾*: las alineás a un costado o al centro, las repartís con el mismo espacio, o las acomodás en una grilla, en fila o en columna. Anda en la plancha y adentro de los post-its.",null,1]]},
  {n:97,f:"20 de noviembre",it:[
   ["*Los links ahora tienen miniatura y título solos.* Pegás un link y aparece la foto (en YouTube, la del video) y el título de verdad, chau «youtube.com». Los que ya tenías se completan solos la próxima vez que abrís el post-it. Algunas páginas no lo permiten: ahí queda como antes y el título se lo ponés vos con doble clic.",null,1],
   ["*Lista de links*, en el *+*: una tarjeta con un link por renglón, cada uno con su miniatura. Pegás varios de una, los reordenás con los puntitos ⋮⋮, y si soltás un link suelto encima, entra en la lista.",null,1]]},
