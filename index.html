@@ -1125,6 +1125,11 @@ body.barra-abierta .barra-extra.h-extra:not(.abierta){display:none}
 .gu-card .t{margin-top:30%;font:700 15px/1.25 "Courier Prime","Courier New",monospace;text-transform:uppercase;word-break:break-word}
 .gu-card .a{margin-top:10px;font:13px "Courier Prime","Courier New",monospace;color:#555}
 .gu-card .m{margin-top:auto;font:500 11px var(--mono);color:#888}
+.gu-card .gu-cv{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;margin:auto 0 10px}
+.gu-card .gu-cv span{font:700 11px var(--mono);letter-spacing:.04em;padding:3px 7px;border-radius:999px;border:1px solid #d8d0bf;color:#777;cursor:pointer}
+.gu-card .gu-cv span:hover{border-color:var(--ink);color:var(--ink)}
+.gu-card .gu-cv span.ult{background:var(--ink);border-color:var(--ink);color:#fffdf6}
+.gu-card .gu-cv+.m{margin-top:0}
 .gu-vacio{color:var(--paper);opacity:.8;font:500 15px/1.5 var(--ui);max-width:460px}
 /* editor */
 .gu-ed{flex:1;display:flex;flex-direction:column;min-height:0}
@@ -3694,7 +3699,7 @@ const AYUDA=[
   [{chip:"⌟"},"Adentro de un post-it, la esquinita de abajo a la derecha de los post-its chiquitos los hace más grandes o más chicos."]]},
  {t:"La flechita ⌄ (al lado de Diario)",it:[
   [{chip:"Frases"},"Citas, cosas que leíste o escuchaste y no querés perder. Mientras estás ahí, aparece como pestaña."],
-  [{chip:"Guiones"},"Todos tus guiones juntos: abrirlos, cambiarles el nombre, borrarlos o importar uno."],
+  [{chip:"Guiones"},"Todos tus guiones juntos: abrirlos, cambiarles el nombre, borrarlos o importar uno. Si un guion tiene versiones, abajo de la tapa ves V1, V2, V3…: tocás la que quieras, y la tapa abre la última."],
   [{chip:"Línea de tiempo"},"Tus ideas (o frases) en el orden en que las fuiste anotando."]]},
  {t:"Menú •••",it:[
   [{chip:"•••"},"Arriba a la derecha: abre una fila con todo lo que sigue."],
@@ -3859,6 +3864,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:94,f:"20 de noviembre",it:[
+  ["En *Más ▾ → Guiones* cada tapa muestra sus versiones, *V1, V2, V3…*: tocás la que quieras. Si tocás la tapa, se abre la última.",null,2]]},
  {n:93,f:"20 de noviembre",it:[
   ["Las versiones del guion ahora se llaman *V1, V2, V3…* (de versión). Funcionan igual: botón al lado del título, y desde el post-it siempre se abre la última.",null,2]]},
  {n:92,f:"20 de noviembre",it:[
@@ -6003,7 +6010,8 @@ function mostrarLista(){guardarYa();salirMitad(true);desconectarVivo();G=null;tr
 function pintarLista(){const c=Q("gu-cards");c.replaceChildren();
   if(!guiones.length){c.append(mk("p","gu-vacio","Acá van tus guiones, con el formato de siempre: Courier, A4, márgenes de industria. Escribís y se acomoda solo. Tocá «+ Guion nuevo» o traé uno de Final Draft."));return}
   for(const g of guiones.filter(esUltima).sort((a,b)=>(b.editado||0)-(a.editado||0))){const b=mk("button","gu-card");b.type="button";const pp=g.portada||{};const vs=versionesDe(g),bv=vs.length>1?"V"+numVer(g):"";
-    b.append(mk("div","t",g.titulo||"Sin título"),mk("div","a",pp.autor?"Escrito por\n"+pp.autor:""),mk("div","m",`${bv?bv+" · ":""}${(g.bloques||[]).filter(x=>x.t==="escena").length} escenas · ${fechaCorta(g.editado)}`));b.onclick=()=>abrirGuion(g);
+    b.append(mk("div","t",g.titulo||"Sin título"),mk("div","a",pp.autor?"Escrito por\n"+pp.autor:""),mk("div","m",`${(g.bloques||[]).filter(x=>x.t==="escena").length} escenas · ${fechaCorta(g.editado)}`));b.onclick=()=>abrirGuion(g);
+    if(vs.length>1){const cv=mk("div","gu-cv");for(const v of vs){const c=mk("span",v.g===g?"ult":null,"V"+v.n);c.setAttribute("role","button");c.title=v.g===g?"V"+v.n+": la última":"Abrir la V"+v.n+" ("+fechaCorta(v.g.editado||v.g.creado)+")";c.onclick=e=>{e.stopPropagation();abrirGuion(v.g)};cv.append(c)}b.querySelector(".m").before(cv)}
     const ed2=mk("span","gu-card-ed","✎");ed2.title="Cambiarle el título";ed2.setAttribute("role","button");ed2.setAttribute("aria-label","Cambiarle el título");
     ed2.onclick=e=>{e.stopPropagation();abrirModal(m=>{m.append(mk("h3",null,"Título del guion"));const i=mk("input");i.type="text";i.value=g.titulo||"";m.append(i);const ok=async()=>{const t=i.value.trim();cerrarModal();if(t===(g.titulo||""))return;const todas=versionesDe(g).map(v=>v.g);for(const x of todas)x.titulo=t;pintarLista();try{await Promise.all(todas.map(x=>col.doc(x.id).update({titulo:t})))}catch(_){toast("No se pudo cambiar el título.")}};
       i.onkeydown=ev=>{if(ev.key==="Enter"){ev.preventDefault();ok()}};const a=mk("div","acc");a.append(btn(null,"Cancelar",cerrarModal),btn("si","Listo",ok));m.append(a);setTimeout(()=>i.select(),40)})};b.append(ed2);
