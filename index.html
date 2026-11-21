@@ -1137,6 +1137,15 @@ body.barra-abierta .barra-extra.h-extra:not(.abierta){display:none}
 .gu-sel{white-space:nowrap;border:0;border-radius:999px;background:#ffe76a;color:var(--ink);font:700 13px var(--ui);padding:7px 10px;cursor:pointer}
 .gu-ic{width:32px;padding:7px 0;text-align:center}
 .gu-mw{position:relative}
+/* versiones del guion: B1, B2, B3… */
+.gu-bver{font:700 12.5px var(--mono);letter-spacing:.05em;padding-left:10px;padding-right:10px;white-space:nowrap}
+.gu-bver.vieja{background:#b8892e;color:#fff}
+.gu-verw .gu-menu{left:0;right:auto;min-width:300px}.gu-verw .gu-menu span,.gu-verw .gu-menu small{white-space:nowrap}
+.gu-menu button.on{background:rgba(43,37,32,.08);font-weight:700}
+.gu-menu .gu-ver-nueva{font-weight:600}
+.gu-vieja{border:0;background:none;color:#e9c46a;font:600 12px var(--ui);cursor:pointer;white-space:nowrap;padding:4px 2px}
+.gu-vieja:hover{text-decoration:underline}
+@media (max-width:760px){.gu-vieja{display:none}}
 .gu-menu{position:absolute;right:0;top:calc(100% + 6px);z-index:5;background:#fffdf6;border-radius:12px;padding:6px;min-width:250px;box-shadow:0 12px 30px rgba(0,0,0,.45);display:grid}
 .gu-menu[hidden]{display:none}
 .gu-menu button{border:0;background:none;text-align:left;font:500 14px var(--ui);padding:9px 12px;border-radius:8px;cursor:pointer;color:var(--ink);display:flex;justify-content:space-between;gap:16px}
@@ -3747,7 +3756,8 @@ const AYUDA=[
   [{h:'<span class="ay-tools"><b class="am">Post-it</b><b>Nota</b><b>Texto</b><b>Imagen</b><b>Link</b></span>'},"En la compu, la barra de abajo pega cosas en la hoja."],
   [{chip:"A Ideas",c:"amarillo"},"Marcá un pedazo de texto y mandalo como idea nueva a tu plancha."]]},
  {t:"Guion",it:[
-  [{chip:"+ → Guion"},"Adentro del post-it de una película, con + o doble clic. Se arma un guion con formato profesional (A4, Courier) y queda en la tarjeta del post-it: «GUION · Abrir». Para otra versión, + → Guion → «+ Otro guion»."],
+  [{chip:"+ → Guion"},"Adentro del post-it de una película, con + o doble clic. Se arma un guion con formato profesional (A4, Courier) y queda en la tarjeta del post-it: «GUION · Abrir»."],
+  [{chip:"B3 ▾"},"Las versiones del guion, al lado del título. «+ Nueva versión» arranca la B siguiente como copia de la que tenés abierta, y la anterior queda guardada tal cual. Desde ahí abrís cualquiera; desde el post-it siempre se abre la última."],
   [{chip:"Tab"},"Cambia el tipo de renglón: escena, acción, personaje, diálogo, paréntesis, transición. Enter pasa al que sigue. Cuando escribís un personaje, Tab lo completa con la primera sugerencia; si bajás con la flechita a otro, Tab confirma ese."],
   [null,"A la izquierda tenés las escenas, los personajes y las locaciones, con buscador. Las locaciones se vuelven post-its adentro de la película solas."],
   [{chip:"Hilos"},"En la lista de escenas, el circulito te deja elegir a qué hilo narrativo pertenece la escena (o crear uno nuevo). Cada hilo tiene su color y la escena se pinta con ese color."],
@@ -3759,7 +3769,7 @@ const AYUDA=[
   [{chip:"⤢"},"En la barrita vertical de la izquierda (tipo de renglón, negrita, buscar, zoom). Modo foco: solo la hoja, sin nada alrededor. También con Ctrl+Shift+Enter. Esc para salir."],
   [null,"Ortografía: las palabras mal escritas quedan subrayadas en rojo (diccionario rioplatense, con voseo). Clic derecho para ver sugerencias o agregarla a tu diccionario. Se apaga en Archivo → Formato."],
   [{chip:"Página 3"},"Abajo a la izquierda: tocá el número de página para saltar a otra."],
-  [{chip:"Versiones anteriores"},"En Archivo. Cada vez que el guion se guarda queda una versión: la ves, volvés a ella o la abrís como copia aparte."],
+  [{chip:"Historial de cambios"},"En Archivo. Cada vez que el guion se guarda queda un punto en el historial: lo ves, volvés a él o lo abrís como una versión nueva."],
   [null,"Si el mismo guion está abierto en dos lados y uno queda viejo, la web no deja que pise al otro: te avisa y elegís qué hacer."],
   [{chip:"Compartir"},"Link para leer o para editar juntos en vivo. Archivo: PDF, Final Draft, Fountain y todos tus guiones."],
   [{chip:"Exportar PDF…"},"En Archivo (o Ctrl+P, ⌘+P en Mac). Elegís todo el guion, la página donde estás o algunas páginas: 10-15, 23-28, o 20- para ir hasta el final. Cada página sale con su número de siempre."]]},
@@ -3849,6 +3859,10 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:92,f:"20 de noviembre",it:[
+  ["Guion: *ahora tiene versiones, B1, B2, B3…* Al lado del título tocás *B1 ▾ → + Nueva versión* y arranca la B2 como copia, y la B1 queda guardada tal cual. Desde ese mismo botón abrís la que quieras. Desde el post-it de la peli siempre se abre la última.",null,1],
+  ["Si ya tenías más de un guion en la misma película, ahora son sus versiones, en el orden en que los creaste.",null,2],
+  ["Lo que antes se llamaba «Versiones anteriores» ahora es *Archivo → Historial de cambios*, para no mezclarlo.",null,3]]},
  {n:91,f:"20 de noviembre",it:[
   ["Ahora *podés reordenar las tareas*: agarrás una de los puntitos ⋮⋮ de la izquierda y la arrastrás adonde quieras. Si estás escribiendo, también va con Alt + ↑ / ↓.",null,2]]},
  {n:90,f:"19 de noviembre",it:[
@@ -5282,6 +5296,8 @@ raiz.innerHTML=`
     <button type="button" class="gu-b" data-a="volverp" title="Volver al post-it de la película">← Volver</button>
     <button type="button" class="gu-b gu-ic" data-a="lado" title="Escenas, personajes y locaciones">☰</button>
     <input class="gu-titulo" id="gu-titulo" placeholder="Sin título" maxlength="120" aria-label="Título del guion">
+    <div class="gu-mw gu-verw solo-duenio"><button type="button" class="gu-b gu-bver" id="gu-bver" data-a="vers" title="Versiones de este guion" hidden>B1 ▾</button><div class="gu-menu" id="gu-m-vers" hidden></div></div>
+    <button type="button" class="gu-vieja solo-duenio" id="gu-vieja" hidden></button>
     <span class="gu-estado" id="gu-estado"></span><span class="gu-gente" id="gu-gente" hidden></span>
     <span class="gu-esp"></span>
     
@@ -5298,11 +5314,11 @@ raiz.innerHTML=`
       <button type="button" data-a="fountain">Exportar Fountain (.fountain)</button>
       <button type="button" data-a="importar" class="solo-duenio">Importar Final Draft o Fountain…</button>
       <hr>
-      <button type="button" data-a="versiones" class="solo-duenio">Versiones anteriores…</button>
+      <button type="button" data-a="versiones" class="solo-duenio">Historial de cambios…</button>
       <button type="button" data-a="mis" class="solo-duenio">Todos los guiones</button>
       <button type="button" data-a="atajos">Atajos de teclado</button>
       <hr>
-      <button type="button" class="peligro solo-duenio" data-a="borrar">Borrar este guion</button>
+      <button type="button" class="peligro solo-duenio" data-a="borrar">Borrar esta versión</button>
     </div></div>
   </div>
 
@@ -5398,11 +5414,34 @@ const tab=mk("button","tab","Guion");tab.type="button";tab.id="tab-guion";tab.se
 /* ya no es una pestaña: el guion vive adentro del post-it de la película (+ → Guion) */
 {const t=$("add-esc");const b=mk("button","tool","Guion");b.type="button";b.id="add-guion";b.title="Guion de esta película";b.onclick=()=>guionDePostit();if(t)t.after(b);else document.body.append(b)}
 const guionesDe=pid=>guiones.filter(g=>g.postit===pid).sort((a,b)=>(a.creado||0)-(b.creado||0)||String(a.id).localeCompare(b.id));
-const principalDe=pid=>guionesDe(pid)[0]||null;
+/* versiones (B1, B2, B3…): los guiones de una misma película son versiones; siempre se abre la última */
+const grupoDe=g=>g.postit?"p:"+g.postit:"s:"+(g.serie||g.id);
+function versionesDe(g){if(!g)return[];const k=grupoDe(g);let n=0;
+  return guiones.filter(x=>grupoDe(x)===k).sort((a,b)=>(a.creado||0)-(b.creado||0)||String(a.id).localeCompare(b.id)).map(x=>{n=Math.max(n+1,+x.ver||0);return{g:x,n}})}
+const numVer=g=>{const v=versionesDe(g).find(x=>x.g.id===g.id);return v?v.n:1};
+const ultimaDe=g=>{const v=versionesDe(g);return v.length?v[v.length-1].g:g};
+const esUltima=g=>ultimaDe(g)===g;
+function proxVer(d){const k=grupoDe({...d,id:"\u0000"});let n=0;for(const x of guiones.filter(x=>grupoDe(x)===k).sort((a,b)=>(a.creado||0)-(b.creado||0)||String(a.id).localeCompare(b.id)))n=Math.max(n+1,+x.ver||0);return n+1}
+const principalDe=pid=>{const gs=guionesDe(pid);return gs.length?gs[gs.length-1]:null};
+const fechaCorta=t=>t?new Date(t).toLocaleDateString("es-AR",{day:"numeric",month:"short"}):"";
+function pintarVer(){const b=Q("gu-bver"),av=Q("gu-vieja");if(!b)return;const yo=G&&guiones.find(x=>x.id===G.id);if(!yo){b.hidden=true;av.hidden=true;return}
+  const vs=versionesDe(yo),n=numVer(yo),ult=vs[vs.length-1],vieja=!!ult&&ult.g.id!==yo.id;
+  b.hidden=false;b.textContent="B"+n+" ▾";b.classList.toggle("vieja",vieja);b.title=vieja?`Estás en la B${n}. La última es la B${ult.n}.`:(vs.length>1?`B${n}: la última de ${vs.length} versiones`:"Versiones de este guion");
+  av.hidden=!vieja;if(vieja){av.textContent=`No es la última · ir a la B${ult.n} →`;av.onclick=()=>irVersion(ult.g.id)}}
+function menuVer(){const m=Q("gu-m-vers");if(!m.hidden){m.hidden=true;return}const yo=G&&guiones.find(x=>x.id===G.id);if(!yo)return;
+  const vs=versionesDe(yo),ult=vs[vs.length-1];m.replaceChildren();
+  for(const v of vs.slice().reverse()){const nE=(v.g.bloques||[]).filter(b=>b.t==="escena"&&(b.h||"").trim()).length;const bt=mk("button");bt.type="button";if(v.g.id===yo.id)bt.classList.add("on");
+    bt.append(mk("span",null,"B"+v.n+(v===ult?" · la última":"")),mk("small",null,(nE===1?"1 esc.":nE+" esc.")+" · "+fechaCorta(v.g.editado||v.g.creado)));bt.onclick=()=>{m.hidden=true;irVersion(v.g.id)};m.append(bt)}
+  if(!soloLee()){m.append(mk("hr"));const nb=mk("button","gu-ver-nueva");nb.type="button";nb.append(mk("span",null,`+ Nueva versión (B${ult.n+1})`),mk("small",null,"copia de la B"+numVer(yo)));nb.onclick=()=>{m.hidden=true;nuevaVersion()};m.append(nb)}
+  m.hidden=false}
+function irVersion(id){if(G&&G.id===id)return;const g=guiones.find(x=>x.id===id);if(!g){toast("Esa versión ya no existe.");return}abrirGuion(g)}
+async function nuevaVersion(){if(!G||soloLee())return;await guardarYa();const yo=guiones.find(x=>x.id===G.id);const de=yo?numVer(yo):1;
+  const d=JSON.parse(JSON.stringify(leerDoc()));delete d.vivo;delete d.peliNueva;delete d.ver;if(!d.postit)d.serie=G.doc.serie||G.id;
+  await nuevo(d);if(G&&G.doc&&G.doc.ver)toast(`Arrancaste la B${G.doc.ver}, una copia de la B${de}. La B${de} queda guardada tal cual.`)}
+document.addEventListener("pointerdown",e=>{const m=Q("gu-m-vers");if(m&&!m.hidden&&!e.target.closest(".gu-verw"))m.hidden=true},true);
 function abrirGuionDesdeHoja(id){vuelveGuion=null;if(abierto){mitadCambia=true;try{cerrar()}finally{mitadCambia=false}}entrar(id)}
 function guionDePostit(){if(!abierto||abierto.k!=="ideas")return;const pid=abierto.id,it=itemDe("ideas",pid);const gs=guionesDe(pid);
-  if(gs.length){abrirModal(m=>{m.append(mk("h3",null,"Guion"));const l=mk("div","gu-elegir-g");for(const g of gs)l.append(btn(null,(g===gs[0]?"Abrir el guion principal · ":"Abrir «")+(g.titulo||"Sin título")+(g===gs[0]?"":"»"),()=>{cerrarModal();abrirGuionDesdeHoja(g.id)}));
-      l.append(btn("si","+ Otro guion",()=>{cerrarModal();crearGuionPara(pid,`${((it&&it.texto)||"").split("\n")[0].trim().slice(0,100)} (versión ${gs.length+1})`)}));m.append(l);const a=mk("div","acc");a.append(btn(null,"Cancelar",cerrarModal));m.append(a)});return}
+  if(gs.length){abrirGuionDesdeHoja(gs[gs.length-1].id);return}
   crearGuionPara(pid,((it&&it.texto)||"").split("\n")[0].trim().slice(0,120))}
 function crearGuionPara(pid,tit){vuelveGuion=null;
   mitadCambia=true;try{cerrar()}finally{mitadCambia=false}
@@ -5660,7 +5699,7 @@ function pintarVolverG(){if(!abierto||navRef.length)return;if(mitad)$("volver").
 let tChipsR=0;
 {const a0=pintarAparece;pintarAparece=function(){const r=a0.apply(this,arguments);try{pintarEnGuion()}catch(e){console.error(e)}return r}}
 function apariciones(k,id){const out=[];const it=itemDe(k,id);const nombre=it&&k==="ideas"?norm((it.texto||"").split("\n")[0]):"";const esLoc=it&&k==="ideas"&&(!!(it.dentro&&!it.anidado)||locPostits().some(l=>l.id===id));
-  for(const g of guiones){if(k==="ideas"&&g.postit===id)continue;let n=0;const vistos=new Set();for(const b of (g.bloques||[])){if(b.t==="escena")n++;
+  for(const g of guiones){if(k==="ideas"&&g.postit===id)continue;if(!esUltima(g))continue;let n=0;const vistos=new Set();for(const b of (g.bloques||[])){if(b.t==="escena")n++;
     let ok=(b.refs||[]).some(r=>r.k===k&&r.id===id);
     if(!ok&&b.t==="escena"&&esLoc&&nombre){const tmp=mk("div");tmp.innerHTML=b.h||"";ok=norm(lugarDe(tmp.textContent))===nombre}
     if(ok&&!vistos.has(n)){vistos.add(n);out.push({g,n:n||1,bid:b.id})}}}
@@ -5676,8 +5715,8 @@ function pintarEnGuion(){{const b=$("add-guion");if(b)b.hidden=!abierto||abierto
   {let gb=p.querySelector(".gu-princ");const g=abierto.k==="ideas"?principalDe(abierto.id):null;
     if(!g){if(gb)gb.remove()}else{if(!gb){gb=mk("button","gu-princ");gb.type="button";gb.addEventListener("pointerdown",e=>e.stopPropagation());p.append(gb)}
       const nE=(g.bloques||[]).filter(b=>b.t==="escena"&&(b.h||"").trim()).length;gb.title="Abrir el guion";gb.onclick=e=>{e.stopPropagation();abrirGuionDesdeHoja(g.id)};
-      {const bl=abierto.doc.bloques,k=bl.findIndex(b=>b.t==="link"&&!b.en&&(b.url||"").includes("#guion="+g.id));if(k>=0){const id=bl[k].id;bl.splice(k,1);sinHistoria();guardarBloques();nodoHoja(id)?.remove();try{pintarHilos()}catch(_){}}}
-      gb.replaceChildren(mk("i","gu-pag"),mk("b",null,"GUION"),mk("small",null,nE===1?"1 escena":nE+" escenas"),mk("span","gu-princ-ir","Abrir →"))}}
+      {const gs=guionesDe(abierto.id),bl=abierto.doc.bloques,k=bl.findIndex(b=>b.t==="link"&&!b.en&&gs.some(x=>(b.url||"").includes("#guion="+x.id)));if(k>=0){const id=bl[k].id;bl.splice(k,1);sinHistoria();guardarBloques();nodoHoja(id)?.remove();try{pintarHilos()}catch(_){}}}
+      const nV=guionesDe(abierto.id).length;gb.replaceChildren(mk("i","gu-pag"),mk("b",null,"GUION"),mk("small",null,(nV>1?"B"+numVer(g)+" · ":"")+(nE===1?"1 escena":nE+" escenas")),mk("span","gu-princ-ir","Abrir →"))}}
   for(const n of document.querySelectorAll("#capa-hoja .pieza.blink")){const a=n.querySelector('a[href*="#guion="]');n.classList.toggle("gu-tapa",!!a);if(a&&!n.querySelector(".gu-tapa-lbl"))n.prepend(mk("span","gu-tapa-lbl","Guion"))}let a=p.querySelector(".aparece.ap-guion");
   const l=apariciones(abierto.k,abierto.id);if(!l.length){if(a)a.remove();return}
   if(!a){a=mk("div","aparece ap-guion");p.append(a)}
@@ -5835,8 +5874,8 @@ async function sincLocaciones(extra){if(!G||!cols.ideas||sincEnCurso)return;cons
     const titulo=tituloG,url=urlGuion(GG.id);
     const locs=[...new Set([...data.ideas.filter(i=>i.dentro===pe.id&&!i.anidado&&!borrar.has(i.id)).map(i=>i.id),...idsNuevos,...migrados])];
     editarPeli(bl=>{let cambio=false;
-      /* el guion principal se abre desde la tarjeta del post-it; los otros quedan como una tapita de guion */
-      const esPrin=(principalDe(pe.id)||{}).id===GG.id;let lk=bl.find(b=>b.t==="link"&&(b.url||"").includes("#guion="+GG.id));
+      /* el guion (su última versión) se abre desde la tarjeta del post-it */
+      const esPrin=true;/* B1, B2…: todas se abren desde la tarjeta del post-it (con el botón de versión), ninguna deja tapita */let lk=bl.find(b=>b.t==="link"&&(b.url||"").includes("#guion="+GG.id));
       if(esPrin){if(lk){const k=bl.indexOf(lk);const ref={x:lk.x,y:lk.y};bl.splice(k,1);lk=ref;cambio=true}}
       else if(!lk){const p0=lugarLibreEn(bl);lk={id:bid(),t:"link",url,titulo:titulo,x:p0.x,y:p0.y,w:200};bl.push(lk);cambio=true}
       else if(lk.titulo!==titulo||lk.url!==url){lk.titulo=titulo;lk.url=url;cambio=true}
@@ -5896,7 +5935,7 @@ function mostrarConflicto(){conflicto=true;pintarEstado();let b=raiz.querySelect
       if(!await confirmar("¿Traer la versión nueva?","Lo que escribiste acá desde el último guardado se pierde. Si no querés perderlo, tocá «Guardar la mía como copia».","Traer la nueva"))return;
       const sc=scroller.scrollTop;G.doc=JSON.parse(JSON.stringify(g));delete G.doc.id;miEditado=g.editado||0;sucio=false;ultJSON="";cerrarConflicto();cargarEnEditor(G.doc);scroller.scrollTop=sc;toast("Listo: estás viendo la versión nueva.")}),
     btn(null,"Guardar la mía como copia",async()=>{const d=leerDoc();d.titulo=(d.titulo||"Guion")+" (copia)";delete d.vivo;cerrarConflicto();sucio=false;await nuevo(d);toast("Guardé lo tuyo como un guion aparte. El original quedó como estaba en el otro lado.")}),
-    btn(null,"Quedarme con la mía",async()=>{if(!await confirmar("¿Quedarte con la tuya?","Reemplaza lo que se cambió en el otro lado. Igual queda en «Versiones anteriores», por las dudas.","Quedarme con la mía"))return;const g=guiones.find(x=>x.id===G.id);miEditado=Math.max(miEditado,(g&&g.editado)||0);cerrarConflicto();sucio=true;ultJSON="";guardarYa()}));
+    btn(null,"Quedarme con la mía",async()=>{if(!await confirmar("¿Quedarte con la tuya?","Reemplaza lo que se cambió en el otro lado. Igual queda en el «Historial de cambios», por las dudas.","Quedarme con la mía"))return;const g=guiones.find(x=>x.id===G.id);miEditado=Math.max(miEditado,(g&&g.editado)||0);cerrarConflicto();sucio=true;ultJSON="";guardarYa()}));
   b.append(acc);raiz.querySelector(".gu-top").after(b)}
 function cerrarConflicto(){conflicto=false;raiz.querySelector(".gu-conf")?.remove();pintarEstado()}
 
@@ -5904,7 +5943,7 @@ function cerrarConflicto(){conflicto=false;raiz.querySelector(".gu-conf")?.remov
 async function abrirVersiones(){if(!G)return;let nube=false;try{nube=localStorage.getItem("plancha_modo")==="nube"}catch(_){}
   if(!window.__ghHist||nube){toast("Las versiones anteriores todavía no están para este tipo de cuenta.");return}
   const path="guiones/"+G.id+".json";let pag=1,todas=[];
-  abrirModal(async m=>{m.classList.add("gu-ver-m");m.append(mk("h3",null,"Versiones anteriores"),mk("p","gu-snota","Cada vez que el guion se guarda, queda una versión. Tocá una para verla."));const ls=mk("div","gu-ver");ls.append(mk("p","gu-snota","Cargando…"));m.append(ls);
+  abrirModal(async m=>{m.classList.add("gu-ver-m");m.append(mk("h3",null,"Historial de cambios"),mk("p","gu-snota","Cada vez que el guion se guarda, queda un punto en el historial. Tocá uno para verlo."));const ls=mk("div","gu-ver");ls.append(mk("p","gu-snota","Cargando…"));m.append(ls);
     const a=mk("div","acc");a.append(btn(null,"Cerrar",cerrarModal));m.append(a);
     const pintarLs=()=>{ls.replaceChildren();let dia="";for(const v of todas){const d=new Date(v.fecha),k=d.toLocaleDateString("es-AR",{weekday:"long",day:"numeric",month:"long"});if(k!==dia){dia=k;ls.append(mk("div","gu-ver-dia",k))}
         const b=btn("gu-ver-it",d.toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit",second:"2-digit",hourCycle:"h23"}),()=>verVersion(v,m,ls,pintarLs));ls.append(b)}
@@ -5920,7 +5959,7 @@ async function verVersion(v,m,ls,volver){ls.replaceChildren(mk("p","gu-snota","T
     mk("span",null,`${cv.esc} escenas · ${cv.ren} renglones (ahora: ${ch.esc} escenas · ${ch.ren} renglones)`),mk("span",null,dist?(dist===1?"1 renglón distinto a lo que tenés ahora.":`${dist} renglones distintos a lo que tenés ahora.`):"Es igual a lo que tenés ahora."));
   const pv=mk("div","gu-ver-pv");for(const b of (d.bloques||[]).slice(0,40)){const x=mk("p",null,b.h||"");x.dataset.t=b.t;pv.append(x)}c.append(pv);
   const acc=mk("div","acc");acc.append(btn("gu-dg-mas","← Volver a la lista",volver),
-    btn(null,"Abrirla como copia aparte",async()=>{const n={...d};delete n.vivo;n.titulo=(n.titulo||"Guion")+" (versión del "+f.toLocaleDateString("es-AR",{day:"numeric",month:"numeric"})+" "+f.toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit",hourCycle:"h23"})+")";cerrarModal();await nuevo(n)}),
+    btn(null,"Abrirla como versión nueva",async()=>{const n={...d};delete n.vivo;delete n.peliNueva;if(G.doc.postit)n.postit=G.doc.postit;else{delete n.postit;n.serie=G.doc.serie||G.id}cerrarModal();await guardarYa();await nuevo(n);if(G&&G.doc.ver)toast("Quedó como la B"+G.doc.ver+".")}),
     btn("si","Volver a esta versión",async()=>{if(!await confirmar("¿Volver a esta versión?","Lo que tenés ahora no se pierde: queda como una versión más en esta lista.","Volver a esta versión"))return;
       cerrarModal();const n={...d,vivo:G.doc.vivo,postit:G.doc.postit||d.postit};G.doc=n;cargarEnEditor(n);cerrarConflicto();cambio();guardarYa();toast("Volviste a la versión de las "+f.toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit",hourCycle:"h23"})+".")}));
   c.append(acc);ls.append(c)}
@@ -5947,39 +5986,42 @@ function entrar(gid,scroll,irA){if(!col){toast("Todavía se están cargando tus 
   try{if(typeof salirDiario==="function")salirDiario()}catch(_){}if(abierto)cerrar();
   raiz.hidden=false;document.body.classList.add("en-guion");tab.setAttribute("aria-selected","true");try{localStorage.setItem("pestana","guion")}catch(_){}
   let id=gid;if(id===undefined){try{id=localStorage.getItem("guion_ult")}catch(_){}}
-  const g=id&&guiones.find(x=>x.id===id);if(g)abrirGuion(g,scroll,irA);else mostrarLista()}
+  let g=id&&guiones.find(x=>x.id===id);if(g&&gid===undefined)g=ultimaDe(g);if(g)abrirGuion(g,scroll,irA);else mostrarLista()}
 function ocultar(){cerrarAC();cerrarPop();cerrarComposer();salirMitad(true);raiz.hidden=true;document.body.classList.remove("en-guion","gu-foco");tab.setAttribute("aria-selected","false")}
 function salir(){guardarYa();vuelveGuion=null;ocultar();desconectarVivo();try{localStorage.setItem("pestana","")}catch(_){}}
 function abrirGuion(g,scroll,irA){guardarYa();zoomManual=false;cerrarTL();G={id:g.id,doc:JSON.parse(JSON.stringify(g))};delete G.doc.id;miEditado=g.editado||0;if(conflicto)cerrarConflicto();try{localStorage.setItem("guion_ult",g.id)}catch(_){}
   Q("gu-lista").hidden=true;Q("gu-ed").hidden=false;
   if(V&&(!g.vivo||V.id!==g.vivo.e))desconectarVivo();if(g.vivo&&g.vivo.e&&(!V||V.id!==g.vivo.e))setTimeout(()=>{if(G&&G.id===g.id)conectarVivo(g.vivo.e,"e",miNombreVivo()).catch(e=>{console.error(e);toast("No pude conectar el guion en vivo. Lo que escribas igual se guarda.")})},50);
   setTimeout(()=>{if(!G||G.id!==g.id)return;const vieja=pilas.find(p=>p.id===G.doc.pilaLoc||(p.guion===G.id&&/^Locaciones · /.test(p.titulo||"")));if(vieja&&!G.doc.pilaLoc){G.doc.pilaLoc=vieja.id;sucio=true}
-    if(vieja){if(peli())sincLocaciones();else{ladoTab="locaciones";pintarSide();elegirPeli()}}},500);if(!mitad){let ab=false;try{ab=localStorage.getItem("gu_lado")==="1"}catch(_){}Q("gu-side").hidden=innerWidth<760||!ab}zoomAuto=true;cargarEnEditor(G.doc,irA);migrarColores();
+    if(vieja){if(peli())sincLocaciones();else{ladoTab="locaciones";pintarSide();elegirPeli()}}},500);if(!mitad){let ab=false;try{ab=localStorage.getItem("gu_lado")==="1"}catch(_){}Q("gu-side").hidden=innerWidth<760||!ab}zoomAuto=true;cargarEnEditor(G.doc,irA);migrarColores();pintarVer();
   requestAnimationFrame(()=>{if(scroll!=null)scroller.scrollTop=scroll;else if(!irA)scroller.scrollTop=opc.portada!==false&&lay?Math.max(0,lay.PASO*zoom-20):0;ed.focus({preventScroll:true});if(!irA&&scroll==null){const p=ed.firstElementChild;caret(p,"fin")}})}
 window.abrirGuiones=()=>{if(abierto){mitadCambia=true;try{cerrar()}finally{mitadCambia=false}}raiz.hidden=false;document.body.classList.add("en-guion");mostrarLista()};
-window.__nGuiones=()=>guiones.length;
+window.__nGuiones=()=>guiones.filter(esUltima).length;
 function mostrarLista(){guardarYa();salirMitad(true);desconectarVivo();G=null;try{localStorage.removeItem("guion_ult")}catch(_){}Q("gu-ed").hidden=true;Q("gu-lista").hidden=false;pintarLista()}
 function pintarLista(){const c=Q("gu-cards");c.replaceChildren();
   if(!guiones.length){c.append(mk("p","gu-vacio","Acá van tus guiones, con el formato de siempre: Courier, A4, márgenes de industria. Escribís y se acomoda solo. Tocá «+ Guion nuevo» o traé uno de Final Draft."));return}
-  for(const g of guiones.slice().sort((a,b)=>(b.editado||0)-(a.editado||0))){const b=mk("button","gu-card");b.type="button";const pp=g.portada||{};
-    b.append(mk("div","t",g.titulo||"Sin título"),mk("div","a",pp.autor?"Escrito por\n"+pp.autor:""),mk("div","m",`${(g.bloques||[]).filter(x=>x.t==="escena").length} escenas · ${g.editado?new Date(g.editado).toLocaleDateString("es-AR",{day:"numeric",month:"short"}):""}`));b.onclick=()=>abrirGuion(g);
+  for(const g of guiones.filter(esUltima).sort((a,b)=>(b.editado||0)-(a.editado||0))){const b=mk("button","gu-card");b.type="button";const pp=g.portada||{};const vs=versionesDe(g),bv=vs.length>1?"B"+numVer(g):"";
+    b.append(mk("div","t",g.titulo||"Sin título"),mk("div","a",pp.autor?"Escrito por\n"+pp.autor:""),mk("div","m",`${bv?bv+" · ":""}${(g.bloques||[]).filter(x=>x.t==="escena").length} escenas · ${fechaCorta(g.editado)}`));b.onclick=()=>abrirGuion(g);
     const ed2=mk("span","gu-card-ed","✎");ed2.title="Cambiarle el título";ed2.setAttribute("role","button");ed2.setAttribute("aria-label","Cambiarle el título");
-    ed2.onclick=e=>{e.stopPropagation();abrirModal(m=>{m.append(mk("h3",null,"Título del guion"));const i=mk("input");i.type="text";i.value=g.titulo||"";m.append(i);const ok=async()=>{const t=i.value.trim();cerrarModal();if(t===(g.titulo||""))return;g.titulo=t;pintarLista();try{await col.doc(g.id).update({titulo:t})}catch(_){toast("No se pudo cambiar el título.")}};
+    ed2.onclick=e=>{e.stopPropagation();abrirModal(m=>{m.append(mk("h3",null,"Título del guion"));const i=mk("input");i.type="text";i.value=g.titulo||"";m.append(i);const ok=async()=>{const t=i.value.trim();cerrarModal();if(t===(g.titulo||""))return;const todas=versionesDe(g).map(v=>v.g);for(const x of todas)x.titulo=t;pintarLista();try{await Promise.all(todas.map(x=>col.doc(x.id).update({titulo:t})))}catch(_){toast("No se pudo cambiar el título.")}};
       i.onkeydown=ev=>{if(ev.key==="Enter"){ev.preventDefault();ok()}};const a=mk("div","acc");a.append(btn(null,"Cancelar",cerrarModal),btn("si","Listo",ok));m.append(a);setTimeout(()=>i.select(),40)})};b.append(ed2);
-    const x=mk("span","gu-card-x","×");x.title="Borrar este guion";x.setAttribute("role","button");x.setAttribute("aria-label","Borrar este guion");x.onclick=async e=>{e.stopPropagation();const ok=await confirmarBorrarGuion(g.titulo);if(!ok)return;try{await col.doc(g.id).delete();guiones=guiones.filter(z=>z.id!==g.id);pintarLista();toast("Guion borrado.")}catch(_){toast("No se pudo borrar.")}};b.append(x);c.append(b)}}
+    const x=mk("span","gu-card-x","×");x.title=bv?"Borrar la "+bv+" (las otras versiones quedan)":"Borrar este guion";x.setAttribute("role","button");x.setAttribute("aria-label",x.title);x.onclick=async e=>{e.stopPropagation();const ok=await confirmarBorrarGuion((g.titulo||"Sin título")+(bv?" ("+bv+")":""));if(!ok)return;try{await col.doc(g.id).delete();guiones=guiones.filter(z=>z.id!==g.id);pintarLista();toast("Guion borrado.")}catch(_){toast("No se pudo borrar.")}};b.append(x);c.append(b)}}
 async function nuevo(doc){if(!col)return;const ahora=Date.now();const d=doc||{titulo:"",portada:{},opciones:{...OPC0},bloques:[{id:rid(),t:"escena",h:""}]};d.creado=ahora;d.editado=ahora;miEditado=ahora;
+  delete d.ver;if(d.postit||d.serie){const n=proxVer(d);if(n>1)d.ver=n}
   try{const r=await col.add(d);const g={id:r.id,...d};if(!guiones.some(x=>x.id===r.id))guiones.push(g);abrirGuion(g);if(!doc)setTimeout(()=>{Q("gu-titulo").focus()},80);
-    setTimeout(()=>{if(!G||G.id!==r.id)return;if(!G.doc.postit)elegirPeli();else{sucio=true;guardarYa();setTimeout(()=>{const p=ed.firstElementChild;ed.focus({preventScroll:true});caret(p,0)},100)}},doc&&!doc.postit?300:60)}catch(_){toast("No se pudo crear el guion.")}}
+    setTimeout(()=>{if(!G||G.id!==r.id)return;if(!G.doc.postit&&!G.doc.serie)elegirPeli();else{sucio=true;guardarYa();setTimeout(()=>{const p=ed.firstElementChild;ed.focus({preventScroll:true});caret(p,0)},100)}},doc&&!doc.postit?300:60)}catch(_){toast("No se pudo crear el guion.")}}
 /* borrar un guion pregunta dos veces: es mucho laburo para perderlo por un clic */
 async function confirmarBorrarGuion(t){t=t||"Sin título";if(!await confirmar(`¿Borrar «${t}»?`,"Se borra el guion entero, con sus comentarios, colores y desglose.","Borrar"))return false;
   return await confirmar("¿Seguro, seguro?",`«${t}» no se puede recuperar después.`,"Sí, borrarlo para siempre")}
-async function borrarGuion(){if(!G)return;const g=G;const ok=await confirmarBorrarGuion(Q("gu-titulo").value);if(!ok)return;sucio=false;clearTimeout(tGuardar);
-  try{await col.doc(g.id).delete();guiones=guiones.filter(x=>x.id!==g.id);mostrarLista();toast("Guion borrado.")}catch(_){toast("No se pudo borrar.")}}
+async function borrarGuion(){if(!G)return;const g=G;const yo=guiones.find(x=>x.id===g.id);const vs=yo?versionesDe(yo):[];const bv=vs.length>1?"B"+numVer(yo):"";
+  const ok=await confirmarBorrarGuion((Q("gu-titulo").value||"Sin título")+(bv?" ("+bv+")":""));if(!ok)return;sucio=false;clearTimeout(tGuardar);
+  try{await col.doc(g.id).delete();guiones=guiones.filter(x=>x.id!==g.id);const resto=vs.filter(v=>v.g.id!==g.id);
+    if(resto.length){const u=resto[resto.length-1];G=null;abrirGuion(u.g);toast(`Borré la ${bv}. Estás en la B${u.n}.`)}else{mostrarLista();toast("Guion borrado.")}}catch(_){toast("No se pudo borrar.")}}
 
 /* datos */
 (function esperar(){if(typeof dbRef==="undefined"||!dbRef){setTimeout(esperar,300);return}
   col=dbRef.collection("guiones");
-  col.onSnapshot(s=>{if(INV)return;guiones=s.docs.map(d=>({id:d.id,...d.data()}));cargados=true;
+  col.onSnapshot(s=>{if(INV)return;guiones=s.docs.map(d=>({id:d.id,...d.data()}));cargados=true;try{pintarVer()}catch(_){}
     if(!raiz.hidden&&!G&&!Q("gu-lista").hidden)pintarLista();
     if(G){const g=guiones.find(x=>x.id===G.id);if(!g){if(!raiz.hidden){toast("Este guion se borró en otro lado.");mostrarLista()}}
       else if((g.editado||0)>miEditado&&sucio&&!guardando&&!enVivoOk())mostrarConflicto();
@@ -6159,8 +6201,8 @@ async function pdf(sel,conPortada){if(!G)return;if(conPortada===undefined)conPor
 /* ---------- botones ---------- */
 raiz.addEventListener("click",e=>{const b=e.target.closest("[data-a],[data-lado]");if(!b||!raiz.contains(b))return;
   if(b.dataset.lado){if(ladoTab!==b.dataset.lado)Q("gu-sq").value="";ladoTab=b.dataset.lado;pintarSide();return}
-  const a=b.dataset.a,m=Q("gu-m-archivo");if(a!=="archivo")m.hidden=true;
-  ({salir,versiones:()=>abrirVersiones(),mis:mostrarLista,nuevo:()=>nuevo(),importar:()=>Q("gu-file").click(),lado:()=>{const s=Q("gu-side");s.hidden=!s.hidden;if(innerWidth>=760)try{localStorage.setItem("gu_lado",s.hidden?"0":"1")}catch(_){}zoomAuto=true;pedirLayout()},
+  const a=b.dataset.a,m=Q("gu-m-archivo");if(a!=="archivo")m.hidden=true;if(a!=="vers")Q("gu-m-vers").hidden=true;
+  ({salir,vers:menuVer,versiones:()=>abrirVersiones(),mis:mostrarLista,nuevo:()=>nuevo(),importar:()=>Q("gu-file").click(),lado:()=>{const s=Q("gu-side");s.hidden=!s.hidden;if(innerWidth>=760)try{localStorage.setItem("gu_lado",s.hidden?"0":"1")}catch(_){}zoomAuto=true;pedirLayout()},
     mitad:alternarMitad,candado:alternarCandado,foco:()=>modoFoco(true),comentar:()=>comentar(),linea:()=>{if(tl&&!tl.hidden)cerrarTL();else abrirTL()},b:()=>formato("b"),i:()=>formato("i"),u:()=>formato("u"),vincular,buscar:abrirBuscar,archivo:()=>{m.hidden=!m.hidden},
     volverp:()=>{const pe=peli();if(!pe){mostrarLista();return}guardarYa();salir();setTimeout(()=>abrir("ideas",pe.id),0)},compartir:compartirUI,portada,opciones,pdf:exportarPDF,fdx:()=>{bajar(nombreArchivo("fdx"),aFDX(),"application/xml");toast("Exportado para Final Draft.")},fountain:()=>bajar(nombreArchivo("fountain"),aFountain(),"text/plain"),atajos,borrar:borrarGuion,
     zauto:()=>{zoomManual=false;zoomAuto=true;maquetar()},zm:()=>{zoomAuto=false;zoomManual=true;zoom=Math.max(.4,Math.round((zoom-.1)*10)/10);maquetar()},zp:()=>{zoomAuto=false;zoomManual=true;zoom=Math.min(2,Math.round((zoom+.1)*10)/10);maquetar()},
@@ -6174,7 +6216,7 @@ addEventListener("keydown",e=>{if(raiz.hidden)return;const tg=e.target;if(tg&&tg
   const c=e.ctrlKey||e.metaKey,l=(e.key||"").toLowerCase(),esInput=!!tg&&/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName);
   if(e.key==="Escape"&&esInput&&tg.closest(".gu-per,.gu-com-nuevo"))return;
   if(esInput&&!(e.key==="Escape"||(c&&!e.altKey&&"fksp".includes(l)&&l.length===1&&!(!modal.hidden&&modal.contains(tg)))))return;
-  if(e.key==="Escape"){if(!acBox.hidden){e.preventDefault();cerrarAC()}else if(!pop.hidden)cerrarPop();else if(!modal.hidden)cerrarModal();else if(!Q("gu-find").hidden)cerrarBuscar();else if(!Q("gu-m-archivo").hidden)Q("gu-m-archivo").hidden=true;e.stopPropagation();return}
+  if(e.key==="Escape"){if(!acBox.hidden){e.preventDefault();cerrarAC()}else if(!pop.hidden)cerrarPop();else if(!modal.hidden)cerrarModal();else if(!Q("gu-find").hidden)cerrarBuscar();else if(!Q("gu-m-archivo").hidden)Q("gu-m-archivo").hidden=true;else if(!Q("gu-m-vers").hidden)Q("gu-m-vers").hidden=true;e.stopPropagation();return}
   const enModal=!modal.hidden&&modal.contains(tg);
   if(G&&!enModal&&c&&e.altKey&&e.code==="KeyM"){e.preventDefault();e.stopPropagation();comentar();return}
   if(G&&!enModal&&c&&!e.altKey){
