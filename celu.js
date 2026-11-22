@@ -32,7 +32,9 @@ const textoIdea=i=>(i.texto||"").trim()||((i.bloques||[]).find(b=>(b.t==="post"|
 const sinT=t=>(t||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
 const autosize=t=>{t.style.height="auto";t.style.height=Math.max(t.scrollHeight,parseFloat(getComputedStyle(t).minHeight)||0)+"px"};
 const vibrar=()=>{try{navigator.vibrate&&navigator.vibrate(8)}catch(_){}};
-const nombreUsuario=()=>{let n="";try{n=(typeof miNombreVivo==="function"?miNombreVivo():"")||""}catch(_){}return n&&n!=="Alguien"?n:""};
+/* nombre para el saludo: primero el de la plancha (Lenny, Helena…), después el usuario de la cuenta; el nombre de «En vivo» no, porque puede ser cualquier cosa */
+const nombreUsuario=()=>{try{const r=typeof NOMBRES_REPO!=="undefined"&&NOMBRES_REPO[LSg("gh_repo")];if(r)return r}catch(_){}
+  try{const c=JSON.parse(LSg("idt-cuenta")||"null"),m=c&&c.user&&c.user.email;if(m){const u=m.endsWith("@imagenesdeltiempo.app")?m.split("@")[0]:m.split("@")[0];if(u)return u.charAt(0).toUpperCase()+u.slice(1)}}catch(_){}return ""};
 
 /* ---------- host + shadow DOM (así los estilos de la web no se meten) ---------- */
 document.documentElement.classList.add("celu-app");
