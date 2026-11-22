@@ -69,7 +69,11 @@ input,textarea{font:inherit;color:inherit}
 .cab-der{display:flex;align-items:center;gap:8px;padding-bottom:4px}
 .redondo{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--card);box-shadow:0 1px 0 var(--line),0 2px 8px rgba(43,37,32,.08)}
 .redondo.verde{background:var(--mat);color:#fff}
-.ava{font:700 16px var(--hand);background:var(--ink);color:var(--paper)}
+.ava{flex:none;display:flex;align-items:center;justify-content:center;overflow:hidden;font:700 17px/1 var(--hand);background:var(--paper);color:var(--ink);box-shadow:0 0 0 2px rgba(255,255,255,.55),0 4px 12px rgba(0,0,0,.25)}
+.ava img{width:100%;height:100%;object-fit:cover;display:block}
+.hoja .quien .ava{box-shadow:0 0 0 1px var(--line)}
+.foto-btn{font:600 13px var(--ui);color:var(--mat);margin-top:3px;display:inline-block;padding:2px 0}
+.foto-btn+.foto-btn{margin-left:12px;color:var(--soft)}
 /* inicio */
 .mat{position:relative;margin:0;padding:calc(var(--st) + 14px) 16px 22px;background-color:var(--mat);color:#fff;
   background-image:linear-gradient(rgba(210,245,200,.16) 1px,transparent 1px),linear-gradient(90deg,rgba(210,245,200,.16) 1px,transparent 1px),linear-gradient(rgba(190,235,190,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(190,235,190,.07) 1px,transparent 1px);
@@ -137,7 +141,7 @@ input,textarea{font:inherit;color:inherit}
 .filtros{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:0 16px 4px}.filtros::-webkit-scrollbar{display:none}
 .mas-btn{display:block;margin:14px auto 0;font:600 14px var(--ui);color:var(--mat);padding:10px 18px}
 /* tabbar */
-.tabs{position:absolute;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(4,1fr);padding:6px 6px calc(var(--sb) + 6px);background:rgba(250,246,238,.86);-webkit-backdrop-filter:saturate(1.6) blur(18px);backdrop-filter:saturate(1.6) blur(18px);border-top:1px solid var(--line);z-index:5;transition:transform .2s}
+.tabs{position:absolute;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(4,1fr);padding:6px 6px max(6px,calc(var(--sb) - 18px));background:rgba(250,246,238,.86);-webkit-backdrop-filter:saturate(1.6) blur(18px);backdrop-filter:saturate(1.6) blur(18px);border-top:1px solid var(--line);z-index:5;transition:transform .2s}
 .tabs button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 0 2px;font:600 11px var(--ui);color:#a69a8b}
 .tabs button.on{color:var(--mat)}
 .app.tecleando .tabs{transform:translateY(110%)}
@@ -295,7 +299,7 @@ function armarInicio(){const p=P.inicio;p.replaceChildren();
   const mat=h("div",{class:"mat"});p.append(mat);
   comp.sync=h("div",{class:"sync"},h("i"),h("span",null,"Guardado"));
   const hora=new Date().getHours(),nom=nombreUsuario(),sal=(hora<6?"Buenas noches":hora<13?"Buen día":hora<20?"Buenas tardes":"Buenas noches")+(nom?", "+nom:"");
-  mat.append(h("div",{class:"saludo"},h("div",null,h("p",{class:"fecha"},fechaLarga(hoyK())),h("h1",null,sal),comp.sync),h("button",{type:"button",class:"redondo ava","aria-label":"Tu cuenta",onclick:abrirAjustes},(nom||"·").charAt(0).toUpperCase())));
+  mat.append(h("div",{class:"saludo"},h("div",null,h("p",{class:"fecha"},fechaLarga(hoyK())),h("h1",null,sal),comp.sync),avatar("button",{"aria-label":"Tu cuenta",onclick:abrirAjustes})));
   const c=h("div",{class:"comp"});mat.append(c);
   const ds=h("div",{class:"dest",role:"tablist"});for(const [id,n] of [["idea","Idea"],["diario","Diario"],["frase","Frase"],["lista","Lista"]])ds.append(h("button",{type:"button","data-d":id,role:"tab",onclick:()=>{dest=id;LSs("celu_dest",id);pintarComp();comp.ta.focus()}},n));
   comp.ta=h("textarea",{rows:3,class:"alta","aria-label":"Escribí acá",enterkeyhint:"enter",oninput:()=>{autosize(comp.ta);estadoGuardar()},onkeydown:e=>{if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)){e.preventDefault();guardarComp()}}});
@@ -504,12 +508,22 @@ function filaItem(L,t,capa){const w=h("div",{class:"it-w"}),bor=h("div",{class:"
   return w}
 
 /* ================= CUENTA / AJUSTES ================= */
+/* foto de perfil: se guarda en config/perfil (así la ves en todos tus dispositivos) */
+let perfil={};const avatares=new Set();
+function avatar(tag,props){const e=h(tag,{type:tag==="button"?"button":null,class:"redondo ava",...props});e._pintar=()=>{e.replaceChildren();if(perfil.foto){const im=h("img",{alt:""});im.onerror=()=>{e.replaceChildren((nombreUsuario()||"·").charAt(0).toUpperCase())};try{cargarImg(im,perfil.foto)}catch(_){}e.append(im)}else e.append((nombreUsuario()||"·").charAt(0).toUpperCase())};e._pintar();avatares.add(e);return e}
+function pintarAvatares(){for(const e of [...avatares]){if(!e.isConnected){avatares.delete(e);continue}e._pintar()}}
+const fotoIn=h("input",{type:"file",accept:"image/*",hidden:true,onchange:async()=>{const f=fotoIn.files[0];fotoIn.value="";if(!f||!D)return;aviso("Subiendo tu foto…");
+  try{const bmp=await createImageBitmap(f),lado=Math.min(bmp.width,bmp.height),cv=document.createElement("canvas");cv.width=cv.height=400;cv.getContext("2d").drawImage(bmp,(bmp.width-lado)/2,(bmp.height-lado)/2,lado,lado,0,0,400,400);
+    const blob=await new Promise(r=>cv.toBlob(r,"image/jpeg",.88));const r=await subir(new File([blob],"perfil.jpg",{type:"image/jpeg"}));if(!r)return;
+    await D.doc("config/perfil").set({...perfil,foto:r.id});perfil={...perfil,foto:r.id};pintarAvatares();aviso("Listo, ya tenés foto.")}catch(_){aviso("No pude usar esa foto. Probá con otra.")}}});
+app.append(fotoIn);
+function elegirFoto(){fotoIn.click()}
 function abrirAjustes(){tst.classList.remove("in");const velo=h("div",{class:"velo"}),hj=h("div",{class:"hoja",role:"dialog","aria-label":"Tu cuenta"});
   const cerrar=()=>{velo.classList.remove("in");hj.classList.remove("in");setTimeout(()=>{velo.remove();hj.remove()},300)};velo.onclick=cerrar;
   const nom=nombreUsuario();
   const salir=h("button",{type:"button",class:"op peligro"},ico(I.x,22),h("span",null,"Salir de mi cuenta"));let sure=false;
   salir.onclick=()=>{if(!sure){sure=true;salir.classList.add("sure");salir.querySelector("span").textContent="¿Salir? Tocá de nuevo";setTimeout(()=>{sure=false;salir.classList.remove("sure");salir.querySelector("span").textContent="Salir de mi cuenta"},3500);return}window.salirGH&&window.salirGH()};
-  hj.append(h("div",{class:"asa"}),h("div",{class:"quien"},h("span",{class:"redondo ava"},(nom||"·").charAt(0).toUpperCase()),h("div",null,h("b",null,nom||"Tu plancha"),h("span",null,`${ideas().length} ideas · ${frases().length} frases · ${misListas().length===1?"1 lista":misListas().length+" listas"}`))),
+  hj.append(h("div",{class:"asa"}),h("div",{class:"quien"},avatar("button",{"aria-label":"Cambiar la foto",onclick:()=>elegirFoto()}),h("div",null,h("b",null,nom||"Tu plancha"),h("span",null,`${ideas().length} ideas · ${frases().length} frases · ${misListas().length===1?"1 lista":misListas().length+" listas"}`),h("button",{type:"button",class:"foto-btn",onclick:()=>elegirFoto()},perfil.foto?"Cambiar foto":"Poner una foto"),perfil.foto?h("button",{type:"button",class:"foto-btn",onclick:()=>{D&&D.doc("config/perfil").set({...perfil,foto:null});cerrar()}},"Sacarla"):null)),
     h("div",{class:"grupo"},
       h("button",{type:"button",class:"op",onclick:()=>{cerrar();try{verNovedades(true,false)}catch(_){}}},ico(I.anotar,22),h("span",null,"Novedades"),ico(I.chev,18)),
       h("button",{type:"button",class:"op",onclick:()=>{cerrar();modoWeb(true)}},ico(I.web,22),h("span",null,"Ver la web completa"),ico(I.chev,18)),
@@ -541,5 +555,5 @@ try{const ay=window.abrirAyuda,t0=Date.now();window.abrirAyuda=function(){if(!ho
 (async()=>{try{D=await window.claude.use("db")}catch(_){D=null}if(!D)return;
   const ping=()=>setTimeout(()=>{listo=true;pintar()},0);
   for(const c of ["ideas","frases","diario","tareas"])D.collection(c).onSnapshot(ping,()=>{});
-  D.doc("config/categorias").onSnapshot(ping,()=>{});D.doc("config/etiquetas").onSnapshot(ping,()=>{});})();
+  D.doc("config/categorias").onSnapshot(ping,()=>{});D.doc("config/perfil").onSnapshot(sn=>{perfil=(sn.exists&&sn.data())||{};pintarAvatares()},()=>{});D.doc("config/etiquetas").onSnapshot(ping,()=>{});})();
 })();
