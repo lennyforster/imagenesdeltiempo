@@ -1,5 +1,5 @@
 /* ===== App de celu: una capa aparte para anotar rápido (ideas, diario, frases, listas). Usa los mismos datos que la web. =====
-   Se prende en el celu (por ahora solo en la plancha de Lenny) o con ?celu en la dirección. ?celu=0 la apaga. */
+   Se prende en el celu (para todos) o con ?celu en la dirección. ?celu=0 la apaga. */
 (function(){
 "use strict";
 const qs=new URLSearchParams(location.search);
@@ -10,7 +10,7 @@ if(typeof INVITADO!=="undefined"&&INVITADO)return;
 if(/^#guion(vivo|ver)=/.test(location.hash))return;
 if(location.hash==="#recorrido"&&!forzar)return;
 const esCelu=document.body.classList.contains("es-celu"),esLenny=LSg("gh_repo")==="banco-de-ideas-datos";
-if(!forzar&&!(esCelu&&esLenny))return;
+if(!forzar&&!esCelu)return;
 
 /* ---------- helpers ---------- */
 const h=(tag,props,...kids)=>{const e=document.createElement(tag);if(props)for(const [k,v] of Object.entries(props)){if(v==null||v===false)continue;if(k==="class")e.className=v;else if(k==="style")e.style.cssText=v;else if(k.startsWith("on"))e.addEventListener(k.slice(2),v);else if(k==="html")e.innerHTML=v;else e.setAttribute(k,v===true?"":v)}
@@ -72,7 +72,12 @@ input,textarea{font:inherit;color:inherit}
 .mat{position:relative;margin:0;padding:calc(var(--st) + 14px) 16px 22px;background-color:var(--mat);color:#fff;
   background-image:linear-gradient(rgba(210,245,200,.16) 1px,transparent 1px),linear-gradient(90deg,rgba(210,245,200,.16) 1px,transparent 1px),linear-gradient(rgba(190,235,190,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(190,235,190,.07) 1px,transparent 1px);
   background-size:96px 96px,96px 96px,24px 24px,24px 24px;background-position:-1px -1px}
-#p-inicio{padding-top:0}
+#p-inicio{padding-top:0;background-color:var(--mat);display:flex;flex-direction:column}#p-inicio[hidden]{display:none}
+#p-inicio .mat{flex:1;padding-bottom:calc(var(--sb) + 96px)}
+.app.en-inicio{background:var(--mat)}
+.app.en-inicio .tabs{background:rgba(20,66,46,.82);border-top-color:rgba(255,255,255,.12)}
+.app.en-inicio .tabs button{color:rgba(255,255,255,.55)}.app.en-inicio .tabs button.on{color:#fff}
+.comp textarea.alta{min-height:34vh}
 .saludo{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin:2px 4px 16px}
 .saludo h1{margin:0;font:800 30px/1.05 var(--hand);letter-spacing:-.02em}
 .saludo .fecha{font:600 13px var(--ui);opacity:.78;margin:0 0 4px}
@@ -248,7 +253,7 @@ const TABS=[["inicio","Anotar",I.anotar],["ideas","Ideas",I.ideas],["diario","Di
 for(const [id,nom,ic] of TABS){P[id]=h("section",{class:"pant",id:"p-"+id,hidden:true});app.append(P[id]);
   const b=h("button",{type:"button","data-t":id,onclick:()=>{if(tab===id){P[id].scrollTo({top:0,behavior:"smooth"});return}irTab(id)}},ico(ic,25),nom);tabsEl.append(b)}
 app.append(tabsEl);
-function irTab(id){tab=id;tst.classList.remove("in");LSs("celu_tab",id);cerrarCapas();for(const [k] of TABS){P[k].hidden=k!==id;tabsEl.querySelector(`[data-t="${k}"]`).classList.toggle("on",k===id)}pintar()}
+function irTab(id){tab=id;app.classList.toggle("en-inicio",id==="inicio");tst.classList.remove("in");LSs("celu_tab",id);cerrarCapas();for(const [k] of TABS){P[k].hidden=k!==id;tabsEl.querySelector(`[data-t="${k}"]`).classList.toggle("on",k===id)}pintar()}
 /* que el teclado no tape: mientras se escribe se esconde la barra de abajo */
 root.addEventListener("focusin",e=>{if(e.target.matches("textarea,input"))app.classList.add("tecleando")});
 root.addEventListener("focusout",()=>setTimeout(()=>{const a=root.activeElement;if(!a||!a.matches("textarea,input"))app.classList.remove("tecleando")},60));
@@ -290,14 +295,13 @@ function armarInicio(){const p=P.inicio;p.replaceChildren();
   mat.append(h("div",{class:"saludo"},h("div",null,h("p",{class:"fecha"},fechaLarga(hoyK())),h("h1",null,sal),comp.sync),h("button",{type:"button",class:"redondo ava","aria-label":"Tu cuenta",onclick:abrirAjustes},(nom||"·").charAt(0).toUpperCase())));
   const c=h("div",{class:"comp"});mat.append(c);
   const ds=h("div",{class:"dest",role:"tablist"});for(const [id,n] of [["idea","Idea"],["diario","Diario"],["frase","Frase"],["lista","Lista"]])ds.append(h("button",{type:"button","data-d":id,role:"tab",onclick:()=>{dest=id;LSs("celu_dest",id);pintarComp();comp.ta.focus()}},n));
-  comp.ta=h("textarea",{rows:3,"aria-label":"Escribí acá",enterkeyhint:"enter",oninput:()=>{autosize(comp.ta);estadoGuardar()},onkeydown:e=>{if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)){e.preventDefault();guardarComp()}}});
+  comp.ta=h("textarea",{rows:3,class:"alta","aria-label":"Escribí acá",enterkeyhint:"enter",oninput:()=>{autosize(comp.ta);estadoGuardar()},onkeydown:e=>{if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)){e.preventDefault();guardarComp()}}});
   comp.ctx=h("div");comp.foto=h("input",{type:"file",accept:"image/*",hidden:true,onchange:()=>{const f=comp.foto.files[0];comp.foto.value="";if(f){fotoSel=f;pintarComp()}}});
   comp.prev=h("div");
   comp.btnFoto=h("button",{type:"button",class:"foto","aria-label":"Sumar una foto",onclick:()=>comp.foto.click()},ico(I.foto,22));
   comp.btn=h("button",{type:"button",class:"guardar",onclick:guardarComp},"Guardar");
   c.append(ds,comp.ta,comp.prev,comp.ctx,h("div",{class:"comp-pie"},comp.btnFoto,comp.btn),comp.foto);
   comp.ds=ds;
-  comp.rec=h("div");p.append(comp.rec);
   pintarComp();pintarRecientes()}
 function estadoGuardar(){const t=comp.ta.value.trim();comp.btn.disabled=!(t||(dest==="idea"&&fotoSel))}
 function pintarComp(){if(!comp.ta)return;for(const b of comp.ds.children)b.classList.toggle("on",b.dataset.d===dest);comp.ta.placeholder=PH[dest];

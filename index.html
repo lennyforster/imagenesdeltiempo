@@ -4113,6 +4113,12 @@ const AYUDA=[
   [null,"Todo se guarda solo, en la nube. No hay botón de guardar."],
   [null,"Entrás con tu usuario (o tu mail) y tu contraseña, en cualquier dispositivo. Si te la olvidás, avisale a Lenny y te la cambia."],
   [null,"Tu plancha es privada: nadie más la ve desde la web. Queda guardada en el servidor de Lenny, como en cualquier servicio."]]},
+ {t:"En el celu",it:[
+  [null,"En el celu la web abre como una app pensada para anotar rápido. La plancha, los hilos y el guion quedan para la compu."],
+  [{chip:"Anotar"},"Escribís y elegís a dónde va: Idea (con su categoría y, si querés, una foto), Diario (con la hora), Frase o Lista."],
+  [{chip:"Ideas"},"Buscás, filtrás por categoría y abrís cada idea para cambiarle el texto, la categoría o el estado, o sumarle algo adentro."],
+  [{chip:"Listas"},"Agregás renglones, los tachás con el círculo y deslizás a la izquierda para sacarlos."],
+  [null,"Tocando el círculo de arriba a la derecha: Novedades, Ver la web completa y Salir."]]},
  {t:"Contacto",it:[
   [null,"¿Algo que cambiarías, que no anda o que te gustaría que tenga? Escribile a Lenny."],
   [{h:'<a class="ay-chip" href="https://wa.me/5491168342011" target="_blank" rel="noopener">15 6834-2011</a>'},"Por WhatsApp o mensaje."]]}
@@ -4141,6 +4147,10 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:102,f:"22 de noviembre",it:[
+  ["*En el celu, la web ahora es una app.* Abrís y escribís: elegís si es una *idea*, algo para el *diario*, una *frase* o un renglón de una *lista*, y guardás. Abajo tenés tus Ideas, el Diario y las Listas para verlas y editarlas.",null,1],
+  ["En las listas, deslizás un renglón a la izquierda para sacarlo. Si borrás algo sin querer, aparece *Deshacer*.",null,2],
+  ["La plancha entera la seguís teniendo: tocás el círculo de arriba → *Ver la web completa*. Igual anda mucho mejor en la compu.",null,2]]},
  {n:101,f:"22 de noviembre",mio:true,it:[
   ["*Nueva versión de celu (prueba, solo la ves vos).* En el celu la web ahora abre como una app: arriba escribís y guardás al toque una *idea*, algo en el *diario*, una *frase* o un renglón en una *lista*. Abajo tenés cuatro pestañas: Anotar, Ideas, Diario y Listas.",null,1],
   ["En una lista, deslizás un renglón a la izquierda para sacarlo. Si borrás algo sin querer, aparece *Deshacer*.",null,2],
@@ -7135,6 +7145,6 @@ if(window.__demo){(function(){
 
 </script>
 
-<script src="celu.js?v=1"></script>
+<script src="celu.js?v=2"></script>
 </body>
 </html>
