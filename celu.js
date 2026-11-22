@@ -39,7 +39,7 @@ const nombreUsuario=()=>{try{const r=typeof NOMBRES_REPO!=="undefined"&&NOMBRES_
 /* ---------- host + shadow DOM (así los estilos de la web no se meten) ---------- */
 document.documentElement.classList.add("celu-app");
 const est=document.createElement("style");est.textContent=`
-html.celu-app.celu-on,html.celu-app.celu-on body{overflow:hidden!important;background:#f5efe3!important}
+html.celu-app.celu-on{overflow:hidden!important}html.celu-app.celu-on body{overflow:hidden!important;background:transparent!important}
 html.celu-app.celu-on body>:not(#celu-host):not(#conectar):not(#novedades):not(#ayuda):not(#cargando):not(#nombre-vivo):not(#toast):not(.guia){visibility:hidden!important}
 html.celu-app.celu-on #toast{z-index:70;bottom:calc(env(safe-area-inset-bottom,0px) + 84px)}
 html.celu-app.celu-on .rc-tira,html.celu-app.celu-on .rc-bur,html.celu-app.celu-on .rc-velo{display:none!important}
@@ -150,7 +150,7 @@ input,textarea{font:inherit;color:inherit}
 .barra .acc{font:600 15px var(--ui);color:var(--mat);padding:8px 10px;border-radius:10px}
 .barra .acc.peligro{color:var(--red)}.barra .acc.sure{background:var(--red);color:#fff}
 .det{padding:4px 18px 0}
-.det-cats{margin:0 -18px 12px;padding:0 18px}
+.det-cats{margin:0 0 10px}
 .det textarea.grande{width:100%;border:0;outline:0;resize:none;background:transparent;font:600 24px/1.25 var(--hand);letter-spacing:-.01em;padding:4px 0;min-height:40px}
 .det .meta{font:500 13px var(--ui);color:var(--soft);margin:4px 0 14px}
 .estados{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 18px}
@@ -255,6 +255,7 @@ const TABS=[["inicio","Anotar",I.anotar],["ideas","Ideas",I.ideas],["diario","Di
 for(const [id,nom,ic] of TABS){P[id]=h("section",{class:"pant",id:"p-"+id,hidden:true});app.append(P[id]);
   const b=h("button",{type:"button","data-t":id,onclick:()=>{if(tab===id){P[id].scrollTo({top:0,behavior:"smooth"});return}irTab(id)}},ico(ic,25),nom);tabsEl.append(b)}
 app.append(tabsEl);
+function colorArriba(){const v=tab==="inicio"&&!capas.length?"#1f6b4a":"#f5efe3";const m=document.querySelector('meta[name="theme-color"]');if(m&&m.content!==v)m.content=v;document.documentElement.style.setProperty("background",v,"important")}
 function irTab(id){tab=id;app.classList.toggle("en-inicio",id==="inicio");tst.classList.remove("in");LSs("celu_tab",id);cerrarCapas();for(const [k] of TABS){P[k].hidden=k!==id;tabsEl.querySelector(`[data-t="${k}"]`).classList.toggle("on",k===id)}pintar()}
 /* que el teclado no tape: mientras se escribe se esconde la barra de abajo */
 root.addEventListener("focusin",e=>{if(e.target.matches("textarea,input"))app.classList.add("tecleando")});
@@ -264,7 +265,7 @@ root.addEventListener("focusout",()=>setTimeout(()=>{const a=root.activeElement;
 const capas=[];
 function abrirCapa(titVolver,armar,acciones){const c=h("div",{class:"capa"});const bar=h("div",{class:"barra"});
   const v=h("button",{type:"button",class:"volver",onclick:()=>cerrarCapa(c)},ico(I.atras,26),titVolver);const der=h("div",{class:"der"});bar.append(v,der);
-  const cuerpo=h("div");c.append(bar,cuerpo);c._der=der;c._cuerpo=cuerpo;c._armar=armar;app.append(c);capas.push(c);
+  const cuerpo=h("div");c.append(bar,cuerpo);c._der=der;c._cuerpo=cuerpo;c._armar=armar;app.append(c);capas.push(c);colorArriba();
   armar(cuerpo,der,c);requestAnimationFrame(()=>requestAnimationFrame(()=>c.classList.add("in")));
   /* deslizar desde el borde izquierdo para volver */
   let x0=null,y0=0,dx=0;c.addEventListener("touchstart",e=>{const t=e.touches[0];if(t.clientX<28){x0=t.clientX;y0=t.clientY;dx=0}},{passive:true});
@@ -277,7 +278,7 @@ const capaArriba=()=>capas[capas.length-1];
 
 /* ---------- datos ---------- */
 let D=null,listo=false;
-const ideas=()=>(typeof data!=="undefined"&&data.ideas)||[],frases=()=>(typeof data!=="undefined"&&data.frases)||[],dias=()=>(typeof data!=="undefined"&&data.diario)||[];
+const todasIdeas=()=>(typeof data!=="undefined"&&data.ideas)||[],ideas=()=>todasIdeas().filter(i=>!i.dentro),frases=()=>(typeof data!=="undefined"&&data.frases)||[],dias=()=>(typeof data!=="undefined"&&data.diario)||[];
 const misListas=()=>(typeof listas!=="undefined"&&listas)||[];
 const categorias=()=>{const usadas=new Map();for(const i of ideas())usadas.set(i.tipo,(usadas.get(i.tipo)||0)+1);return [...cats].sort((a,b)=>(usadas.get(b.id)||0)-(usadas.get(a.id)||0))};
 const usoListas=()=>{try{return JSON.parse(LSg("celu_uso_listas")||"{}")||{}}catch(_){return {}}};
@@ -341,7 +342,7 @@ function filaIdea(i,k){const esF=k==="frases";const t=textoIdea(i);
   const meta=h("div",{class:"f-meta"});if(esF){if(i.autor)meta.append(h("span",null,i.autor+" ·"))}else meta.append(h("span",null,"#"+(i.numero||"")+" · "+cat(i.tipo).nombre+" ·"));meta.append(h("span",null,fechaCorta(i.creado||0)));
   if(!esF&&i.estado){const e=estadoDe(i.estado);if(e)meta.append(h("span",{class:"est"},h("i",{style:"background:"+e.color}),e.nombre))}
   const nImg=(i.bloques||[]).filter(b=>b.t==="img").length;if(nImg)meta.append(h("span",null,"· "+nImg+(nImg===1?" foto":" fotos")));
-  return h("button",{type:"button",class:"fila",onclick:()=>esF?abrirFrase(i.id):abrirIdea(i.id)},esF?h("span",{class:"comilla"},"“"):h("span",{class:"post",style:"background:"+colorCat(i)}),
+  return h("button",{type:"button",class:"fila",onclick:()=>esF?abrirFrase(i.id):abrirIdea(i.id,i.dentro?"Atrás":null)},esF?h("span",{class:"comilla"},"“"):h("span",{class:"post",style:"background:"+colorCat(i)}),
     h("div",{class:"f-cuerpo"},h("div",{class:"f-txt"+(t?"":" vacio")},t||(nImg?"Una foto":"Sin texto")),meta),ico(I.chev,18))}
 function pintarRecientes(){if(!comp.rec)return;const r=comp.rec;r.replaceChildren();
   const e=entradaDia(hoyK()),tr=e?tramosDe(e).filter(t=>(t.texto||"").trim()):[];
@@ -379,26 +380,26 @@ function pintarListaIdeas(){if(!ideasUI.lista)return;for(const b of ideasUI.seg.
 
 function botonBorrar(der,texto,fn){const b=h("button",{type:"button",class:"acc peligro"},texto);let sure=false,t=null;
   b.onclick=()=>{if(!sure){sure=true;b.classList.add("sure");b.textContent="¿Seguro?";t=setTimeout(()=>{sure=false;b.classList.remove("sure");b.textContent=texto},3000);return}clearTimeout(t);fn()};der.append(b);return b}
-function abrirIdea(id){const c=abrirCapa("Ideas",(cu,der,capa)=>{
-  botonBorrar(der,"Borrar",async()=>{const i=ideas().find(x=>x.id===id);cerrarCapa(capa);try{await cols.ideas.doc(id).delete();try{borrarFlechasDe(id)}catch(_){}aviso("Borré la idea"+(i&&i.numero?" #"+i.numero:"")+".","Deshacer",deshacerBtn)}catch(_){aviso("No se pudo borrar.")}});
+function abrirIdea(id,volverA){const c=abrirCapa(volverA||"Ideas",(cu,der,capa)=>{
+  botonBorrar(der,"Borrar",async()=>{const i=todasIdeas().find(x=>x.id===id);cerrarCapa(capa);try{await cols.ideas.doc(id).delete();try{borrarFlechasDe(id)}catch(_){}aviso("Borré la idea"+(i&&i.numero?" #"+i.numero:"")+".","Deshacer",deshacerBtn)}catch(_){aviso("No se pudo borrar.")}});
   const d=h("div",{class:"det"});cu.append(d);
-  const cs=h("div",{class:"ctx det-cats"}),ta=h("textarea",{class:"grande",rows:1,placeholder:"Escribí la idea…","aria-label":"Texto de la idea"}),meta=h("div",{class:"meta"}),ests=h("div",{class:"estados"}),bl=h("div");
-  let tG=null;const guardarTxt=()=>{clearTimeout(tG);const i=ideas().find(x=>x.id===id);if(i&&(i.texto||"")!==ta.value)cols.ideas.doc(id).update({texto:ta.value})};
+  const cs=h("div",{class:"det-cats"}),ta=h("textarea",{class:"grande",rows:1,placeholder:"Escribí la idea…","aria-label":"Texto de la idea"}),meta=h("div",{class:"meta"}),ests=h("div",{class:"estados"}),bl=h("div");
+  let tG=null;const guardarTxt=()=>{clearTimeout(tG);const i=todasIdeas().find(x=>x.id===id);if(i&&(i.texto||"")!==ta.value)cols.ideas.doc(id).update({texto:ta.value})};
   ta.oninput=()=>{autosize(ta);clearTimeout(tG);tG=setTimeout(guardarTxt,700)};ta.onblur=guardarTxt;capa._alCerrar=guardarTxt;
   const sum=h("textarea",{rows:1,placeholder:"Sumarle algo…","aria-label":"Sumarle algo a la idea",oninput:()=>{autosize(sum);ir.disabled=!sum.value.trim()}});
-  const ir=h("button",{type:"button",class:"ir","aria-label":"Sumar",disabled:true,onclick:()=>{const v=sum.value.trim();if(!v)return;const i=ideas().find(x=>x.id===id);if(!i)return;const b=[...(i.bloques||[])];const y=b.reduce((a,x)=>Math.max(a,(x.y||0)+(x.h||200)),0);
+  const ir=h("button",{type:"button",class:"ir","aria-label":"Sumar",disabled:true,onclick:()=>{const v=sum.value.trim();if(!v)return;const i=todasIdeas().find(x=>x.id===id);if(!i)return;const b=[...(i.bloques||[])];const y=b.reduce((a,x)=>Math.max(a,(x.y||0)+(x.h||200)),0);
     b.push({id:bid(),t:"post",v,c:"#fff4a8",x:480,y,w:220});cols.ideas.doc(id).update({bloques:b});sum.value="";autosize(sum);ir.disabled=true;vibrar();aviso("Sumado adentro de la idea.")}},ico(I.flecha,20));
-  const fi=h("input",{type:"file",accept:"image/*",hidden:true,onchange:async()=>{const f=fi.files[0];fi.value="";if(!f)return;aviso("Subiendo foto…");const r=await subir(f);if(!r){return}const i=ideas().find(x=>x.id===id);if(!i)return;const b=[...(i.bloques||[])];const y=b.reduce((a,x)=>Math.max(a,(x.y||0)+(x.h||200)),0);
+  const fi=h("input",{type:"file",accept:"image/*",hidden:true,onchange:async()=>{const f=fi.files[0];fi.value="";if(!f)return;aviso("Subiendo foto…");const r=await subir(f);if(!r){return}const i=todasIdeas().find(x=>x.id===id);if(!i)return;const b=[...(i.bloques||[])];const y=b.reduce((a,x)=>Math.max(a,(x.y||0)+(x.h||200)),0);
     b.push({id:bid(),t:"img",a:r.id,alt:f.name||"Foto",x:480,y,w:300});cols.ideas.doc(id).update({bloques:b});aviso("Foto sumada.")}});
   const cam=h("button",{type:"button",class:"cam","aria-label":"Sumar una foto",onclick:()=>fi.click()},ico(I.foto,22));
   d.append(cs,ta,meta,ests,h("div",{class:"sumar"},sum,cam,ir,fi),bl);
-  capa._pintar=()=>{const i=ideas().find(x=>x.id===id);if(!i){cerrarCapa(capa);return}
-    cs.replaceChildren();for(const cc of categorias())cs.append(h("button",{type:"button",class:"chip"+(cc.id===i.tipo?" on":""),onclick:()=>{if(cc.id!==i.tipo)cols.ideas.doc(id).update({tipo:cc.id})}},h("i",{style:"background:"+cc.color}),cc.nombre));
+  capa._pintar=()=>{const i=todasIdeas().find(x=>x.id===id);if(!i){cerrarCapa(capa);return}
+    const cc=cat(i.tipo);cs.replaceChildren(h("span",{class:"chip"},h("i",{style:"background:"+colorCat(i)}),cc.nombre));
     if(root.activeElement!==ta){ta.value=i.texto||"";requestAnimationFrame(()=>autosize(ta))}
     meta.textContent="#"+(i.numero||"")+" · anotada "+fechaCorta(i.creado||0);
     ests.replaceChildren();for(const e of ESTADOS)ests.append(h("button",{type:"button",class:"chip"+(i.estado===e.id?" on":""),style:"--c:"+e.color,onclick:()=>cols.ideas.doc(id).update({estado:i.estado===e.id?null:e.id})},h("i",{style:"background:"+e.color}),e.nombre));
     pintarBloques(bl,i)};
-  capa._pintar();if(!(ideas().find(x=>x.id===id)||{}).texto)setTimeout(()=>ta.focus(),350)});return c}
+  capa._pintar();if(!(todasIdeas().find(x=>x.id===id)||{}).texto)setTimeout(()=>ta.focus(),350)});return c}
 function pintarBloques(cont,i){const firma=JSON.stringify(i.bloques||[]);if(cont._f===firma)return;cont._f=firma;cont.replaceChildren();
   const bs=[...(i.bloques||[])].sort((a,b)=>(a.y||0)-(b.y||0)||(a.x||0)-(b.x||0));if(!bs.length)return;
   const g=h("div",{class:"bloques"});let otros=0;
@@ -407,6 +408,7 @@ function pintarBloques(cont,i){const firma=JSON.stringify(i.bloques||[]);if(cont
     else if(b.t==="img"&&b.a){const im=h("img",{alt:b.alt||"",loading:"lazy"});const w=h("div",{class:"bl-img"},im);try{cargarImg(im,b.a)}catch(_){}im.onclick=()=>{try{verImagen&&verImagen(im.src)}catch(_){}};g.append(w)}
     else if(b.t==="link"&&b.url){const a=h("a",{class:"bl-link",href:b.url,target:"_blank",rel:"noopener"});if(b.img)a.append(h("img",{src:b.img,alt:"",loading:"lazy",onerror:e=>e.target.remove()}));a.append(h("div",null,h("div",{class:"t"},b.titulo||b.tt||hostDe(b.url)),h("div",{class:"u"},hostDe(b.url))));g.append(a)}
     else if(b.t==="links"&&(b.items||[]).length){for(const x of b.items){if(!x.url)continue;const a=h("a",{class:"bl-link",href:x.url,target:"_blank",rel:"noopener"});if(x.img)a.append(h("img",{src:x.img,alt:"",loading:"lazy",onerror:e=>e.target.remove()}));a.append(h("div",null,h("div",{class:"t"},x.titulo||x.tt||hostDe(x.url)),h("div",{class:"u"},hostDe(x.url))));g.append(a)}}
+    else if(b.t==="ref"&&b.ref){const k=b.k==="frases"?"frases":"ideas",x=(k==="frases"?frases():todasIdeas()).find(z=>z.id===b.ref);if(x)g.append(h("div",{class:"grupo"},filaIdea(x,k)));else otros++}
     else if(b.t==="tar"&&b.ref){const L=misListas().find(l=>l.id===b.ref);if(L){const pend=(L.lista||[]).filter(t=>!t.hecho).length;g.append(h("button",{type:"button",class:"bl-lista",onclick:()=>abrirLista(L.id,"Idea")},ico(I.listas,20),h("span",null,nombreLista(L)),h("small",null,pend?pend+" por hacer":"todo hecho"),ico(I.chev,16)))}}
     else otros++}
   cont.append(h("h3",null,"Adentro"),g);
@@ -517,7 +519,7 @@ function abrirAjustes(){tst.classList.remove("in");const velo=h("div",{class:"ve
 
 /* web completa ↔ app */
 const volverBtn=h("button",{id:"celu-volver",type:"button",onclick:()=>modoWeb(false)},"← Volver a la app");
-function modoWeb(si){LSs("celu_web",si?"1":"0");document.documentElement.classList.toggle("celu-on",!si);host.hidden=si;if(si){if(!volverBtn.isConnected)document.body.append(volverBtn)}else{volverBtn.remove();pintar()}}
+function modoWeb(si){LSs("celu_web",si?"1":"0");document.documentElement.classList.toggle("celu-on",!si);host.hidden=si;if(si){if(!volverBtn.isConnected)document.body.append(volverBtn);const m=document.querySelector('meta[name="theme-color"]');if(m)m.content="#1f6b4a";document.documentElement.style.removeProperty("background")}else{volverBtn.remove();pintar()}}
 
 /* ---------- pintar ---------- */
 let tP=null;
@@ -527,7 +529,7 @@ function pintar(){cancelAnimationFrame(tP);tP=requestAnimationFrame(()=>{if(host
   else if(tab==="diario"){if(!diaUI.tr)armarDiario();else pintarDiarioC()}
   else if(tab==="listas"){if(!listUI.c)armarListas();else pintarListasC()}
   for(const c of capas)if(c._pintar)try{c._pintar()}catch(e){console.error(e)}
-  pintarSync()})}
+  pintarSync();colorArriba()})}
 function pintarSync(){if(!comp.sync)return;const pendiente=[...ideas(),...frases(),...dias()].some(x=>x._pend);const off=navigator.onLine===false;
   comp.sync.className="sync"+(off?" off":pendiente?" pend":"");comp.sync.lastChild.textContent=off?"Sin conexión: queda guardado acá y se sube solo":pendiente?"Guardando…":listo?"Todo guardado":"Conectando…"}
 addEventListener("online",pintarSync);addEventListener("offline",pintarSync);setInterval(pintarSync,2000);
