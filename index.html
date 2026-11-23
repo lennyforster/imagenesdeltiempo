@@ -515,6 +515,10 @@ html.plano .mas-fila{border-top:1px solid #333!important}
 /* Lápiz */
 .trazos{position:absolute;left:0;top:0;width:1px;height:1px;overflow:visible;pointer-events:none;z-index:100000}
 .trazos path{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.trazos path.trazo-hit{stroke:transparent;pointer-events:stroke;cursor:pointer}
+.modo-lapiz .trazos path.trazo-hit,.modo-flecha .trazos path.trazo-hit{pointer-events:none}
+.trazos path.sel{filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 4px #2a7de1)}
+.trazo-borrar{position:fixed;z-index:60;border:0;border-radius:999px;background:var(--ink);color:var(--paper);font:600 13px var(--ui);padding:8px 14px;box-shadow:0 6px 16px rgba(0,0,0,.3);cursor:pointer}
 .capa-lapiz{position:absolute;inset:0;z-index:5;cursor:crosshair;touch-action:none}
 .capa-lapiz.goma{cursor:cell}
 /* Barra lateral */
@@ -3587,7 +3591,22 @@ function camino(a){const n=a.length/2;if(n<1)return "";if(n===1)return `M${a[0]}
   let d=`M${a[0]},${a[1]}`;for(let i=1;i<n-1;i++){const x=a[i*2],y=a[i*2+1];d+=` Q${x},${y} ${r1((x+a[i*2+2])/2)},${r1((y+a[i*2+3])/2)}`}
   return d+` L${a[n*2-2]},${a[n*2-1]}`}
 function capaTrazos(capa){const svg=svgEl("svg",{class:"trazos",width:"1",height:"1","aria-hidden":"true"});const g=svgEl("g",{});svg.append(g);capa.append(svg);return g}
-function pintarTrazos(g,lista){g.replaceChildren(...lista.map(t=>{const p=svgEl("path",{d:camino(t.pts||[]),stroke:t.c||"#fffdf6","stroke-width":t.g||4});p.dataset.id=t.id;return p}))}
+function pintarTrazos(g,lista){const sel=selTrazo&&selTrazo.g===g?selTrazo.id:null;if(selTrazo&&selTrazo.g===g&&!lista.some(t=>t.id===sel))soltarTrazo();
+  g.replaceChildren(...lista.flatMap(t=>{const d=camino(t.pts||[]),p=svgEl("path",{d,stroke:t.c||"#fffdf6","stroke-width":t.g||4});p.dataset.id=t.id;if(t.id===sel)p.classList.add("sel");
+    /* una franja invisible más ancha encima, para poder tocar el trazo y seleccionarlo */
+    const hit=svgEl("path",{d,class:"trazo-hit","stroke-width":Math.max(14,(t.g||4)+10)});hit.dataset.hit=t.id;hit.addEventListener("click",e=>{e.stopPropagation();elegirTrazo(g,t.id,e)});return [p,hit]}))}
+/* trazos: se seleccionan tocándolos (fuera del modo lápiz) y se borran con Supr/Borrar o con el botoncito */
+let selTrazo=null;
+function lzDeTrazos(g){return g===gTrazosHoja?lzHoja:lzMain}
+function elegirTrazo(g,id,e){soltarTrazo();const lz=lzDeTrazos(g);if(lz.sel&&lz.sel.size&&typeof selLimpiar==="function")selLimpiar(lz);
+  selTrazo={g,id};const p=g.querySelector(`path[data-id="${CSS.escape(id)}"]`);if(p)p.classList.add("sel");
+  const b=el("button","trazo-borrar","Borrar dibujo");b.type="button";b.id="trazo-borrar";b.style.left=Math.min(innerWidth-130,e.clientX+10)+"px";b.style.top=Math.max(8,e.clientY-44)+"px";
+  b.onclick=ev=>{ev.stopPropagation();borrarTrazoSel()};document.body.append(b);
+  setTimeout(()=>document.addEventListener("pointerdown",fueraTrazo,true),0)}
+function fueraTrazo(e){if(e.target.closest&&(e.target.closest("#trazo-borrar")||e.target.closest(".trazo-hit")))return;soltarTrazo()}
+function soltarTrazo(){document.removeEventListener("pointerdown",fueraTrazo,true);document.getElementById("trazo-borrar")?.remove();if(!selTrazo)return;selTrazo.g.querySelectorAll("path.sel").forEach(x=>x.classList.remove("sel"));selTrazo=null}
+function borrarTrazoSel(){if(!selTrazo)return;const {g,id}=selTrazo;soltarTrazo();lzDeTrazos(g).lapiz.borrar([id]);toast("Borré el dibujo. (Ctrl+Z lo vuelve)")}
+document.addEventListener("keydown",e=>{if(!selTrazo||escribiendo())return;if(e.key==="Delete"||e.key==="Backspace"){e.preventDefault();borrarTrazoSel()}else if(e.key==="Escape")soltarTrazo()});
 function tocaTrazo(t,p,tol){const a=t.pts||[],r=tol+(t.g||4)/2;
   for(let i=0;i<a.length;i+=2){const x1=a[i],y1=a[i+1],x2=i+2<a.length?a[i+2]:x1,y2=i+2<a.length?a[i+3]:y1,dx=x2-x1,dy=y2-y1,L=dx*dx+dy*dy;
     let u=L?((p.x-x1)*dx+(p.y-y1)*dy)/L:0;u=Math.max(0,Math.min(1,u));if(Math.hypot(x1+u*dx-p.x,y1+u*dy-p.y)<=r)return true}return false}
@@ -4250,6 +4269,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:116,f:"23 de noviembre",it:[
+  ["*Los dibujos se pueden seleccionar.* Fuera del modo lápiz, tocás un trazo y queda marcado: lo borrás con *Borrar dibujo*, o con la tecla Supr. Se deshace con Ctrl+Z.",null,2]]},
  {n:115,f:"23 de noviembre",it:[
   ["Los post-its que viven adentro de otro ahora se agrandan para que *entre más texto*, sin que la letra cambie de tamaño: los estirás desde la esquinita de abajo a la derecha, a lo ancho y a lo alto.",null,2]]},
  {n:114,f:"23 de noviembre",it:[
