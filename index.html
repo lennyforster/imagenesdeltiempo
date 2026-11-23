@@ -1126,10 +1126,10 @@ html:not(.plano).fondo-cuad #vp-main{background-color:#1a5a3e;--mat-major:transp
 .bpila.destino .hp-frente{outline:3px dashed var(--paper);outline-offset:6px}
 .hp-vista{z-index:21}
 
-.nota,.bpost{transform-origin:0 0}
+.nota,.bpost,.bref{transform-origin:0 0}
 .esc-asa{position:absolute;right:0;bottom:0;width:22px;height:22px;z-index:3;cursor:nwse-resize;opacity:0;transition:opacity .15s;touch-action:none;
   background:linear-gradient(135deg,transparent 52%,rgba(43,37,32,.45) 52%,rgba(43,37,32,.45) 60%,transparent 60%,transparent 70%,rgba(43,37,32,.45) 70%,rgba(43,37,32,.45) 78%,transparent 78%)}
-.nota:hover .esc-asa,.pieza.bpost:hover .esc-asa,.pieza.bpost.sel .esc-asa{opacity:1}
+.nota:hover .esc-asa,.pieza.bpost:hover .esc-asa,.pieza.bpost.sel .esc-asa,.pieza.bref:hover .esc-asa,.pieza.bref.sel .esc-asa{opacity:1}
 @media (hover:none){.esc-asa{opacity:.6}}
 .nota.editando .esc-asa{display:none}
 
@@ -1160,7 +1160,7 @@ body.barra-abierta .barra-extra.h-extra:not(.abierta){display:none}
 .esc-asa::before{content:"";position:absolute;right:5px;bottom:5px;width:7px;height:7px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;border-radius:0 0 2px 0;color:rgba(43,37,32,.35);transition:color .15s,width .15s,height .15s}
 .esc-asa:hover{background:none;transform:none}
 .esc-asa:hover::before{color:rgba(43,37,32,.75);width:9px;height:9px}
-@media (hover:none){.esc-asa{opacity:0}.nota:focus-within .esc-asa,.pieza.bpost.sel .esc-asa{opacity:1}}
+@media (hover:none){.esc-asa{opacity:0}.nota:focus-within .esc-asa,.pieza.bpost.sel .esc-asa,.pieza.bref.sel .esc-asa{opacity:1}}
 
 .esc-asa{border:0!important;transform:none!important;border-radius:0!important}
 #h-vivo{background:#d42020;color:#fff;display:inline-flex;align-items:center;gap:8px;box-shadow:0 2px 10px -2px rgba(212,32,32,.6)}
@@ -3113,7 +3113,7 @@ function alFrente(b){if(!abierto)return;const bl=abierto.doc.bloques,i=bl.indexO
 function nodoBloque(b){
   const tipo={txt:"btxt",tx:"btexto",link:"blink",links:"blinks",img:"bimg",post:"bpost",cal:"bcal",esc:"besc",ref:"bref",tar:"btar",pila:"bpila"}[b.t]||"btxt";
   const n=el("div","pieza "+tipo+(selB===b.id?" sel":""));n.dataset.bid=b.id;if(b.g)n.dataset.g=b.g;n.style.left=b.x+"px";n.style.top=b.y+"px";n.style.width=(b.t==="post"||b.t==="ref"||b.t==="pila"?200:b.t==="tar"?(b.w||260):b.t==="cal"?280:(b.w||(b.t==="img"?300:260)))+"px";n.style.zIndex=capaDe(b);
-  n.style.setProperty("--r",giro(b.id)*(b.t==="post"?1:.6)+"deg");if(b.t==="post"&&+b.esc&&+b.esc!==1)n.style.scale=String(+b.esc);
+  n.style.setProperty("--r",giro(b.id)*(b.t==="post"?1:.6)+"deg");if((b.t==="post"||b.t==="ref")&&+b.esc&&+b.esc!==1)n.style.scale=String(+b.esc);
   const marcar=()=>{if(selB!==b.id){selB=b.id;selHilo=null;document.querySelectorAll("#capa-hoja .pieza.sel").forEach(x=>x.classList.remove("sel"));n.classList.add("sel");pintarHilos()}};
   if(b.t==="esc"){const g=el("div","grip esc-cab","Escaleta");g.title="Arrastrá para mover";n.append(g);const cont=el("div");n.append(cont);pintarEsc(cont,b,n)}
   else if(b.t==="cal"){n.append(el("div","grip"));const cont=el("div");n.append(cont);pintarCal(cont,b)}
@@ -3160,7 +3160,7 @@ function nodoBloque(b){
     redimensionable(asa,lzHoja,{inicio:()=>parseFloat(n.style.width),mover:w=>{n.style.width=Math.max(220,Math.min(900,w))+"px";pintarHilos()},soltar:()=>{b.w=Math.round(parseFloat(n.style.width));guardarBloques()}})}
   if(b.t==="tar"){const asa=el("div","asa lado");asa.title="Arrastrá para ensanchar o angostar la lista";n.append(asa);
     redimensionable(asa,lzHoja,{inicio:()=>parseFloat(n.style.width),mover:w=>{n.style.width=Math.max(200,Math.min(900,w))+"px";n.querySelectorAll(".tr-v").forEach(autosize);pintarHilos()},soltar:()=>{b.w=Math.round(parseFloat(n.style.width));n.querySelectorAll(".tr-v").forEach(autosize);guardarBloques()}})}
-  if(b.t==="post"){const asa=el("div","asa esc-asa");asa.title="Arrastrá para achicarlo o agrandarlo";n.append(asa);
+  if(b.t==="post"||b.t==="ref"){const asa=el("div","asa esc-asa");asa.title="Arrastrá para achicarlo o agrandarlo";n.append(asa);
     redimensionable(asa,lzHoja,{inicio:()=>200*(parseFloat(n.style.scale)||1),mover:w=>{n.style.scale=String(Math.max(.45,Math.min(2.5,w/200)));pintarHilos()},soltar:()=>{b.esc=Math.round((parseFloat(n.style.scale)||1)*100)/100;if(b.esc===1)delete b.esc;guardarBloques()}})}
   if(b.t==="img"){const asa=el("div","asa");n.append(asa);redimensionable(asa,lzHoja,{inicio:()=>parseFloat(n.style.width),mover:w=>{n.style.width=w+"px";pintarHilos()},soltar:()=>{b.w=Math.round(parseFloat(n.style.width));guardarBloques()}})}
   arrastrable(n,lzHoja,{solo:b.t==="tar"?".tr-cab":b.t==="links"?".ll-cab":b.t==="txt"||b.t==="tx"||b.t==="post"||b.t==="cal"||b.t==="esc"?".grip":null,inicio:()=>({x:parseFloat(n.style.left),y:parseFloat(n.style.top)}),mover:(x,y)=>{n.style.left=x+"px";n.style.top=y+"px";pintarHilos();if(b.t==="link"){marcarListaLinks(destinoListaLinks(n));marcarTarHoja(destinoTarHoja(n))}const dp=destinoPilaHoja(n,b);marcarPilaHoja(dp);if(!dp&&!n.classList.contains("msel"))seguirApilarHoja(n,b)},
@@ -4245,6 +4245,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:113,f:"23 de noviembre",it:[
+  ["Los post-its que viven adentro de otro ahora se pueden achicar y agrandar, igual que los demás: desde la esquinita de abajo a la derecha.",null,3]]},
  {n:112,f:"23 de noviembre",it:[
   ["*«En vivo» ahora se llama «Compartir».* Es lo mismo: pasás el link y editan juntos. Y ahora viaja todo: también los post-its que viven adentro del que compartís (y los de adentro de esos). El que lo guarda en su plancha los tiene igual que vos.",null,1],
   ["El botón que antes decía «Compartir» (un link a la nota que solo abre en tus dispositivos) ahora se llama «Mi link».",null,3]]},
