@@ -460,6 +460,8 @@ html.plano .mas-fila{border-top:1px solid #333!important}
 #zoom-hoja{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 64px)}
 @media (max-width:560px){#zoom-hoja .todo,#zoom-main .todo{display:none}.herramientas{left:12px;right:12px;transform:none;max-width:none}.tool-lbl{display:none}.vistaseg .seg-lbl{display:none}}
 .comp-btns{display:flex;gap:8px}
+.lat.mic-lat .mic-t{display:none}.lat.mic-lat.grab{background:#c8372d;color:#fff}.lat.mic-lat.grab svg{animation:micLat .8s infinite alternate}.lat.mic-lat.pensando{opacity:.6;pointer-events:none}
+.mic-hoja{display:inline-flex!important;align-items:center;gap:5px}.mic-hoja .mic-t:empty{display:none}.mic-hoja.grab{background:#c8372d!important;color:#fff!important;border-color:#c8372d!important}.mic-hoja.grab svg{animation:micLat .8s infinite alternate}.mic-hoja.pensando{opacity:.6;pointer-events:none}
 .mic-pc{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:38px;padding-left:10px!important;padding-right:10px!important}
 .mic-pc .mic-t:empty{display:none}.mic-pc .mic-t{font-variant-numeric:tabular-nums}
 .mic-pc.grab{background:#c8372d!important;color:#fff!important}.mic-pc.grab svg{animation:micLat .8s infinite alternate}
@@ -2164,6 +2166,7 @@ window.claude={use:async n=>{if(INVITADO&&n==="db"){if(!listo)listo=conectar();r
   <div class="dia-feed" id="dia-feed"></div>
 </section>
 <div class="herramientas dia-herr" id="dia-herr" role="toolbar" aria-label="Agregar al diario">
+  <button class="tool mic-hoja" id="mic-diario" type="button" title="Dictá y queda en el diario de hoy, con la hora («idea…», «frase…», «lista…» van a su lugar)" aria-label="Dictar al diario"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg><span class="mic-t"></span></button>
   <span class="tool-lbl">Pegar</span>
   <button class="tool amarillo" type="button" data-dh="post">Post-it</button>
   <button class="tool" type="button" data-dh="txt">Nota</button>
@@ -2206,6 +2209,7 @@ window.claude={use:async n=>{if(INVITADO&&n==="db"){if(!listo)listo=conectar();r
     <button class="btn" id="h-mas" type="button" aria-label="Más opciones de esta idea">•••</button>
   </div>
   <div class="herramientas" role="toolbar" aria-label="Agregar a la nota">
+    <button class="tool mic-hoja" id="mic-hoja" type="button" title="Dictale: «nuevo post-it…», «nueva nota…», «nueva lista compras: leche, pan», «nuevo vínculo a la 12», «nuevo link…»" aria-label="Dictar"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg><span class="mic-t"></span></button>
     <span class="tool-lbl">Agregar</span>
     <button class="tool amarillo" id="add-post" type="button">Post-it</button>
     <button class="tool" id="add-txt" type="button">Nota</button>
@@ -2888,10 +2892,13 @@ function ordenar(k,modo){
   else lista.forEach((i,n)=>mover(i,(n%5)*240,Math.floor(n/5)*250));
   pintarMain();lzMain.encuadrar(lzMain.limites());
 }
-{const b=$("mic-pc"),tt=b.querySelector(".mic-t"),normal=()=>{b.classList.remove("grab","pensando");tt.textContent="";b.title="Dictar con la voz"};
+function botonVoz(b,hacer){const tt=b.querySelector(".mic-t"),tit=b.title,normal=()=>{b.classList.remove("grab","pensando");tt.textContent="";b.title=tit};
   const o={onTick:s=>{b.classList.add("grab");b.title="Terminar de dictar";tt.textContent=Math.floor(s/60)+":"+String(s%60).padStart(2,"0")},onPensando:()=>{normal();b.classList.add("pensando")},onError:m=>toast(m),onFin:normal,
-    onTexto:async t=>{if(!cols.ideas){toast("Todavía estoy cargando tu plancha.");return}try{const r=await anotarPorVoz(t);toast(r?"Listo: "+r+". (Ctrl+Z lo deshace)":"No entendí qué anotar: «"+t+"»")}catch(_){toast("No se pudo guardar lo que dictaste: «"+t+"»")}}};
+    onTexto:async t=>{if(!cols.ideas){toast("Todavía estoy cargando tu plancha.");return}try{const r=await hacer(t);toast(r?(/^no /.test(r)?"Ojo: "+r:"Listo: "+r+". (Ctrl+Z lo deshace)"):"No entendí qué anotar: «"+t+"»")}catch(e){console.error(e);toast("No se pudo guardar lo que dictaste: «"+t+"»")}}};
   b.onclick=()=>{if(!window.Dictado){toast("El dictado no cargó. Recargá la página.");return}if(Dictado.de(o))Dictado.parar();else Dictado.empezar(o)}}
+botonVoz($("mic-pc"),anotarPorVoz);botonVoz($("mic-hoja"),anotarEnHoja);botonVoz($("mic-diario"),anotarEnDiarioVoz);
+/* en el diario: lo que dictás queda en la página de hoy con la hora; si arrancás con «idea…», «frase…», «lista…» o «agregale a la…», va a su lugar */
+async function anotarEnDiarioVoz(t){const d=leerDictado(t);if(d.tipo==="diario"||(d.tipo==="idea"&&(d.cat||"otro")==="otro"&&(d.texto||"")===t)){const v=mayus((d.tipo==="diario"?d.texto:t)||"");if(!v)return null;if(!anotarEnDiario(v))return "no: el diario todavía no cargó";return "anotado en el diario"}return anotarPorVoz(t)}
 $("abrir-composer").onclick=()=>{$("nueva").hidden=false;document.querySelector(".comp-btns").hidden=true;$("texto").focus()};
 $("cerrar-composer").onclick=()=>{$("nueva").hidden=true;document.querySelector(".comp-btns").hidden=false};
 $("texto").addEventListener("keydown",e=>{if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)){e.preventDefault();$("nueva").requestSubmit()}});
@@ -3684,7 +3691,8 @@ function crearLateral(lz){
 crearLateral(lzMain);crearLateral(lzHoja);pintarPaletas();
 /* adentro de un post-it: el + de la barra izquierda tiene todo lo que se puede agregar */
 {const bar=lzHoja.vp.parentElement.querySelector(".lateral"),mas=el("button","lat mas","+");mas.type="button";mas.title="Agregar";mas.setAttribute("aria-label","Agregar");mas.setAttribute("aria-expanded","false");
-  bar.prepend(mas,el("span","lat-sep"));const menu=el("div","agregar-menu");menu.hidden=true;menu.setAttribute("role","menu");$("detalle").append(menu);
+  const micL=el("button","lat mic-lat");micL.type="button";micL.title="Dictar: «nuevo post-it…», «nueva nota…», «nueva lista compras: leche, pan», «nuevo vínculo a la 12», «nuevo link…»";micL.setAttribute("aria-label","Dictar");micL.innerHTML='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg><span class="mic-t"></span>';
+  bar.prepend(mas,micL,el("span","lat-sep"));setTimeout(()=>botonVoz(micL,anotarEnHoja),0);const menu=el("div","agregar-menu");menu.hidden=true;menu.setAttribute("role","menu");$("detalle").append(menu);
   const OPC=[["add-post","Post-it","am"],["add-txt","Nota"],["add-tx","Texto"],["add-link","Link"],["add-ref","Vínculo"],["add-nidea","Post-it nuevo"],["add-nfrase","Frase nueva"],["add-tar","Lista"],["add-pila","Pila"],["add-img","Imagen"],["add-cal","Calendario"],["add-esc","Escaleta"],["add-guion","Guion"]];
   const cerrarM=()=>{menu.hidden=true;mas.setAttribute("aria-expanded","false");document.removeEventListener("pointerdown",fuera,true)};
   const fuera=e=>{if(!menu.contains(e.target)&&e.target!==mas)cerrarM()};
@@ -3938,6 +3946,35 @@ async function anotarPorVoz(t){const d=leerDictado(t),id="voz-"+bid()+bid(),crea
     if(it&&d.texto){const bl=[...(it.bloques||[])],y=bl.reduce((a,b)=>Math.max(a,(b.y||0)+200),0);bl.push({id,t:"txt",v:mayus(d.texto),x:480,y,w:300});await cols.ideas.doc(it.id).update({bloques:bl});return `sumado a la #${d.numero}`}}
   const texto=mayus(d.texto||t);if(!texto)return null;const numero=data.ideas.reduce((a,i)=>Math.max(a,i.numero||0),0)+1;await cols.ideas.doc(id).set({texto,tipo:d.cat||"otro",creado,numero,origen:"voz"});
   return "idea #"+numero+(d.cat&&d.cat!=="otro"?" en "+label(d.cat):"")}
+/* Micrófono adentro de un post-it: se le dan indicaciones («nuevo post-it…», «nueva nota…», «nuevo texto…», «nuevo link…»,
+   «nuevo vínculo a la 12», «nueva lista compras: leche, pan», «nueva pila…», «nuevo guion», «nueva frase de Borges: …»).
+   Si no arranca con ninguna, queda como un post-it adentro. «Diario…» sigue yendo al diario. */
+function urlDeVoz(t){let u=sinTilde(t).trim().replace(/\s+punto\s+/g,".").replace(/\s+barra\s+/g,"/").replace(/\s+guion bajo\s+/g,"_").replace(/\s+guion\s+/g,"-").replace(/\s+/g,"").replace(/[.,;:]+$/,"");
+  if(!u)return null;if(!/^https?:\/\//.test(u))u="https://"+u;try{const p=new URL(u);if(!p.hostname.includes("."))return null;return u}catch(_){return null}}
+function itemsDeVoz(t){return t.split(/\s*(?:,|\by\b(?=[^,]*$)|\n)\s*/).map(x=>x.trim().replace(/[.]+$/,"")).filter(Boolean).map(v=>({id:bid(),v:mayus(v),hecho:null}))}
+async function anotarEnHoja(t){if(!abierto||abierto.k!=="ideas")return anotarPorVoz(t);const destino=abierto.id;
+  const n=sinTilde(t).trim(),resto=k=>t.trim().slice(k).replace(/^[\s,.:;\-–—]+/,"").trim();let m;
+  const c=centroNuevo(),en=(dx,dy)=>({x:Math.round(c.x-dx),y:Math.round(c.y-dy)}),enfocar=nd=>requestAnimationFrame(()=>nd&&nd.scrollIntoView&&0);
+  if(/^(querido diario|diario)\b/.test(n))return anotarPorVoz(t);
+  if((m=/^(?:(?:un|una|nuevo|nueva|agrega(?:r|le)?|suma(?:r|le)?|pone(?:r|le)?)\s+)*(?:post-?\s?its?)(?:\s+nuevo)?\b/.exec(n))){const v=mayus(resto(m[0].length));
+    agregarBloque({id:bid(),t:"post",v,c:PALETA[Math.floor(Math.random()*8)],...en(100,100)});return v?"post-it nuevo adentro":"post-it vacío adentro"}
+  if((m=/^(?:(?:una|nueva|agrega(?:r|le)?|suma(?:r|le)?)\s+)*nota(?:\s+nueva)?\b/.exec(n))){agregarBloque({id:bid(),t:"txt",v:mayus(resto(m[0].length)),...en(120,120),w:240});return "nota nueva"}
+  if((m=/^(?:(?:un|nuevo|agrega(?:r|le)?|suma(?:r|le)?)\s+)*texto(?:\s+nuevo)?\b/.exec(n))){agregarBloque({id:bid(),t:"tx",v:mayus(resto(m[0].length)),...en(160,30),w:320});return "texto nuevo"}
+  if((m=/^(?:(?:un|nuevo|agrega(?:r|le)?|suma(?:r|le)?)\s+)*(?:link|enlace)(?:\s+nuevo)?(?:\s+(?:a|de|al))?\b/.exec(n))){const u=urlDeVoz(resto(m[0].length));
+    if(!u)return "no entendí el link: «"+resto(m[0].length)+"»";agregarBloque({id:bid(),t:"link",url:u,titulo:"",...en(130,50),w:260});return "link a "+hostDe(u)}
+  if((m=/^(?:(?:un|nuevo|agrega(?:r|le)?|suma(?:r|le)?)\s+)*vinculo(?:\s+nuevo)?(?:\s+(?:a|con|al))?(?:\s+(?:la|el|los|las))?\b/.exec(n))){const r=resto(m[0].length),rn=sinTilde(r).replace(/^(numero|idea|post-?it)\s+/,"");
+    const num=+((/(\d+)/.exec(rn)||[])[1]||0);let it=num?data.ideas.find(i=>i.numero===num):null;
+    if(!it&&rn){const q=rn.replace(/[.]+$/,"");it=data.ideas.filter(i=>i.id!==destino&&sinTilde(i.texto||"").includes(q)).sort((a,b)=>(b.creado||0)-(a.creado||0))[0]}
+    if(!it)return "no encontré ese post-it: «"+r+"»";if(it.id===destino)return "ese es este mismo post-it";ponerRef(it.id,"ideas");return "vínculo a la #"+it.numero}
+  if((m=/^(?:(?:una|nueva|agrega(?:r|le)?|suma(?:r|le)?)\s+)*lista(?:\s+nueva)?(?:\s+de)?\b/.exec(n))){const r=resto(m[0].length),sep=/^([^:,.]{1,40})[:.]\s*(.+)$/s.exec(r);
+    const titulo=mayus(sep?sep[1].trim():r.split(/[,]/)[0].trim().length<=40&&!r.includes(",")?r:""),items=sep?itemsDeVoz(sep[2]):r.includes(",")?itemsDeVoz(r):[];
+    const id=await nuevaLista({titulo,enPlancha:false,lista:items});if(!id)return null;if(abierto&&abierto.id===destino)ponerLista(id);return "lista"+(titulo?" «"+titulo+"»":"")+(items.length?" con "+items.length+(items.length===1?" cosa":" cosas"):"")}
+  if((m=/^(?:(?:una|nueva)\s+)*pila(?:\s+nueva)?(?:\s+de)?\b/.exec(n))){const tit=mayus(resto(m[0].length))||"Pila nueva";abierto.doc.bloques.push({id:bid(),t:"pila",titulo:tit,...en(100,90)});$("capa-hoja").append(nodoBloque(abierto.doc.bloques[abierto.doc.bloques.length-1]));guardarBloques();return "pila «"+tit+"»"}
+  if((m=/^(?:(?:un|nuevo|abri(?:r)?|abrime)\s+)*(?:el\s+)?gui[oó]n(?:\s+nuevo)?\b/.exec(n))){if(typeof guionDePostit==="function"){guionDePostit();return "guion"}return null}
+  if((m=/^(?:(?:una|nueva)\s+)*frase(?:\s+nueva)?\b/.exec(n))){let r=resto(m[0].length),autor="";const a=/^de\s+([^:,.]+?)\s*[:,.]\s*/i.exec(r);if(a){autor=a[1].trim().replace(/\b\w/g,x=>x.toUpperCase());r=r.slice(a[0].length)}
+    if(!r||!cols.frases)return null;const numero=data.frases.reduce((x,i)=>Math.max(x,i.numero||0),0)+1;const ref=await cols.frases.add({texto:mayus(r),autor,creado:Date.now(),numero,origen:"voz"});refNuevos.add(ref.id);
+    if(abierto&&abierto.id===destino)ponerRef(ref.id,"frases");return "frase #"+numero}
+  const v=mayus(t.trim());if(!v)return null;agregarBloque({id:bid(),t:"post",v,c:PALETA[Math.floor(Math.random()*8)],...en(100,100)});return "post-it adentro"}
 /* "Diario, …" dictado: un bloque nuevo en la página de ese día, con la hora en que lo dijiste */
 function diarioDesdeCelu(id,texto,creado){const f=new Date(creado-3*36e5),k=claveDia(f.getFullYear(),f.getMonth(),f.getDate()),c=new Date(creado),h=pad(c.getHours())+":"+pad(c.getMinutes());
   const e=entradaDia(k),base=e?JSON.parse(JSON.stringify(e)):{fecha:k,texto:"",bloques:[]};let tramos=Array.isArray(base.tramos)&&base.tramos.length?base.tramos:migrarTramos(base);
@@ -4076,6 +4113,7 @@ const AYUDA=[
  {t:"Lo básico",it:[
   [null,"Arriba a la izquierda: Ideas y Diario. La flechita de al lado abre las Frases, todos tus guiones y la línea de tiempo."],
   [{h:'<span class="ay-seg"><b>Ideas</b><span>Diario</span><span>⌄</span></span>'},"Cambiás de sección. La flechita del costado abre las Frases, tus guiones y la línea de tiempo."],
+  [{chip:"🎙 adentro"},"Adentro de un post-it, el micrófono de la barra izquierda (en el diario, el de arriba escribe en el día de hoy): «nuevo post-it, …», «nueva nota, …», «nuevo texto, …», «nuevo link …», «nuevo vínculo a la 12», «nueva lista compras: leche, pan», «nueva pila …», «nueva frase de …: …», «nuevo guion». Si no, queda como post-it adentro."],
   [{chip:"🎙"},"El micrófono, al lado de «+ Nueva idea»: lo tocás, hablás y lo tocás de nuevo. Se guarda solo según cómo arranques: «Diario, …», «Frase de …: …», «Idea para un corto: …», «Lista de compras: leche, pan», «Agregale a la 12 que …». Si no, queda como idea."],
   [{chip:"+ Nueva idea",c:"amarillo"},"Escribís una idea nueva y elegís su categoría. Con "+CMD+"+Enter la pegás."],
   ["Doble clic en el fondo","Escribís un post-it ahí mismo. Enter lo pega, Esc lo cancela. En el celu es doble toque."],
@@ -4269,6 +4307,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:118,f:"23 de noviembre",it:[
+  ["*Micrófono adentro de los post-its.* En la barra de la izquierda, abajo del +, hay un micrófono (en el diario está arriba, al lado de «Pegar»). Le das indicaciones: «nuevo post-it, …», «nueva nota, …», «nuevo texto, …», «nuevo link imagenesdeltiempo punto app», «nuevo vínculo a la 12», «nueva lista compras: leche, pan y café», «nueva pila personajes», «nueva frase de Borges: …», «nuevo guion». Si no decís nada de eso, queda como un post-it adentro. En el diario, lo que dictás queda en la página de hoy con la hora.",null,1]]},
  {n:117,f:"23 de noviembre",it:[
   ["Las listas ya no dicen «4 por hacer»: ahora sirven para cualquier cosa, no solo tareas.",null,3]]},
  {n:116,f:"23 de noviembre",it:[
