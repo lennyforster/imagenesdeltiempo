@@ -300,7 +300,7 @@ const capaArriba=()=>capas[capas.length-1];
 
 /* ---------- datos ---------- */
 let D=null,listo=false;
-const todasIdeas=()=>(typeof data!=="undefined"&&data.ideas)||[],ideas=()=>todasIdeas().filter(i=>!i.dentro),frases=()=>(typeof data!=="undefined"&&data.frases)||[],dias=()=>(typeof data!=="undefined"&&data.diario)||[];
+const todasIdeas=()=>(typeof data!=="undefined"&&data.ideas)||[],ideas=()=>todasIdeas().filter(i=>!i.dentro&&!(typeof enPila==="function"&&enPila(i))),frases=()=>(typeof data!=="undefined"&&data.frases)||[],dias=()=>(typeof data!=="undefined"&&data.diario)||[];
 const misListas=()=>(typeof listas!=="undefined"&&listas)||[];
 const categorias=()=>{const usadas=new Map();for(const i of ideas())usadas.set(i.tipo,(usadas.get(i.tipo)||0)+1);return [...cats].sort((a,b)=>(usadas.get(b.id)||0)-(usadas.get(a.id)||0))};
 const usoListas=()=>{try{return JSON.parse(LSg("celu_uso_listas")||"{}")||{}}catch(_){return {}}};
