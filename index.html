@@ -1324,10 +1324,10 @@ body.barra-abierta .barra-extra.h-extra:not(.abierta){display:none}
 .gu-texto p[data-t="escena"],.gu-texto p[data-t="personaje"],.gu-texto p[data-t="transicion"],.gu-texto p[data-t="plano"]{text-transform:uppercase}
 .gu-texto p[data-t="personaje"]{margin-left:calc(var(--ml) + 211px);width:calc(var(--cw) - 211px)}
 .gu-texto p[data-t="parentesis"]{margin-left:calc(var(--ml) + 154px);width:221px;text-indent:-8px;padding-left:8px;box-sizing:border-box}
-.gu-texto p[data-t="dialogo"]{margin-left:calc(var(--ml) + 96px);width:336px}
+.gu-texto p[data-t="dialogo"]{margin-left:calc(var(--ml) + 96px);width:var(--dw,336px)}
 .gu-texto p[data-t="transicion"]{text-align:right}
 /* formato convocatoria: personaje, paréntesis y diálogo con 5 cm a cada lado (≈ 40 caracteres), y todo a la izquierda */
-.gu-texto.fmt-conv p[data-t="personaje"],.gu-texto.fmt-conv p[data-t="parentesis"],.gu-texto.fmt-conv p[data-t="dialogo"]{margin-left:calc(var(--ml) + 2.5cm);width:calc(var(--cw) - 5cm)}
+.gu-texto.fmt-conv p[data-t="personaje"],.gu-texto.fmt-conv p[data-t="parentesis"],.gu-texto.fmt-conv p[data-t="dialogo"]{margin-left:calc(var(--ml) + 2.5cm);width:var(--dw)}
 .gu-texto.fmt-conv p[data-t="transicion"]{text-align:left}
 .gu-texto.neg-esc p[data-t="escena"]{font-weight:700}
 .gu-texto.sub-esc p[data-t="escena"]{text-decoration:underline}
@@ -4311,6 +4311,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:121,f:"23 de noviembre",it:[
+  ["Guion: ahora *se ve igual con cualquier zoom*. Antes, según el zoom del navegador, algunos renglones cortaban en otro lado y se movían los saltos de página. Ahora las páginas, los cortes y el PDF son siempre los mismos.",null,2]]},
  {n:120,f:"23 de noviembre",it:[
   ["Guion: arreglé un error con el zoom del navegador. Si no lo tenías al 100%, el texto se iba corriendo para arriba página tras página y al final quedaba pegado al borde. Ahora cada página arranca siempre en su margen.",null,2]]},
  {n:119,f:"23 de noviembre",it:[
@@ -6320,7 +6322,10 @@ function pintarEnGuion(){{const b=$("add-guion");if(b)b.hidden=!abierto||abierto
 
 /* ---------- maquetado: páginas, márgenes, (CONT.), números ---------- */
 function clasesTexto(){return ["gu-texto",esConv()?"fmt-conv":"",opc.negritaEscena?"neg-esc":"",opc.subrayarEscena?"sub-esc":"",opc.numEscenas==="izq"?"num-izq":opc.numEscenas==="der"?"num-der":opc.numEscenas==="ambos"?"num-ambos":""].filter(Boolean).join(" ")}
-function varsPagina(e){margenes();const pg=PAGINAS[opc.pagina]||PAGINAS.a4;e.style.setProperty("--ml",ML+"px");e.style.setProperty("--cw",(pg.w-ML-MR)+"px");e.style.setProperty("--gu-font",opc.fuente==="new"?'"Courier New",Courier,monospace':'"Courier Prime","Courier New",Courier,monospace')}
+/* el ancho de cada columna se ajusta a una cantidad entera de letras (Courier 12 = 9,6 px por letra) con medio carácter de aire:
+   si el ancho cae justo en el límite, según el zoom entra una letra más o una menos y los renglones cortan distinto */
+function anchoCol(raw){const C=9.6,N=Math.floor(raw/C+1e-6);return N*C+Math.min(C/2,Math.max(1.5,raw-N*C))}
+function varsPagina(e){margenes();const pg=PAGINAS[opc.pagina]||PAGINAS.a4,cw=pg.w-ML-MR;e.style.setProperty("--ml",ML+"px");e.style.setProperty("--cw",anchoCol(cw)+"px");e.style.setProperty("--dw",anchoCol(esConv()?cw-5*CM:336)+"px");e.style.setProperty("--gu-font",opc.fuente==="new"?'"Courier New",Courier,monospace':'"Courier Prime","Courier New",Courier,monospace')}
 function marcarCont(){let ultimo=null,hablo=false;
   for(const p of bloques()){const t=p.dataset.t;
     if(t==="escena"){ultimo=null;hablo=false;p.removeAttribute("data-cont");continue}
