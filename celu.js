@@ -232,6 +232,8 @@ input,textarea{font:inherit;color:inherit}
 .precio{flex:none;width:88px;border:0;border-bottom:1.5px dashed rgba(43,37,32,.2);outline:0;background:transparent;font:600 16px var(--ui);text-align:right;padding:1px 0;color:var(--ink);font-variant-numeric:tabular-nums}
 .precio:focus{border-bottom-color:var(--mat)}.precio::placeholder{color:#c9bfb1}
 .it.hecha .precio{color:var(--soft);text-decoration:line-through}
+.ns{flex:none;width:26px;height:26px;margin-left:2px;border-radius:50%;font:700 14px/26px var(--ui);color:var(--ink);background:rgba(43,37,32,.06);text-align:center}
+.it.no-suma .ns{color:var(--soft);background:transparent;text-decoration:line-through}.it.no-suma .precio{color:var(--soft);font-style:italic}
 .tot-bar{position:sticky;bottom:calc(var(--sb) + 10px);margin:14px 0 0;display:flex;align-items:baseline;flex-wrap:wrap;gap:8px;background:var(--ink);color:var(--paper);border-radius:14px;padding:12px 16px;box-shadow:0 10px 24px -10px rgba(0,0,0,.45);font:600 13px var(--ui);text-transform:uppercase;letter-spacing:.06em}
 .tot-bar[hidden]{display:none}
 .tot-bar b{margin-left:auto;font:800 22px var(--hand);letter-spacing:0;text-transform:none;font-variant-numeric:tabular-nums}
@@ -509,7 +511,7 @@ function abrirLista(id,volver,nueva){marcarUsoLista(id);abrirCapa(volver||"Lista
   const cnt=h("div",{class:"meta",style:"margin:2px 0 0"});
   const pesos=h("button",{type:"button",class:"pesos-btn",onclick:()=>{const L=L0();if(!L)return;L.precios=!L.precios;guardarLista(L);try{pintarTareas()}catch(_){}vibrar();capa._pintar(true)}});
   const totBar=h("div",{class:"tot-bar"});
-  capa._total=()=>{const L=L0();if(!L)return;totBar.hidden=!L.precios;if(!L.precios)return;const {tot,falta,hay}=totalLista(L);totBar.replaceChildren(h("span",null,"Total"),h("b",null,fmtPrecio(tot)),hay&&falta!==tot?h("small",null,"Falta comprar "+fmtPrecio(falta)):null)};
+  capa._total=()=>{const L=L0();if(!L)return;totBar.hidden=!L.precios;if(!L.precios)return;const {tot,falta,hay,fuera}=totalLista(L);const extra=[hay&&falta!==tot?"Falta comprar "+fmtPrecio(falta):"",fuera?(fuera===1?"1 opción sin sumar":fuera+" opciones sin sumar"):""].filter(Boolean).join(" · ");totBar.replaceChildren(h("span",null,"Total"),h("b",null,fmtPrecio(tot)),extra?h("small",null,extra):null)};
   const add=h("textarea",{rows:1,placeholder:"Agregar…","aria-label":"Agregar a la lista",enterkeyhint:"done",oninput:()=>autosize(add),onkeydown:e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();agregar()}}});
   const agregar=()=>{const v=add.value.trim();if(!v)return;const L=L0();if(!L)return;sumarALista(L,v);add.value="";autosize(add);vibrar();capa._pintar(true)};
   const items=h("div");d.append(tit,h("div",{class:"l-sub"},cnt,pesos),h("div",{class:"l-add"},h("span",{class:"mas"},ico(I.mas,22)),add,botonMic(()=>add,true)),items);
@@ -543,7 +545,9 @@ function filaItem(L,t,capa){const w=h("div",{class:"it-w"}),bor=h("div",{class:"
     const g=()=>{clearTimeout(tG);const it=(L.lista||[]).find(z=>z.id===t.id);if(!it)return;const n=leerPrecio(pr.value);if(n===null){if(!("precio" in it))return;delete it.precio}else{if(it.precio===n)return;it.precio=n}guardarLista(L);try{pintarTareas()}catch(_){}};
     pr.oninput=()=>{const it=(L.lista||[]).find(z=>z.id===t.id);if(it){const n=leerPrecio(pr.value);if(n===null)delete it.precio;else it.precio=n}capa._total();clearTimeout(tG);tG=setTimeout(g,800)};
     pr.onblur=()=>{g();const it=(L.lista||[]).find(z=>z.id===t.id);if(it&&typeof it.precio==="number")pr.value=(+it.precio).toLocaleString("es-AR",{maximumFractionDigits:2})};
-    pr.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();const ps=[...root.querySelectorAll(".capa.in .precio")],i=ps.indexOf(pr);if(ps[i+1])ps[i+1].focus();else pr.blur()}};row.append(pr)}
+    pr.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();const ps=[...root.querySelectorAll(".capa.in .precio")],i=ps.indexOf(pr);if(ps[i+1])ps[i+1].focus();else pr.blur()}};
+    if(t.noSuma)row.classList.add("no-suma");const ns=h("button",{type:"button",class:"ns","aria-label":t.noSuma?"No se suma al total. Tocá para sumarlo":"Se suma al total. Tocá si es una opción",onclick:()=>{const it=(L.lista||[]).find(z=>z.id===t.id);if(!it)return;if(it.noSuma)delete it.noSuma;else it.noSuma=true;vibrar();guardarLista(L);try{pintarTareas()}catch(_){}capa._pintar(true)}},"Σ");
+    row.append(pr,ns)}
   /* deslizar a la izquierda para borrar */
   let x0=null,y0=0,dx=0,mov=false;
   row.addEventListener("touchstart",e=>{const p=e.touches[0];x0=p.clientX;y0=p.clientY;dx=0;mov=false},{passive:true});

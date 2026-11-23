@@ -1034,6 +1034,11 @@ body.tr-ordenando{cursor:grabbing;user-select:none;-webkit-user-select:none}
 .tr-precio{width:78px;border:0;border-bottom:1px dashed rgba(43,37,32,.25);background:none;font:600 13px var(--mono);color:var(--ink);text-align:right;padding:1px 0;user-select:text;-webkit-user-select:text;touch-action:auto}
 .tr-precio:focus{outline:none;border-bottom-color:var(--ink)}.tr-precio::placeholder{color:rgba(43,37,32,.3)}
 .tr-item.hecha .tr-precio{color:var(--soft);text-decoration:line-through}
+.tr-ns{border:0;background:none;padding:0 2px;font:700 12px/18px var(--ui);color:var(--ink);cursor:pointer;opacity:0}
+.tr-item:hover .tr-ns,.tr-item:focus-within .tr-ns,.tr-item.no-suma .tr-ns{opacity:.6}
+@media (hover:none){.tr-ns{opacity:.45}}
+.tr-item.no-suma .tr-ns{color:var(--soft);text-decoration:line-through}
+.tr-item.no-suma .tr-precio{color:var(--soft);font-style:italic}
 .tr-total{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;border-top:1.5px solid var(--ink);margin-top:8px;padding-top:7px;font:500 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--soft)}
 .tr-total b{margin-left:auto;font:700 17px var(--mono);color:var(--ink);letter-spacing:0;text-transform:none}
 .tr-total small{flex-basis:100%;text-align:right;font:500 11px var(--mono);text-transform:none;letter-spacing:0}
@@ -4132,7 +4137,7 @@ const AYUDA=[
   [{chip:"⋮⋮"},"Para cambiar el orden, agarrá una tarea de los puntitos de la izquierda y arrastrala adonde quieras. Con el teclado: Alt + ↑ / ↓ mientras escribís en la tarea."],
   [{chip:"×"},"Arriba a la derecha de la lista: la saca de la plancha. Si está adentro de algún post-it, sigue ahí; si no, se borra (te pregunta antes)."],
   [{chip:"🔗"},"Un renglón puede ser un link: pegalo en «+ agregar (o pegá un link)» y aparece con su foto y su título. Si la página no da el título (eBay, por ejemplo), tocá el renglón y ponele un nombre vos. La foto o el dominio lo abren."],
-  [{chip:"$"},"Para las listas de compras: tocás el $ al lado del nombre de la lista y cada renglón tiene su precio. Abajo ves el total y cuánto falta comprar (lo tachado ya está comprado)."],
+  [{chip:"$"},"Para las listas de compras: tocás el $ al lado del nombre de la lista y cada renglón tiene su precio. Abajo ves el total y cuánto falta comprar (lo tachado ya está comprado). Si un renglón es una opción que no querés sumar, tocá la Σ al lado del precio."],
   [{chip:"Etiquetas"},"Pasá por un renglón y tocá la etiquetita al lado de la ×: Urgente, Importante, Algún día, o creá las tuyas con nombre y color. Las tuyas sirven en todas tus listas."],
   [{chip:"Lista"},"Adentro de un post-it, en el «+»: armás una lista nueva ahí o ponés una que ya existe. Es la misma lista en los dos lados: si tachás o borrás algo adentro, cambia afuera también."],
   [{chip:"En la plancha"},"Para que una lista de adentro de un post-it se vea en la plancha principal, poné un vínculo a ese post-it en la plancha."]]},
@@ -4190,6 +4195,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:110,f:"23 de noviembre",it:[
+  ["*Opciones que no suman.* En una lista con precios, si un renglón es una alternativa (por ejemplo, dos cámaras para elegir una), tocás la *Σ* al lado del precio y deja de sumarse al total. En el celu es el mismo botoncito.",null,2]]},
  {n:109,f:"23 de noviembre",it:[
   ["*Precios en las listas.* Para las listas de compras: tocás el *$* al lado del nombre de la lista (en el celu, «$ Precios») y cada renglón tiene su casillero de precio. Abajo te suma el total y cuánto te falta comprar. Si la lista se llama «compras», «súper», «regalos» o parecido, te lo sugiere solo.",null,1]]},
  {n:108,f:"22 de noviembre",it:[
@@ -5030,11 +5037,11 @@ function asaOrden(h,f,L){h.addEventListener("pointerdown",e=>{if(e.button)return
   const up=()=>{document.removeEventListener("pointermove",mv,true);document.removeEventListener("pointerup",up,true);document.removeEventListener("pointercancel",up,true);f.classList.remove("tr-arr");document.body.classList.remove("tr-ordenando");
     if(movio)ordenarTareas(L,[...cont.querySelectorAll(":scope>.tr-item:not(.hecha)")].map(x=>x.dataset.id))};
   document.addEventListener("pointermove",mv,true);document.addEventListener("pointerup",up,true);document.addEventListener("pointercancel",up,true)})}
-const limpiarItems=l=>(l||[]).map(t=>{const r={id:t.id,v:t.v||"",hecho:t.hecho||null};if(t.dia)r.dia=t.dia;if(t.url){r.url=t.url;if(t.tt)r.tt=t.tt;if(t.img)r.img=t.img;if(t.meta)r.meta=t.meta}if(Array.isArray(t.tags)&&t.tags.length)r.tags=[...t.tags];if(typeof t.precio==="number"&&isFinite(t.precio))r.precio=t.precio;return r});
+const limpiarItems=l=>(l||[]).map(t=>{const r={id:t.id,v:t.v||"",hecho:t.hecho||null};if(t.dia)r.dia=t.dia;if(t.url){r.url=t.url;if(t.tt)r.tt=t.tt;if(t.img)r.img=t.img;if(t.meta)r.meta=t.meta}if(Array.isArray(t.tags)&&t.tags.length)r.tags=[...t.tags];if(typeof t.precio==="number"&&isFinite(t.precio))r.precio=t.precio;if(t.noSuma)r.noSuma=true;return r});
 /* precios en las listas de compras: «12.500», «$ 1.200,50», «3500» → número; y al revés, para mostrar */
 const leerPrecio=x=>{let s=String(x||"").replace(/[^\d.,]/g,"");if(!s)return null;if(/,\d{1,2}$/.test(s))s=s.replace(/\./g,"").replace(",",".");else if(/\.\d{1,2}$/.test(s)&&!/\.\d{3}/.test(s))s=s.replace(/,/g,"");else s=s.replace(/[.,]/g,"");const n=parseFloat(s);return isFinite(n)?n:null};
 const fmtPrecio=n=>"$ "+(+n||0).toLocaleString("es-AR",{maximumFractionDigits:2});
-const totalLista=L=>{let tot=0,falta=0,hay=0;for(const t of L.lista||[])if(typeof t.precio==="number"){hay++;tot+=t.precio;if(!t.hecho)falta+=t.precio}return {tot,falta,hay}};
+const totalLista=L=>{let tot=0,falta=0,hay=0,fuera=0;for(const t of L.lista||[])if(typeof t.precio==="number"){if(t.noSuma){fuera++;continue}hay++;tot+=t.precio;if(!t.hecho)falta+=t.precio}return {tot,falta,hay,fuera}};
 const pareceCompras=L=>/compra|super|mercado|regalo|comprar|chino|verduler|ferreter|farmacia|gastos?\b|presupuesto/i.test(L.titulo||"");
 /* un renglón de lista puede ser texto o un link (con su foto y su título); el texto que se muestra: */
 const txtItem=t=>(t.v||"").trim()||t.tt||(t.url?hostDe(t.url):"");
@@ -5111,9 +5118,11 @@ function armarLista(cont,L,modo){cont.dataset.lista=L.id;cont._f=firmaLista(L,mo
     if(L.precios){const pr=el("input","tr-precio");pr.type="text";pr.inputMode="decimal";pr.placeholder="$";pr.setAttribute("aria-label","Precio");pr.value=typeof t.precio==="number"?(+t.precio).toLocaleString("es-AR",{maximumFractionDigits:2}):"";
       pr.oninput=()=>{const n=leerPrecio(pr.value);if(n===null)delete t.precio;else t.precio=n;pintarTotal();clearTimeout(t._tp);t._tp=setTimeout(()=>guardarLista(L),700)};
       pr.onkeydown=e=>{e.stopPropagation();if(e.key==="Enter"){e.preventDefault();pr.blur();const ps=[...cont.querySelectorAll(".tr-precio")],i=ps.indexOf(pr);if(ps[i+1])ps[i+1].focus()}};
-      pr.onblur=()=>{clearTimeout(t._tp);guardarLista(L);if(typeof t.precio==="number")pr.value=(+t.precio).toLocaleString("es-AR",{maximumFractionDigits:2})};f.append(h,ok,cuerpo,pr,acc)}
+      pr.onblur=()=>{clearTimeout(t._tp);guardarLista(L);if(typeof t.precio==="number")pr.value=(+t.precio).toLocaleString("es-AR",{maximumFractionDigits:2})};
+      if(t.noSuma)f.classList.add("no-suma");const ns=el("button","tr-ns","Σ");ns.type="button";ns.title=t.noSuma?"No se suma al total (es una opción). Tocá para sumarlo":"Se suma al total. Tocá si es una opción y no querés sumarlo";ns.setAttribute("aria-label",ns.title);ns.setAttribute("aria-pressed",t.noSuma?"false":"true");
+      ns.onclick=()=>{if(t.noSuma)delete t.noSuma;else t.noSuma=true;guardarLista(L);pintarTareas(L.id)};acc.prepend(ns);f.append(h,ok,cuerpo,pr,acc)}
     else f.append(h,ok,cuerpo,acc);requestAnimationFrame(()=>autosize(v));return f});
-  const totEl=el("div","tr-total");const pintarTotal=()=>{const {tot,falta,hay}=totalLista(L);totEl.replaceChildren(el("span",null,"Total"),el("b",null,fmtPrecio(tot)));if(hay&&falta!==tot)totEl.append(el("small",null,"falta comprar "+fmtPrecio(falta)))};
+  const totEl=el("div","tr-total");const pintarTotal=()=>{const {tot,falta,hay,fuera}=totalLista(L);totEl.replaceChildren(el("span",null,"Total"),el("b",null,fmtPrecio(tot)));const extra=[hay&&falta!==tot?"falta comprar "+fmtPrecio(falta):"",fuera?(fuera===1?"1 opción sin sumar":fuera+" opciones sin sumar"):""].filter(Boolean).join(" · ");if(extra)totEl.append(el("small",null,extra))};
   const nu=el("input","tr-nueva");nu.type="text";nu.placeholder="+ agregar (o pegá un link)";nu.setAttribute("aria-label","Agregar a la lista");
   nu.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();const v=nu.value.trim();if(!v)return;const us=soloLinks(v);if(us)for(const u of us)L.lista.push(itemLink(u));else L.lista.push({id:bid(),v,hecho:null});guardarLista(L);pintarTareas(L.id);enfocarLista(L.id)}};
   nu.addEventListener("paste",e=>{const tx=(e.clipboardData&&e.clipboardData.getData("text/plain"))||"",us=soloLinks(tx.trim());if(!us||nu.value.trim())return;e.preventDefault();e.stopPropagation();for(const u of us)L.lista.push(itemLink(u));guardarLista(L);pintarTareas(L.id);enfocarLista(L.id)});
@@ -7232,6 +7241,6 @@ if(window.__demo){(function(){
   window.buscarActualizacion=revisar})();
 </script>
 <script src="dictado.js?v=1"></script>
-<script src="celu.js?v=9"></script>
+<script src="celu.js?v=10"></script>
 </body>
 </html>
