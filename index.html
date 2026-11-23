@@ -1326,6 +1326,9 @@ body.barra-abierta .barra-extra.h-extra:not(.abierta){display:none}
 .gu-texto p[data-t="parentesis"]{margin-left:calc(var(--ml) + 154px);width:221px;text-indent:-8px;padding-left:8px;box-sizing:border-box}
 .gu-texto p[data-t="dialogo"]{margin-left:calc(var(--ml) + 96px);width:336px}
 .gu-texto p[data-t="transicion"]{text-align:right}
+/* formato convocatoria: personaje, paréntesis y diálogo con 5 cm a cada lado (≈ 40 caracteres), y todo a la izquierda */
+.gu-texto.fmt-conv p[data-t="personaje"],.gu-texto.fmt-conv p[data-t="parentesis"],.gu-texto.fmt-conv p[data-t="dialogo"]{margin-left:calc(var(--ml) + 2.5cm);width:calc(var(--cw) - 5cm)}
+.gu-texto.fmt-conv p[data-t="transicion"]{text-align:left}
 .gu-texto.neg-esc p[data-t="escena"]{font-weight:700}
 .gu-texto.sub-esc p[data-t="escena"]{text-decoration:underline}
 .gu-texto p[data-t="escena"]{counter-increment:esc}
@@ -4194,6 +4197,7 @@ const AYUDA=[
   [{chip:"A Ideas",c:"amarillo"},"Marcá un pedazo de texto y mandalo como idea nueva a tu plancha."]]},
  {t:"Guion",it:[
   [{chip:"+ → Guion"},"Adentro del post-it de una película, con + o doble clic. Se arma un guion con formato profesional (A4, Courier) y queda en la tarjeta del post-it: «GUION · Abrir»."],
+  [{chip:"Formato"},"En Archivo → Formato y página elegís «Convocatorias» (lo que piden el INCAA y los concursos: 2,5 cm de margen, diálogos con 5 cm a cada lado, todo a la izquierda y páginas numeradas) o «Industria» (el de Final Draft). Los guiones nuevos arrancan en Convocatorias."],
   [{chip:"V3 ▾"},"Las versiones del guion, al lado del título. «+ Nueva versión» arranca la V siguiente como copia de la que tenés abierta, y la anterior queda guardada tal cual. Desde ahí abrís cualquiera; desde el post-it siempre se abre la última. Si escribís bastante en una vieja, la web te avisa por las dudas."],
   [{chip:"Tab"},"Cambia el tipo de renglón: escena, acción, personaje, diálogo, paréntesis, transición. Enter pasa al que sigue. Cuando escribís un personaje, Tab lo completa con la primera sugerencia; si bajás con la flechita a otro, Tab confirma ese."],
   [null,"A la izquierda tenés las escenas, los personajes y las locaciones, con buscador. Las locaciones se vuelven post-its adentro de la película solas."],
@@ -4307,6 +4311,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:119,f:"23 de noviembre",it:[
+  ["Guion: *ahora tiene el formato de las convocatorias* (INCAA, concursos, fondos): 2,5 cm de margen arriba, abajo y a los costados, diálogos con 5 cm a cada lado, todo alineado a la izquierda y las páginas numeradas desde la 1. Así lo mandás directo sin tocar nada. Los guiones nuevos ya arrancan así; en uno que ya tenías lo cambiás en *Archivo → Formato y página*. Si querés el de Final Draft, elegís «Industria».",null,1]]},
  {n:118,f:"23 de noviembre",it:[
   ["*Micrófono adentro de los post-its.* En la barra de la izquierda, abajo del +, hay un micrófono (en el diario está arriba, al lado de «Pegar»). Le das indicaciones: «nuevo post-it, …», «nueva nota, …», «nuevo texto, …», «nuevo link imagenesdeltiempo punto app», «nuevo vínculo a la 12», «nueva lista compras: leche, pan y café», «nueva pila personajes», «nueva frase de Borges: …», «nuevo guion». Si no decís nada de eso, queda como un post-it adentro. En el diario, lo que dictás queda en la página de hoy con la hora.",null,1]]},
  {n:117,f:"23 de noviembre",it:[
@@ -5825,7 +5831,10 @@ drawComposer();setVista(vista);try{if(localStorage.getItem("pestana")==="diario"
 if(window.__invitado)return;
 
 /* ---------- constantes de formato (en píxeles CSS: 96 por pulgada, Courier 12 pt = 16 px, 6 líneas por pulgada) ---------- */
-const LH=16,MT=96,MB=96,ML=144,MR=96,GAP=28;
+const LH=16,GAP=28;let MT=96,MB=96,ML=144,MR=96;
+/* «convocatoria» (INCAA, concursos, fondos): 2,5 cm arriba, abajo, izquierda y derecha; diálogos con 5 cm a cada lado; todo alineado a la izquierda; páginas numeradas desde la 1 */
+const CM=96/2.54;const esConv=()=>opc.formato==="convocatoria";
+function margenes(){if(esConv()){MT=MB=ML=MR=2.5*CM}else{MT=96;MB=96;ML=144;MR=96}}
 const PAGINAS={a4:{n:"A4",w:793.7,h:1122.5,css:"210mm 297mm"},carta:{n:"Carta (EE. UU.)",w:816,h:1056,css:"8.5in 11in"}};
 const T={escena:"Escena",accion:"Acción",personaje:"Personaje",parentesis:"Paréntesis",dialogo:"Diálogo",transicion:"Transición",plano:"Plano",general:"Texto"};
 const CICLO=["escena","accion","personaje","parentesis","dialogo","transicion","plano","general"];
@@ -5838,7 +5847,8 @@ const MOMENTOS=["DÍA","NOCHE","ATARDECER","AMANECER","MAÑANA","TARDE","CONTINU
 const TRANS=["CORTE A:","FUNDIDO A:","FUNDIDO A NEGRO.","FUNDIDO DESDE NEGRO:","DISOLVENCIA A:","CORTE RÁPIDO A:","CORTE DE MATCH A:","FIN."];
 const EXTS=["(V.O.)","(O.S.)","(O.C.)","(CONT.)"];
 const PLANOS=["PRIMER PLANO DE ","PLANO GENERAL","PLANO DETALLE DE ","PUNTO DE VISTA DE ","INSERTO","DE VUELTA A LA ESCENA"];
-const OPC0={pagina:"a4",fuente:"prime",lineasEscena:2,negritaEscena:true,subrayarEscena:false,numEscenas:"ambos",numPaginas:true,contd:true,contdTxt:"(CONT.)",trasDialogo:"accion",portada:true};
+const OPC0={pagina:"a4",fuente:"prime",lineasEscena:2,negritaEscena:true,subrayarEscena:false,numEscenas:"ambos",numPaginas:true,contd:true,contdTxt:"(CONT.)",trasDialogo:"accion",portada:true,formato:"industria"};
+const OPC_NUEVO={...OPC0,formato:"convocatoria"}; /* los guiones nuevos arrancan con el formato de las convocatorias */
 const RX_PREF=/^\s*(INT\.?\s*\/\s*EXT\.?|EXT\.?\s*\/\s*INT\.?|I\s*\/\s*E\.?|INT\.|EXT\.|INT |EXT |EST\.)\s*/i;
 const rid=()=>Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,6);
 const norm=s=>(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/\s+/g," ").trim();
@@ -6029,7 +6039,7 @@ function guionDePostit(){if(!abierto||abierto.k!=="ideas")return;const pid=abier
   crearGuionPara(pid,((it&&it.texto)||"").split("\n")[0].trim().slice(0,120))}
 function crearGuionPara(pid,tit){vuelveGuion=null;
   mitadCambia=true;try{cerrar()}finally{mitadCambia=false}
-  raiz.hidden=false;document.body.classList.add("en-guion");nuevo({titulo:tit,portada:{},opciones:{...OPC0},bloques:[{id:rid(),t:"escena",h:""}],postit:pid})}
+  raiz.hidden=false;document.body.classList.add("en-guion");nuevo({titulo:tit,portada:{},opciones:{...OPC_NUEVO},bloques:[{id:rid(),t:"escena",h:""}],postit:pid})}
 
 /* ---------- utilidades de cursor ---------- */
 const bloques=()=>[...ed.children];
@@ -6307,8 +6317,8 @@ function pintarEnGuion(){{const b=$("add-guion");if(b)b.hidden=!abierto||abierto
   a.replaceChildren(mk("span",null,"En el guion:"),...l.slice(0,12).map(x=>{const b=btn(null,`${x.g.titulo||"Sin título"} · esc. ${x.n}`,()=>escenaAlLado(x.g.id,x.bid));b.style.setProperty("--c","#e9e4d8");b.title="Ir a esa escena";return b}))}
 
 /* ---------- maquetado: páginas, márgenes, (CONT.), números ---------- */
-function clasesTexto(){return ["gu-texto",opc.negritaEscena?"neg-esc":"",opc.subrayarEscena?"sub-esc":"",opc.numEscenas==="izq"?"num-izq":opc.numEscenas==="der"?"num-der":opc.numEscenas==="ambos"?"num-ambos":""].filter(Boolean).join(" ")}
-function varsPagina(e){const pg=PAGINAS[opc.pagina]||PAGINAS.a4;e.style.setProperty("--ml",ML+"px");e.style.setProperty("--cw",(pg.w-ML-MR)+"px");e.style.setProperty("--gu-font",opc.fuente==="new"?'"Courier New",Courier,monospace':'"Courier Prime","Courier New",Courier,monospace')}
+function clasesTexto(){return ["gu-texto",esConv()?"fmt-conv":"",opc.negritaEscena?"neg-esc":"",opc.subrayarEscena?"sub-esc":"",opc.numEscenas==="izq"?"num-izq":opc.numEscenas==="der"?"num-der":opc.numEscenas==="ambos"?"num-ambos":""].filter(Boolean).join(" ")}
+function varsPagina(e){margenes();const pg=PAGINAS[opc.pagina]||PAGINAS.a4;e.style.setProperty("--ml",ML+"px");e.style.setProperty("--cw",(pg.w-ML-MR)+"px");e.style.setProperty("--gu-font",opc.fuente==="new"?'"Courier New",Courier,monospace':'"Courier Prime","Courier New",Courier,monospace')}
 function marcarCont(){let ultimo=null,hablo=false;
   for(const p of bloques()){const t=p.dataset.t;
     if(t==="escena"){ultimo=null;hablo=false;p.removeAttribute("data-cont");continue}
@@ -6330,15 +6340,15 @@ function paginar(ps,hs,H){const res=new Array(ps.length),forz=new Set();let pag=
     if(y>H){const k=Math.floor((y-1)/H);pag+=k;y-=k*H;if(y>=H){pag++;y=0}}
     i++}
   return {res,N:pag+1}}
-function maquetar(){if(!G)return;const pg=PAGINAS[opc.pagina]||PAGINAS.a4,H=Math.floor((pg.h-MT-MB)/LH)*LH,PASO=pg.h+GAP;
-  ed.className=clasesTexto();varsPagina(escala);ed.style.width=pg.w+"px";marcarCont();
+function maquetar(){if(!G)return;margenes();const pg=PAGINAS[opc.pagina]||PAGINAS.a4,H=Math.floor((pg.h-MT-MB)/LH)*LH,PASO=pg.h+GAP;
+  ed.className=clasesTexto();varsPagina(escala);ed.style.width=pg.w+"px";ed.style.paddingTop=MT+"px";marcarCont();
   const ps=bloques(),hs=ps.map(p=>(p._h=p.offsetHeight));const {res,N}=paginar(ps,hs,H);
   let fin=MT;for(let i=0;i<ps.length;i++){const r=res[i];const top=r.pag*PASO+MT+r.y;r.top=top;const mt=Math.round((top-fin)*100)/100;const v=mt+"px";if(ps[i].style.marginTop!==v)ps[i].style.marginTop=v;fin=top+r.h}
   /* hojas */
   const conPortada=opc.portada!==false,off=conPortada?PASO:0;ed.style.top=off+"px";chips.style.top=off+"px";
   pintarPortadaHoja(pg,conPortada,PASO);
   while(hojas.children.length<N)hojas.append(mk("div","gu-hoja"));while(hojas.children.length>N)hojas.lastChild.remove();
-  [...hojas.children].forEach((h,n)=>{h.style.top=(off+n*PASO)+"px";h.style.width=pg.w+"px";h.style.height=pg.h+"px";let np=h.querySelector(".np");if(opc.numPaginas&&n>0){if(!np){np=mk("span","np");h.append(np)}np.textContent=(n+1)+".";np.style.right=MR+"px"}else if(np)np.remove()});
+  [...hojas.children].forEach((h,n)=>{h.style.top=(off+n*PASO)+"px";h.style.width=pg.w+"px";h.style.height=pg.h+"px";let np=h.querySelector(".np");if(opc.numPaginas&&(n>0||esConv())){if(!np){np=mk("span","np");h.append(np)}np.textContent=(n+1)+".";np.style.right=MR+"px"}else if(np)np.remove()});
   const alto=off+N*PASO-GAP;escala.style.height=alto+"px";escala.style.width=pg.w+"px";
   const W=scroller.clientWidth,z0=zoomPintado||zoom,top0=spacer.offsetTop,ancla=(scroller.scrollTop-top0+scroller.clientHeight*.3)/z0;
   if(zoomAuto&&!zoomManual){zoom=Math.max(.35,Math.min(1,(W-(mitad?24:48))/pg.w))}
@@ -6591,7 +6601,7 @@ function pintarLista(){const c=Q("gu-cards");c.replaceChildren();
     ed2.onclick=e=>{e.stopPropagation();abrirModal(m=>{m.append(mk("h3",null,"Título del guion"));const i=mk("input");i.type="text";i.value=g.titulo||"";m.append(i);const ok=async()=>{const t=i.value.trim();cerrarModal();if(t===(g.titulo||""))return;const todas=versionesDe(g).map(v=>v.g);for(const x of todas)x.titulo=t;pintarLista();try{await Promise.all(todas.map(x=>col.doc(x.id).update({titulo:t})))}catch(_){toast("No se pudo cambiar el título.")}};
       i.onkeydown=ev=>{if(ev.key==="Enter"){ev.preventDefault();ok()}};const a=mk("div","acc");a.append(btn(null,"Cancelar",cerrarModal),btn("si","Listo",ok));m.append(a);setTimeout(()=>i.select(),40)})};b.append(ed2);
     const x=mk("span","gu-card-x","×");x.title=bv?"Borrar la "+bv+" (las otras versiones quedan)":"Borrar este guion";x.setAttribute("role","button");x.setAttribute("aria-label",x.title);x.onclick=async e=>{e.stopPropagation();const ok=await confirmarBorrarGuion((g.titulo||"Sin título")+(bv?" ("+bv+")":""));if(!ok)return;try{await col.doc(g.id).delete();guiones=guiones.filter(z=>z.id!==g.id);pintarLista();toast("Guion borrado.")}catch(_){toast("No se pudo borrar.")}};b.append(x);c.append(b)}}
-async function nuevo(doc){if(!col)return;const ahora=Date.now();const d=doc||{titulo:"",portada:{},opciones:{...OPC0},bloques:[{id:rid(),t:"escena",h:""}]};d.creado=ahora;d.editado=ahora;miEditado=ahora;
+async function nuevo(doc){if(!col)return;const ahora=Date.now();const d=doc||{titulo:"",portada:{},opciones:{...OPC_NUEVO},bloques:[{id:rid(),t:"escena",h:""}]};d.creado=ahora;d.editado=ahora;miEditado=ahora;
   delete d.ver;if(d.postit||d.serie){const n=proxVer(d);if(n>1)d.ver=n}
   try{const r=await col.add(d);const g={id:r.id,...d};if(!guiones.some(x=>x.id===r.id))guiones.push(g);abrirGuion(g);if(!doc)setTimeout(()=>{Q("gu-titulo").focus()},80);
     setTimeout(()=>{if(!G||G.id!==r.id)return;if(!G.doc.postit&&!G.doc.serie)elegirPeli();else{sucio=true;guardarYa();setTimeout(()=>{const p=ed.firstElementChild;ed.focus({preventScroll:true});caret(p,0)},100)}},doc&&!doc.postit?300:60)}catch(_){toast("No se pudo crear el guion.")}}
@@ -6632,13 +6642,13 @@ function portada(){abrirModal(m=>{const p=G.doc.portada||{};m.append(mk("h3",nul
 function opciones(){abrirModal(m=>{m.append(mk("h3",null,"Formato y página"));
   const sel=(lbl,val,ops)=>{m.append(mk("label",null,lbl));const s=mk("select");for(const [v,t] of ops){const o=mk("option",null,t);o.value=v;s.append(o)}s.value=String(val);m.append(s);return s};
   const chk=(lbl,val)=>{const l=mk("label","chk");const c=mk("input");c.type="checkbox";c.checked=!!val;l.append(c," "+lbl);m.append(l);return c};
-  const pa=sel("Tamaño de página",opc.pagina,[["a4","A4 (el de acá)"],["carta","Carta (EE. UU.)"]]),fu=sel("Tipografía",opc.fuente,[["prime","Courier Prime (recomendada)"],["new","Courier New"]]),
+  const fo=sel("Formato",opc.formato||"industria",[["convocatoria","Convocatorias (INCAA, concursos, fondos)"],["industria","Industria (Final Draft, EE. UU.)"]]),pa=sel("Tamaño de página",opc.pagina,[["a4","A4 (el de acá)"],["carta","Carta (EE. UU.)"]]),fu=sel("Tipografía",opc.fuente,[["prime","Courier Prime (recomendada)"],["new","Courier New"]]),
     le=sel("Líneas en blanco antes de cada escena",opc.lineasEscena,[["1","1"],["2","2 (más aire)"]]),ne=sel("Números de escena",opc.numEscenas,[["no","Sin números"],["izq","A la izquierda"],["der","A la derecha"],["ambos","A los dos lados"]]),
     td=sel("Después de un diálogo, Enter pasa a",opc.trasDialogo,[["accion","Acción"],["personaje","Personaje"]]);
-  const ng=chk("Encabezados de escena en negrita",opc.negritaEscena),sb=chk("Encabezados de escena subrayados",opc.subrayarEscena),np=chk("Números de página (desde la página 2)",opc.numPaginas),ct=chk("Agregar (CONT.) cuando un personaje sigue hablando después de una acción",opc.contd);
+  const ng=chk("Encabezados de escena en negrita",opc.negritaEscena),sb=chk("Encabezados de escena subrayados",opc.subrayarEscena),np=chk("Números de página",opc.numPaginas),ct=chk("Agregar (CONT.) cuando un personaje sigue hablando después de una acción",opc.contd);
   const cx=campo(m,"Cómo escribir (CONT.)",opc.contdTxt);const oc=chk("Corrector de ortografía (español rioplatense)",ORT.on);
-  m.append(mk("p","gu-nota","Márgenes de industria: 1,5\" a la izquierda, 1\" arriba, abajo y a la derecha. Courier 12 a 6 líneas por pulgada (≈ 1 página por minuto)."));
-  const acc=mk("div","acc");acc.append(btn(null,"Cancelar",cerrarModal),btn("si","Listo",()=>{marcar();Object.assign(opc,{pagina:pa.value,fuente:fu.value,lineasEscena:+le.value,numEscenas:ne.value,trasDialogo:td.value,negritaEscena:ng.checked,subrayarEscena:sb.checked,numPaginas:np.checked,contd:ct.checked,contdTxt:cx.value.trim()||"(CONT.)"});if(oc.checked!==ORT.on)ortPrender(oc.checked);zoomAuto=true;cerrarModal();cambio()}));m.append(acc)})}
+  m.append(mk("p","gu-nota","Convocatorias: 2,5 cm arriba, abajo y a los costados; diálogos con 5 cm a cada lado (≈ 40 caracteres); todo a la izquierda; páginas numeradas desde la 1. Industria: 1,5\" a la izquierda, 1\" arriba, abajo y a la derecha; páginas numeradas desde la 2. Siempre Courier 12, interlineado sencillo."));
+  const acc=mk("div","acc");acc.append(btn(null,"Cancelar",cerrarModal),btn("si","Listo",()=>{marcar();Object.assign(opc,{formato:fo.value,pagina:pa.value,fuente:fu.value,lineasEscena:+le.value,numEscenas:ne.value,trasDialogo:td.value,negritaEscena:ng.checked,subrayarEscena:sb.checked,numPaginas:np.checked,contd:ct.checked,contdTxt:cx.value.trim()||"(CONT.)"});if(oc.checked!==ORT.on)ortPrender(oc.checked);zoomAuto=true;cerrarModal();cambio()}));m.append(acc)})}
 function atajos(){abrirModal(m=>{m.append(mk("h3",null,"Atajos de teclado"));const t=mk("table","gu-atajos");
   for(const [a,b] of [["Tab","Cambia el tipo de la línea: Escena → Acción → Personaje → Paréntesis → Diálogo → Transición → Plano → Texto"],["Shift+Tab","Lo mismo, para atrás"],["Enter","Línea nueva del tipo que sigue (Escena→Acción, Personaje→Diálogo, Diálogo→Acción, Transición→Escena)"],["Enter en línea vacía","La vuelve Acción"],["Shift+Enter","Línea nueva del mismo tipo"],[`${CTRL}+Shift+1…8`,"Escena, Acción, Personaje, Paréntesis, Diálogo, Transición, Plano, Texto"],["(","En una línea vacía de diálogo o personaje, empieza un paréntesis"],["↑ ↓ y Enter o Tab","Elegir una sugerencia (lugares, momentos del día, personajes, transiciones)"],["Tab en un personaje","Completa el nombre con la primera sugerencia (o la que elegiste con las flechas)"],[`${CTRL}+B / I / U`,"Negrita, itálica, subrayado"],[`${CTRL}+Z / ${CTRL}+Shift+Z`,"Deshacer / rehacer"],[`${CTRL}+F`,"Buscar y reemplazar"],[`${CTRL}+K`,"Vincular un post-it o frase a la escena"],[`${CTRL}+S`,"Guardar ya (igual se guarda solo)"],[`${CTRL}+P`,"Exportar PDF"],["Esc","Cerrar sugerencias y ventanas"]]){const tr=mk("tr");tr.append(mk("td",null,a),mk("td",null,b));t.append(tr)}
   m.append(t,mk("p","gu-nota","Escribir «int.» o «ext.» al principio de una acción y apretar Enter la convierte en escena."));const acc=mk("div","acc");acc.append(btn("si","Listo",cerrarModal));m.append(acc)})}
@@ -6725,7 +6735,7 @@ function deFDX(xml){const d=new DOMParser().parseFromString(xml,"application/xml
 Q("gu-file").addEventListener("change",async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;let txt;try{txt=await f.text()}catch(_){toast("No pude leer el archivo.");return}
   let r;try{r=/\.fdx$|\.xml$/i.test(f.name)||/<FinalDraft/.test(txt.slice(0,600))?deFDX(txt):deTexto(txt)}catch(_){toast("Ese archivo no parece un Final Draft válido.");return}
   if(!r.bloques.length){toast("No encontré texto de guion en el archivo.");return}
-  const titulo=r.titulo||f.name.replace(/\.[^.]+$/,"");await nuevo({titulo,portada:r.portada||{},opciones:{...OPC0},bloques:r.bloques});toast(`Importado: ${r.bloques.filter(b=>b.t==="escena").length} escenas.`)});
+  const titulo=r.titulo||f.name.replace(/\.[^.]+$/,"");await nuevo({titulo,portada:r.portada||{},opciones:{...OPC_NUEVO},bloques:r.bloques});toast(`Importado: ${r.bloques.filter(b=>b.t==="escena").length} escenas.`)});
 
 /* ---------- exportar ---------- */
 function nombreArchivo(ext){return ((Q("gu-titulo").value||"guion").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^\w\- ]+/g,"").trim().replace(/\s+/g,"_")||"guion")+"."+ext}
@@ -6771,7 +6781,7 @@ async function pdf(sel,conPortada){if(!G)return;if(conPortada===undefined)conPor
     if(pp.contacto){const k=mk("div","gu-port");k.style.top=(pg.h-MB-LH*pp.contacto.split("\n").length)+"px";k.style.paddingLeft=ML+"px";k.style.whiteSpace="pre-wrap";k.textContent=pp.contacto;h.append(k)}
     if(pp.borrador){const k=mk("div","gu-port");k.style.top=(pg.h-MB-LH)+"px";k.style.paddingRight=MR+"px";k.style.textAlign="right";k.textContent=pp.borrador;h.append(k)}}
   const paginas=[];for(let n=0;n<lay.N;n++){const h=hoja();const caja=mk("div","caja");caja.style.top=MT+"px";caja.style.height=H+"px";const t=mk("div",clasesTexto());t.style.width=pg.w+"px";caja.append(t);h.append(caja);
-    if(opc.numPaginas&&n>0){const np=mk("span","np",(n+1)+".");np.style.top="48px";np.style.right=MR+"px";h.append(np)}if(sel&&!sel.has(n+1))h.classList.add("fuera");paginas.push({t,fin:0})}
+    if(opc.numPaginas&&(n>0||esConv())){const np=mk("span","np",(n+1)+".");np.style.top="48px";np.style.right=MR+"px";h.append(np)}if(sel&&!sel.has(n+1))h.classList.add("fuera");paginas.push({t,fin:0})}
 
   let nEsc=0;lay.ps.forEach((p,i)=>{const r=lay.res[i];const c=p.cloneNode(true);c.removeAttribute("data-ph");if(p.dataset.t==="escena"){nEsc++;if(sel)c.style.counterSet="esc "+nEsc}const P=paginas[r.pag];c.style.marginTop=(r.y-P.fin)+"px";P.t.append(c);P.fin=r.y+r.h;
     let resto=r.y+r.h-H,k=1;while(resto>0&&paginas[r.pag+k]){const c2=p.cloneNode(true);c2.removeAttribute("data-ph");c2.style.marginTop=(-(r.h-resto))+"px";c2.style.counterIncrement="none";const Q2=paginas[r.pag+k];Q2.t.append(c2);Q2.fin=Math.max(Q2.fin,resto);resto-=H;k++}});
