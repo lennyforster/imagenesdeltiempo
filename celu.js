@@ -24,7 +24,7 @@ const I={
   atras:'<path d="m15 18-6-6 6-6"/>',buscar:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',mas:'<path d="M12 5v14M5 12h14"/>',
   foto:'<path d="M4 8h3l2-3h6l2 3h3v11H4Z"/><circle cx="12" cy="13" r="3.5"/>',x:'<path d="M18 6 6 18M6 6l12 12"/>',flecha:'<path d="M5 12h14M13 6l6 6-6 6"/>',
   basura:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',link:'<path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
-  check:'<path d="m5 12.5 4.5 4.5L19 7.5"/>',chev:'<path d="m9 6 6 6-6 6"/>',web:'<rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/>'};
+  check:'<path d="m5 12.5 4.5 4.5L19 7.5"/>',mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/>',stop:'<rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor" stroke="none"/>',chev:'<path d="m9 6 6 6-6 6"/>',web:'<rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/>'};
 const hoyK=()=>hoyDia();
 const fechaCorta=t=>{const d=new Date(t),hoy=new Date();const dias=Math.floor((new Date(hoy.getFullYear(),hoy.getMonth(),hoy.getDate())-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/864e5);
   if(dias<=0)return "hoy";if(dias===1)return "ayer";if(dias<7)return d.toLocaleDateString("es-AR",{weekday:"long"});return d.toLocaleDateString("es-AR",{day:"numeric",month:"short",...(d.getFullYear()!==hoy.getFullYear()?{year:"numeric"}:{})}).replace(".","")};
@@ -107,6 +107,11 @@ input,textarea{font:inherit;color:inherit}
 .comp-pie{display:flex;align-items:center;gap:8px;margin-top:10px}
 .comp-pie .foto{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:rgba(43,37,32,.06)}
 .comp-pie .foto.tiene{background:#e8f2ec;color:var(--mat)}
+.mic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:rgba(43,37,32,.06);flex:none;transition:background .15s,color .15s,width .2s}
+.mic.grab{width:auto;padding:0 14px;display:flex;gap:8px;background:var(--red);color:#fff;font:700 14px var(--ui);font-variant-numeric:tabular-nums}
+.mic.grab::before{content:"";width:8px;height:8px;border-radius:50%;background:#fff;animation:lat .8s infinite alternate}
+.mic.pensando{opacity:.6;pointer-events:none}.mic.pensando svg{animation:lat .6s infinite alternate}
+.mic.chico{width:36px;height:36px;border-radius:10px;background:transparent;color:var(--soft)}.mic.chico.grab{width:auto;height:36px;color:#fff;background:var(--red)}
 .guardar{flex:1;height:44px;border-radius:12px;background:var(--mat);color:#fff;font:700 16px var(--ui);display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s,transform .1s}
 .guardar:disabled{opacity:.35}.guardar:active:not(:disabled){transform:scale(.98)}
 .prev-foto{display:flex;align-items:center;gap:8px;margin:6px 0 0;font:500 13px var(--ui);color:var(--soft)}
@@ -291,6 +296,36 @@ const listasOrden=()=>{const u=usoListas();return [...misListas()].sort((a,b)=>(
 const sigNumero=arr=>arr.reduce((a,i)=>Math.max(a,+i.numero||0),0)+1;
 const colorCat=i=>i.colorPropio||cat(i.tipo).color;
 
+/* ================= DICTADO (Whisper vía el Worker; no usa el del iPhone) ================= */
+const URL_DICTAR="https://imagenes-del-tiempo.rental-bff.workers.dev/dictar";
+let grab=null;/* {rec,stream,trozos,boton,destino,t0,tick} */
+function botonMic(destino,chico){const b=h("button",{type:"button",class:"mic"+(chico?" chico":""),"aria-label":"Dictar con la voz"},ico(I.mic,chico?20:22));b.onclick=()=>{if(grab&&grab.boton===b)pararGrab();else empezarGrab(b,destino)};return b}
+const tipoAudio=()=>{if(typeof MediaRecorder==="undefined")return null;for(const t of ["audio/mp4","audio/webm;codecs=opus","audio/webm","audio/ogg"])if(MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t))return t;return ""};
+async function empezarGrab(b,destino){if(grab)pararGrab();const tipo=tipoAudio();if(tipo===null||!navigator.mediaDevices){aviso("Este navegador no deja grabar audio.");return}
+  let stream;try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}})}catch(_){aviso("Necesito permiso para usar el micrófono. Fijate en la configuración del navegador.");return}
+  const rec=tipo?new MediaRecorder(stream,{mimeType:tipo}):new MediaRecorder(stream);const g={rec,stream,trozos:[],boton:b,destino,t0:Date.now()};grab=g;
+  rec.ondataavailable=e=>{if(e.data&&e.data.size)g.trozos.push(e.data)};rec.onstop=()=>transcribir(g);rec.start(1000);vibrar();
+  const pintarT=()=>{const s=Math.floor((Date.now()-g.t0)/1000);b.replaceChildren(ico(I.stop,16),Math.floor(s/60)+":"+String(s%60).padStart(2,"0"));if(s>=600)pararGrab()};
+  b.classList.add("grab");b.setAttribute("aria-label","Terminar de dictar");pintarT();g.tick=setInterval(pintarT,500)}
+function pararGrab(){const g=grab;if(!g)return;grab=null;clearInterval(g.tick);try{g.rec.stop()}catch(_){}g.stream.getTracks().forEach(t=>t.stop());const b=g.boton;b.classList.remove("grab");b.classList.add("pensando");b.replaceChildren(ico(I.mic,b.classList.contains("chico")?20:22));vibrar()}
+async function cabecerasDictado(){const hd={};try{const m=await import("./cuenta.js?v=4");const t=await m.token();if(t)hd.Authorization="Bearer "+t}catch(_){}
+  const gh=LSg("gh_token"),repo=LSg("gh_repo");if(gh&&repo){hd["X-GH"]=gh;hd["X-GH-Repo"]=repo}return hd}
+async function transcribir(g){const b=g.boton,fin=()=>{b.classList.remove("pensando");b.setAttribute("aria-label","Dictar con la voz")};
+  const tipo=(g.rec.mimeType||g.trozos[0]&&g.trozos[0].type||"audio/webm"),blob=new Blob(g.trozos,{type:tipo});
+  if(Date.now()-g.t0<700||blob.size<2000){fin();aviso("Mantené un poco más: tocás, hablás y tocás de nuevo.");return}
+  try{const r=await fetch(URL_DICTAR,{method:"POST",headers:{...(await cabecerasDictado()),"Content-Type":tipo.split(";")[0]},body:blob});
+    if(r.status===429){aviso("Se usó mucho el dictado en poco rato. Probá en unos minutos.");return}
+    if(r.status===401){aviso("No pude verificar tu cuenta para dictar. Probá salir y volver a entrar.");return}
+    if(!r.ok)throw 0;const {texto}=await r.json();let t=(texto||"").trim();
+    /* Whisper a veces «escucha» frases fijas cuando no hay voz (ruido, silencio): esas no cuentan */
+    if(/^(¡?gracias( por ver( el video)?)?[.!]*|subt[ií]tulos.*amara\.org.*|¡?suscr[ií]bete.*|\.+)$/i.test(t))t="";
+    if(!t){aviso("No escuché nada. Probá de nuevo, más cerca del micrófono.");return}
+    const ta=g.destino();if(!ta){aviso("Dictado: "+t);return}
+    const a=ta.value,i0=ta.selectionStart!=null&&root.activeElement===ta?ta.selectionStart:a.length,i1=ta.selectionEnd!=null&&root.activeElement===ta?ta.selectionEnd:a.length;
+    const antes=a.slice(0,i0),sep=antes&&!/\s$/.test(antes)?" ":"";ta.value=antes+sep+t+a.slice(i1);ta.dispatchEvent(new Event("input"));vibrar()}
+  catch(_){aviso("No pude pasar el audio a texto. Revisá la conexión y probá de nuevo.")}finally{fin()}}
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&grab)pararGrab()});
+
 /* ================= ANOTAR ================= */
 let dest=LSg("celu_dest")||"idea",catSel=LSg("celu_cat")||"otro",listaSel=LSg("celu_lista")||"",fotoSel=null;
 const PH={idea:"Una idea, una locación, lo que sea…",diario:"¿Qué pasó hoy?",frase:"La frase…",lista:"Algo para la lista…"};
@@ -307,7 +342,8 @@ function armarInicio(){const p=P.inicio;p.replaceChildren();
   comp.prev=h("div");
   comp.btnFoto=h("button",{type:"button",class:"foto","aria-label":"Sumar una foto",onclick:()=>comp.foto.click()},ico(I.foto,22));
   comp.btn=h("button",{type:"button",class:"guardar",onclick:guardarComp},"Guardar");
-  c.append(ds,comp.ta,comp.prev,comp.ctx,h("div",{class:"comp-pie"},comp.btnFoto,comp.btn),comp.foto);
+  comp.mic=botonMic(()=>comp.ta);
+  c.append(ds,comp.ta,comp.prev,comp.ctx,h("div",{class:"comp-pie"},comp.mic,comp.btnFoto,comp.btn),comp.foto);
   comp.ds=ds;
   pintarComp();pintarRecientes()}
 function estadoGuardar(){const t=comp.ta.value.trim();comp.btn.disabled=!(t||(dest==="idea"&&fotoSel))}
@@ -396,7 +432,7 @@ function abrirIdea(id,volverA){const c=abrirCapa(volverA||"Ideas",(cu,der,capa)=
   const fi=h("input",{type:"file",accept:"image/*",hidden:true,onchange:async()=>{const f=fi.files[0];fi.value="";if(!f)return;aviso("Subiendo foto…");const r=await subir(f);if(!r){return}const i=todasIdeas().find(x=>x.id===id);if(!i)return;const b=[...(i.bloques||[])];const y=b.reduce((a,x)=>Math.max(a,(x.y||0)+(x.h||200)),0);
     b.push({id:bid(),t:"img",a:r.id,alt:f.name||"Foto",x:480,y,w:300});cols.ideas.doc(id).update({bloques:b});aviso("Foto sumada.")}});
   const cam=h("button",{type:"button",class:"cam","aria-label":"Sumar una foto",onclick:()=>fi.click()},ico(I.foto,22));
-  d.append(cs,ta,meta,ests,h("div",{class:"sumar"},sum,cam,ir,fi),bl);
+  d.append(cs,ta,meta,ests,h("div",{class:"sumar"},sum,botonMic(()=>sum,true),cam,ir,fi),bl);
   capa._pintar=()=>{const i=todasIdeas().find(x=>x.id===id);if(!i){cerrarCapa(capa);return}
     const cc=cat(i.tipo);cs.replaceChildren(h("span",{class:"chip"},h("i",{style:"background:"+colorCat(i)}),cc.nombre));
     if(root.activeElement!==ta){ta.value=i.texto||"";requestAnimationFrame(()=>autosize(ta))}
@@ -434,7 +470,7 @@ function armarDiario(){const p=P.diario;p.replaceChildren();
   const card=h("div",{class:"dia-hoy"});diaUI.fe=h("div",{class:"fe"});diaUI.tr=h("div",{class:"tramos"});
   diaUI.ta=h("textarea",{rows:2,placeholder:"¿Qué pasó? Contalo como te salga…","aria-label":"Escribir en el diario",oninput:()=>{autosize(diaUI.ta);diaUI.ok.disabled=!diaUI.ta.value.trim()}});
   diaUI.ok=h("button",{type:"button",class:"btn-chico",disabled:true,onclick:()=>{const t=diaUI.ta.value.trim();if(!t)return;if(!anotarEnDiario(t)){aviso("El diario todavía está cargando. Probá en un toque.");return}diaUI.ta.value="";autosize(diaUI.ta);diaUI.ok.disabled=true;vibrar();setTimeout(pintarDiarioC,80)}},"Anotar");
-  card.append(diaUI.fe,diaUI.tr,diaUI.ta,h("div",{class:"dia-pie"},h("span",null,"Se guarda con la hora"),diaUI.ok));
+  card.append(diaUI.fe,diaUI.tr,diaUI.ta,h("div",{class:"dia-pie"},h("span",null,"Se guarda con la hora"),h("div",{style:"display:flex;gap:6px;align-items:center"},botonMic(()=>diaUI.ta,true),diaUI.ok)));
   diaUI.lista=h("div",{class:"sec"});p.append(card,diaUI.lista);pintarDiarioC()}
 function pintarDiarioC(){if(!diaUI.tr)return;const k=hoyK();diaUI.fe.textContent=fechaLarga(k);
   const tr=tramosDe(entradaDia(k)).filter(t=>(t.texto||"").trim());diaUI.tr.replaceChildren(...tr.map(t=>h("div",{class:"tramo"},t.h?h("span",{class:"hh"},t.h):null,t.texto)));
@@ -472,7 +508,7 @@ function abrirLista(id,volver,nueva){marcarUsoLista(id);abrirCapa(volver||"Lista
   const cnt=h("div",{class:"meta",style:"margin:2px 0 0"});
   const add=h("textarea",{rows:1,placeholder:"Agregar…","aria-label":"Agregar a la lista",enterkeyhint:"done",oninput:()=>autosize(add),onkeydown:e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();agregar()}}});
   const agregar=()=>{const v=add.value.trim();if(!v)return;const L=L0();if(!L)return;sumarALista(L,v);add.value="";autosize(add);vibrar();capa._pintar(true)};
-  const items=h("div");d.append(tit,cnt,h("div",{class:"l-add"},h("span",{class:"mas"},ico(I.mas,22)),add),items);
+  const items=h("div");d.append(tit,cnt,h("div",{class:"l-add"},h("span",{class:"mas"},ico(I.mas,22)),add,botonMic(()=>add,true)),items);
   let verHechas=false;
   capa._alCerrar=()=>{gTit();const L=L0();if(L&&!(L.titulo||"").trim()&&!(L.lista||[]).length&&!L.enPlancha&&!refsLista(L.id).length)colTareas.doc(L.id).delete().catch(()=>{})};
   capa._pintar=forzarItems=>{const L=L0();if(!L){cerrarCapa(capa);return}if(root.activeElement!==tit)tit.value=L.titulo||"";
