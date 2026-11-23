@@ -513,7 +513,7 @@ html.plano .mas-fila{border-top:1px solid #333!important}
 .vista.modo-flecha .nota,.vista.modo-flecha .pieza,.vista.modo-flecha .principal,.vista.modo-flecha .grip{cursor:crosshair}
 .vista.modo-flecha textarea,.vista.modo-flecha input{pointer-events:none}
 /* Lápiz */
-.trazos{position:absolute;left:0;top:0;width:1px;height:1px;overflow:visible;pointer-events:none;z-index:5}
+.trazos{position:absolute;left:0;top:0;width:1px;height:1px;overflow:visible;pointer-events:none;z-index:100000}
 .trazos path{fill:none;stroke-linecap:round;stroke-linejoin:round}
 .capa-lapiz{position:absolute;inset:0;z-index:5;cursor:crosshair;touch-action:none}
 .capa-lapiz.goma{cursor:cell}
@@ -4245,6 +4245,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:114,f:"23 de noviembre",it:[
+  ["Ahora se puede dibujar con el lápiz encima de las fotos y de los post-its: el dibujo queda siempre arriba.",null,2]]},
  {n:113,f:"23 de noviembre",it:[
   ["Los post-its que viven adentro de otro ahora se pueden achicar y agrandar, igual que los demás: desde la esquinita de abajo a la derecha.",null,3]]},
  {n:112,f:"23 de noviembre",it:[
