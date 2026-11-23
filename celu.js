@@ -314,7 +314,7 @@ function rutearDictado(t){const n=sinT(t),corta=k=>t.slice(k).replace(/^[\s,.:;\
   else if((m=/^(a la )?lista\b/.exec(n))){dest="lista";let r=corta(m[0].length);const ls=listasOrden();const L=ls.find(l=>{const nm=sinT(nombreLista(l)).trim();return nm&&sinT(r).startsWith(nm)});
     if(L){listaSel=L.id;LSs("celu_lista",L.id);r=r.slice(nombreLista(L).length).replace(/^[\s,.:;\-–—]+/,"")}comp.ta.value=mayus(r)}
   else return false;
-  LSs("celu_dest",dest);pintarComp();vibrar();return true}
+  LSs("celu_dest",dest);LSs("celu_borrador",comp.ta.value);pintarComp();vibrar();return true}
 
 /* ================= ANOTAR ================= */
 let dest=LSg("celu_dest")||"idea",catSel=LSg("celu_cat")||"otro",listaSel=LSg("celu_lista")||"",fotoSel=null;
@@ -327,14 +327,14 @@ function armarInicio(){const p=P.inicio;p.replaceChildren();
   mat.append(h("div",{class:"saludo"},h("div",null,h("p",{class:"fecha"},fechaLarga(hoyK())),h("h1",null,sal),comp.sync),avatar("button",{"aria-label":"Tu cuenta",onclick:abrirAjustes})));
   const c=h("div",{class:"comp"});mat.append(c);
   const ds=h("div",{class:"dest",role:"tablist"});for(const [id,n] of [["idea","Idea"],["diario","Diario"],["frase","Frase"],["lista","Lista"]])ds.append(h("button",{type:"button","data-d":id,role:"tab",onclick:()=>{dest=id;LSs("celu_dest",id);pintarComp();comp.ta.focus()}},n));
-  comp.ta=h("textarea",{rows:3,class:"alta","aria-label":"Escribí acá",enterkeyhint:"enter",oninput:()=>{autosize(comp.ta);estadoGuardar()},onkeydown:e=>{if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)){e.preventDefault();guardarComp()}}});
+  comp.ta=h("textarea",{rows:3,class:"alta","aria-label":"Escribí acá",enterkeyhint:"enter",oninput:()=>{autosize(comp.ta);estadoGuardar();LSs("celu_borrador",comp.ta.value)},onkeydown:e=>{if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)){e.preventDefault();guardarComp()}}});
   comp.ctx=h("div");comp.foto=h("input",{type:"file",accept:"image/*",hidden:true,onchange:()=>{const f=comp.foto.files[0];comp.foto.value="";if(f){fotoSel=f;pintarComp()}}});
   comp.prev=h("div");
   comp.btnFoto=h("button",{type:"button",class:"foto","aria-label":"Sumar una foto",onclick:()=>comp.foto.click()},ico(I.foto,22));
   comp.btn=h("button",{type:"button",class:"guardar",onclick:guardarComp},"Guardar");
   comp.mic=botonMic(()=>comp.ta,false,t=>rutearDictado(t));
   c.append(ds,comp.ta,comp.prev,comp.ctx,h("div",{class:"comp-pie"},comp.mic,comp.btnFoto,comp.btn),comp.foto);
-  comp.ds=ds;
+  comp.ds=ds;comp.ta.value=LSg("celu_borrador")||"";
   pintarComp();pintarRecientes()}
 function estadoGuardar(){const t=comp.ta.value.trim();comp.btn.disabled=!(t||(dest==="idea"&&fotoSel))}
 function pintarComp(){if(!comp.ta)return;for(const b of comp.ds.children)b.classList.toggle("on",b.dataset.d===dest);comp.ta.placeholder=PH[dest];
@@ -362,7 +362,7 @@ async function guardarComp(){if(guardando)return;const t=comp.ta.value.trim();if
   else if(dest==="lista"){let L=misListas().find(l=>l.id===listaSel);
     if(!L){const id=await nuevaLista({titulo:"Lista"});await new Promise(r=>setTimeout(r,60));L=misListas().find(l=>l.id===id);if(!L){aviso("No se pudo crear la lista.");return}listaSel=id;LSs("celu_lista",id)}
     const n=sumarALista(L,t);marcarUsoLista(L.id);vibrar();aviso((n===1?"Sumado a ":`Sumé ${n} cosas a `)+nombreLista(L)+".","Ver",()=>abrirLista(L.id))}
-  comp.ta.value="";autosize(comp.ta);pintarComp();
+  comp.ta.value="";LSs("celu_borrador","");autosize(comp.ta);pintarComp();
   }finally{guardando=false}}
 function sumarALista(L,txt,arriba){if(!Array.isArray(L.lista))L.lista=[];const nuevos=[];
   for(const ln of txt.split(/\n+/).map(s=>s.trim()).filter(Boolean)){if(RX_URL.test(ln)){const u=/^www\./i.test(ln)?"https://"+ln:ln;nuevos.push(itemLink(u))}else nuevos.push({id:bid(),v:ln,hecho:null})}
@@ -553,6 +553,7 @@ function abrirAjustes(){tst.classList.remove("in");const velo=h("div",{class:"ve
     h("div",{class:"grupo"},
       h("button",{type:"button",class:"op",onclick:()=>{cerrar();try{verNovedades(true,false)}catch(_){}}},ico(I.anotar,22),h("span",null,"Novedades"),ico(I.chev,18)),
       h("button",{type:"button",class:"op",onclick:()=>{cerrar();modoWeb(true)}},ico(I.web,22),h("span",null,"Ver la web completa"),ico(I.chev,18)),
+      h("button",{type:"button",class:"op",onclick:()=>{cerrar();aviso("Recargando…");setTimeout(()=>location.reload(),300)}},ico(I.flecha,22),h("span",null,"Recargar la app"),ico(I.chev,18)),
       salir),
     h("p",{class:"chiquito",html:'La web completa (la plancha, el guion, los hilos) anda mejor en la compu.<br>¿Algo no anda o se te ocurre algo? <a href="https://wa.me/5491168342011" target="_blank" rel="noopener">Escribime</a>.'}));
   app.append(velo,hj);requestAnimationFrame(()=>requestAnimationFrame(()=>{velo.classList.add("in");hj.classList.add("in")}))}

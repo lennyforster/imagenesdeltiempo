@@ -4179,6 +4179,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:108,f:"22 de noviembre",it:[
+  ["*La web se actualiza sola.* Si la tenés como ícono en el celu, ya no hace falta borrarla y volver a ponerla: cuando subo algo nuevo, se recarga sola la próxima vez que la abrís (si estás escribiendo, espera a que termines). Lo que tengas a medio escribir en Anotar queda guardado.",null,1]]},
  {n:107,f:"22 de noviembre",it:[
   ["*Micrófono en la compu.* Al lado de «+ Nueva idea» hay un micrófono: lo tocás, hablás y lo tocás de nuevo. Se guarda solo, según cómo arranques: «Diario, …», «Frase de Borges: …», «Idea para un corto: …», «Lista de compras: leche, pan y café», «Agregale a la 12 que…». Si no decís nada de eso, queda como idea.",null,1],
   ["En el celu pasa lo mismo: si en Anotar arrancás diciendo «diario», «frase», «lista» o «idea», se elige solo a dónde va.",null,2]]},
@@ -7190,7 +7192,20 @@ if(window.__demo){(function(){
 
 </script>
 
+<script>
+/* ===== Actualización sola: cuando se sube una versión nueva, la web se recarga al volver a abrirla (sirve sobre todo para el ícono del celu, que no tiene botón de recargar). No recarga si estás escribiendo o grabando. ===== */
+(function(){if(typeof NOVEDADES==="undefined")return;const VER=NOVEDADES[0].n;let rev=false,hayNueva=false;
+  const ocupado=()=>{const a=document.activeElement;if(a&&(a.tagName==="TEXTAREA"||a.tagName==="INPUT"||a.isContentEditable||a.id==="celu-host"))return true;if(window.Dictado&&Dictado.grabando())return true;if(document.querySelector("#novedades,.guia:not([hidden])"))return true;return false};
+  /* se recarga con la versión en la dirección (?_v=) para que el navegador no use la copia vieja guardada; después se limpia la dirección */
+  try{const u=new URL(location.href);if(u.searchParams.has("_v")){u.searchParams.delete("_v");history.replaceState(null,"",u.pathname+u.search+u.hash)}}catch(_){}
+  let nueva=0;const recargar=()=>{if(ocupado())return;let ya=null;try{ya=sessionStorage.getItem("actualizando")}catch(_){}if(ya===String(nueva))return;/* ya se intentó con esta versión: no insistir en loop */
+    try{sessionStorage.setItem("actualizando",String(nueva))}catch(_){}const u=new URL(location.href);u.searchParams.set("_v",nueva);location.replace(u.pathname+u.search+u.hash)};
+  async function revisar(){if(document.hidden)return;if(hayNueva){recargar();return}if(rev)return;rev=true;
+    try{const r=await fetch(location.pathname+"?ver="+Date.now(),{cache:"no-store"});if(!r.ok)return;const t=await r.text();const m=/const NOVEDADES=\[\s*\{n:(\d+)/.exec(t);if(m&&+m[1]>VER){hayNueva=true;nueva=+m[1];recargar()}}catch(_){}finally{rev=false}}
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)revisar()});addEventListener("focus",revisar);setInterval(revisar,3*60*1000);setTimeout(revisar,8000);
+  window.buscarActualizacion=revisar})();
+</script>
 <script src="dictado.js?v=1"></script>
-<script src="celu.js?v=7"></script>
+<script src="celu.js?v=8"></script>
 </body>
 </html>
