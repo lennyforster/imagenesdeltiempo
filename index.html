@@ -117,7 +117,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
 #h-vivo[aria-pressed="true"]{background:#1f9d6b;color:#fff}
 .vivo-chip{display:inline-flex;align-items:center;gap:6px;margin-left:8px;padding:4px 10px;border-radius:999px;background:#1f9d6b;color:#fff;font:600 .72rem var(--ui);vertical-align:middle}
 .vivo-chip::before{content:"";width:7px;height:7px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.3)}
-.nota.en-vivo .meta span:first-child::after{content:" ● en vivo";color:#1f9d6b;font-weight:600}
+.nota.en-vivo .meta span:first-child::after{content:" ● compartido";color:#1f9d6b;font-weight:600}
 .nombre-vivo{position:fixed;inset:0;z-index:90;background:rgba(20,14,10,.55);display:flex;align-items:center;justify-content:center;padding:16px}
 .nombre-vivo[hidden]{display:none}
 .nombre-vivo form{box-sizing:border-box;background:#fbf7ec;border-radius:12px;padding:22px;width:min(360px,100%);display:grid;grid-template-columns:minmax(0,1fr);gap:12px;box-shadow:0 30px 60px -20px rgba(0,0,0,.6)}
@@ -1027,6 +1027,7 @@ body.tr-ordenando{cursor:grabbing;user-select:none;-webkit-user-select:none}
 .tr-cerrar{border:0;border-radius:999px;min-width:22px;height:22px;padding:0 6px;background:rgba(43,37,32,.08);color:var(--soft);font:600 13px/22px var(--ui);cursor:pointer;flex:none}
 .tr-cerrar.sure{background:var(--danger);color:#fff;font-size:11px}
 .tr-pie{display:grid;gap:6px;justify-items:start}
+body.invitado.en-ref #volver{display:revert!important}
 .adoptar-vivo{position:fixed;z-index:40;right:16px;top:16px;border:0;border-radius:999px;background:#1f6b4a;color:#fff;font:700 14px var(--ui);padding:10px 16px;box-shadow:0 8px 20px rgba(0,0,0,.3);cursor:pointer}
 @media (max-width:600px){.adoptar-vivo{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);right:50%;transform:translateX(50%)}}
 .tr-pesos{border:0;border-radius:999px;min-width:22px;height:22px;padding:0 7px;background:rgba(43,37,32,.08);color:var(--soft);font:700 12px/22px var(--ui);cursor:pointer;flex:none;white-space:nowrap}
@@ -2225,7 +2226,7 @@ window.claude={use:async n=>{if(INVITADO&&n==="db"){if(!listo)listo=conectar();r
     <div class="meta"><span>Esta idea</span><button type="button" class="cerrar" id="cerrar-mas" aria-label="Cerrar">×</button></div>
     <div id="mas-cat" class="mas-sec"><span class="nota-panel">Categoría</span><div class="colores" id="h-colores" role="group" aria-label="Categoría"></div></div>
     <div id="mas-est" class="mas-sec"><span class="nota-panel">Estado</span><div class="colores" id="h-estados" role="group" aria-label="Estado de la idea"></div></div>
-    <div class="mas-fila"><button class="btn" id="h-vivo" type="button" title="Compartí un link y editen este post-it juntos, en tiempo real (los otros no necesitan cuenta)"><span class="vivo-pt"></span>En vivo · editar con otros</button><button class="btn" id="h-compartir" type="button">Compartir</button><button class="btn" id="h-exportar" type="button">Exportar</button><button class="btn" id="h-a-pila" type="button" hidden>Devolver a la pila</button></div>
+    <div class="mas-fila"><button class="btn" id="h-vivo" type="button" title="Pasale un link a quien quieras y lo editan juntos (lo que cambia uno le aparece al otro)"><span class="vivo-pt"></span>Compartir</button><button class="btn" id="h-compartir" type="button" title="Un link a esta nota que solo abre en tus dispositivos">Mi link</button><button class="btn" id="h-exportar" type="button">Exportar</button><button class="btn" id="h-a-pila" type="button" hidden>Devolver a la pila</button></div>
     <div class="mas-pie"><button class="btn" id="h-ayuda" type="button">Cómo se usa?</button><button class="btn" id="h-del" type="button" hidden>Borrar este día</button></div>
   </div>
   <form class="panel" id="linkform" hidden>
@@ -2245,14 +2246,14 @@ window.claude={use:async n=>{if(INVITADO&&n==="db"){if(!listo)listo=conectar();r
     <div id="r-crear" hidden><span class="nota-panel">¿No existe? Crealo ya conectado:</span><div class="ed-barra" id="r-tipo"><button type="button" data-k="ideas">Post-it</button><button type="button" data-k="frases">Frase</button></div><div class="colores" id="r-cats" role="group" aria-label="Categoría del post-it nuevo"></div><button type="button" class="btn oscuro" id="r-crear-btn">+ Crear</button><span class="nota-panel" id="r-donde"></span></div>
   </div>
   <div class="panel ancho" id="panel-compartir" hidden>
-    <div class="meta"><span>Compartir esta nota</span><button type="button" class="cerrar" id="cerrar-compartir" aria-label="Cerrar">×</button></div>
+    <div class="meta"><span>Mi link a esta nota</span><button type="button" class="cerrar" id="cerrar-compartir" aria-label="Cerrar">×</button></div>
     <div class="libre"><input type="text" id="link-nota" readonly aria-label="Link a esta nota"><button type="button" class="btn oscuro" id="copiar-link">Copiar</button></div>
-    <span class="nota-panel">El link abre esta nota directo. Funciona solo en tus dispositivos (donde entraste con tu clave): sirve para guardarla o abrirla rápido, no para que otra persona la vea.</span>
+    <span class="nota-panel">El link abre esta nota directo. Funciona solo en tus dispositivos (donde entraste con tu clave): sirve para guardarla o abrirla rápido. Para que la vea otra persona, usá «Compartir».</span>
   </div>
   <div class="panel ancho" id="panel-vivo" hidden>
-    <div class="meta"><span>Post-it en vivo</span><button type="button" class="cerrar" id="cerrar-vivo" aria-label="Cerrar">×</button></div>
-    <p class="nota-panel" id="vivo-txt">Pasale este link a quien quieras: entra directo a este post-it (sin ver el resto de tu plancha) y lo editan juntos en el momento, cada uno con su cursor.</p>
-    <div class="libre"><input type="text" id="vivo-link" readonly aria-label="Link del post-it en vivo"><button type="button" class="btn oscuro" id="vivo-copiar">Copiar</button></div>
+    <div class="meta"><span>Compartir este post-it</span><button type="button" class="cerrar" id="cerrar-vivo" aria-label="Cerrar">×</button></div>
+    <p class="nota-panel" id="vivo-txt">Pasale este link a quien quieras: entra directo a este post-it (sin ver el resto de tu plancha) y lo editan juntos, con las fotos, las listas y los post-its de adentro. Si tiene cuenta, lo puede guardar en su plancha. Si están los dos adentro a la vez, ven el cursor del otro.</p>
+    <div class="libre"><input type="text" id="vivo-link" readonly aria-label="Link del post-it compartido"><button type="button" class="btn oscuro" id="vivo-copiar">Copiar</button></div>
     <div class="acc" style="justify-content:space-between"><span class="nota-panel" id="vivo-gente"></span><button type="button" class="btn" id="vivo-dejar">Dejar de compartir</button></div>
   </div>
   <div class="panel ancho" id="panel-export" hidden>
@@ -3035,7 +3036,7 @@ let navRef=[];let abierto=null,selB=null,borrarB=null,borrarSure=false;
 const timers={},pend={};let enVuelo=0;
 function estado(t){$("estado").textContent=t}
 function guardarHoja(campo,valor){if(!abierto)return;
-  if(vivoAct&&!vivoSilencio&&abierto.doc.vivo===vivoAct.id&&CAMPOS_VIVO.includes(campo))vivoAct.poner(campo,valor);const {k,id}=abierto;enVuelo++;estado("Guardando…");let pr;
+  if(vivoAct&&!vivoSilencio&&abierto.doc.vivo===vivoAct.id&&CAMPOS_VIVO.includes(campo)){vivoAct.poner(campo,valor);if(campo==="bloques")programarRefsVivo()}const {k,id}=abierto;enVuelo++;estado("Guardando…");let pr;
   if(k==="diario"&&!entradaDia(id)){const base=JSON.parse(JSON.stringify(abierto.doc));delete base.id;delete base._pend;base[campo]=valor;base.fecha=id;base.creado=base.creado||Date.now();
     pr=cola[id]=(cola[id]||Promise.resolve()).then(()=>entradaDia(id)?cols.diario.doc(id).update({[campo]:valor}):cols.diario.doc(id).set(base)).then(()=>true,()=>{toast("No se guardó. Revisá la conexión.");return false})}
   else pr=escribir(cols[k],id,{[campo]:valor});
@@ -3058,7 +3059,7 @@ function abrir(k,id,virtual){
   lzHoja.apply();if(k==="diario"){lzHoja.clave=null;posicionarDia()}else if(!lzHoja.usar("hoja:"+id))requestAnimationFrame(()=>lzHoja.encuadrar(lzHoja.limites()));
   requestAnimationFrame(()=>{document.querySelectorAll("#capa-hoja textarea").forEach(autosize);pintarHilos();$("volver").focus()});
 }
-function cerrar(){if(window.__invitado)return;window.cerrarBarraHoja&&window.cerrarBarraHoja();cerrarPilaHoja();navRef=[];$("volver").textContent="← Volver";$("panel-ref").hidden=true;$("panel-tar").hidden=true;const vacio=abierto&&abierto.vacio&&abierto.k==="ideas"&&!(abierto.doc.texto||"").trim()&&!(abierto.doc.bloques||[]).length&&!(abierto.doc.trazos||[]).length?abierto.id:null;if(vacio&&cols.ideas)setTimeout(()=>cols.ideas.doc(vacio).delete().catch(()=>{}),0);cerrarVivo();$("panel-vivo").hidden=true;const eraDia=abierto&&abierto.k==="diario"?{id:abierto.id,doc:abierto.doc}:null;
+function cerrar(){if(window.__invitado&&!navegandoRef)return;window.cerrarBarraHoja&&window.cerrarBarraHoja();cerrarPilaHoja();navRef=[];$("volver").textContent="← Volver";$("panel-ref").hidden=true;$("panel-tar").hidden=true;const vacio=abierto&&abierto.vacio&&abierto.k==="ideas"&&!(abierto.doc.texto||"").trim()&&!(abierto.doc.bloques||[]).length&&!(abierto.doc.trazos||[]).length?abierto.id:null;if(vacio&&cols.ideas)setTimeout(()=>cols.ideas.doc(vacio).delete().catch(()=>{}),0);cerrarVivo();$("panel-vivo").hidden=true;const eraDia=abierto&&abierto.k==="diario"?{id:abierto.id,doc:abierto.doc}:null;
   setTimeout(()=>{if(eraDia&&!pesoDia(eraDia.doc)&&!(eraDia.doc.trazos||[]).length&&entradaDia(eraDia.id))cols.diario.doc(eraDia.id).delete().catch(()=>{});pintarDiario()},50);
   selLimpiar(lzHoja);$("panel-export").hidden=true;$("panel-mas").hidden=true;vaciarPendientes();if(modoHilo)setModoHilo(false);selHilo=null;abierto=null;$("detalle").hidden=true;$("panel-compartir").hidden=true;$("capa-hoja").replaceChildren();gHoja=null;cortarHoja=null;gTrazosHoja=null;if(lzHoja.modo)lzHoja.setModo(null)}
 function sincronizarAbierto(k){
@@ -3318,9 +3319,10 @@ function pintarAparece(){if(!abierto||abierto.k==="diario")return;const p=$("cap
   if(!a){a=el("div","aparece");p.append(a)}
   a.replaceChildren(el("span",null,abierto.k==="frases"?"Esta frase también aparece en:":"También aparece en:"),...l.map(i=>{const b=el("button",null,"#"+(i.numero||"?")+" "+((i.texto||"").replace(/\s+/g," ").trim().slice(0,40)||"(sin texto)"));b.type="button";b.style.setProperty("--c",colorDe("ideas",i));b.title="Abrir";b.onclick=()=>irARef(i.id,"ideas");return b}));
   requestAnimationFrame(pintarHilos)}
-function pintarVolver(){const v=$("volver"),u=navRef[navRef.length-1],prev=u?data[u.k].find(x=>x.id===u.id):null;v.textContent=prev?`← ${u.k==="frases"?"Frase ":""}#${prev.numero||"?"}`:"← Volver";v.title=prev?"Volver a donde estabas":""}
+function pintarVolver(){document.body.classList.toggle("en-ref",navRef.length>0);const v=$("volver"),u=navRef[navRef.length-1],prev=u?data[u.k].find(x=>x.id===u.id):null;v.textContent=prev?`← ${u.k==="frases"?"Frase ":""}#${prev.numero||"?"}`:"← Volver";v.title=prev?"Volver a donde estabas":""}
+let navegandoRef=false;
 function irARef(id,k){k=k||"ideas";if(!abierto||id===abierto.id)return;if(!data[k].some(x=>x.id===id)){toast(k==="frases"?"Esa frase ya no existe.":"Ese post-it ya no existe.");return}
-  const st=[...navRef,{k:abierto.k,id:abierto.id}];cerrar();navRef=st;abrir(k,id);pintarVolver()}
+  const st=[...navRef,{k:abierto.k,id:abierto.id}];navegandoRef=true;try{cerrar()}finally{navegandoRef=false}navRef=st;abrir(k,id);pintarVolver()}
 let crearRefModo=false;
 function abrirPanelRef(modo){if(!abierto||abierto.k!=="ideas")return;crearRefModo=modo==="ideas"||modo==="frases";if(crearRefModo)kRef=modo;$("panel-ref").classList.toggle("crear",crearRefModo);
   $("r-tit").textContent=!crearRefModo?"Vínculo a otro post-it":modo==="frases"?"Frase nueva":"Post-it nuevo";$("r-buscar").placeholder=!crearRefModo?"Buscalo por texto, número o categoría…":modo==="frases"?"Escribí la frase…":"Escribí el post-it…";$("r-buscar").type=crearRefModo?"text":"search";$("linkform").hidden=true;$("panel-tar").hidden=true;$("panel-ref").hidden=false;$("r-buscar").value="";if(!catRef||!cats.some(c=>c.id===catRef))catRef=tipoNueva;pintarPanelRef();requestAnimationFrame(()=>$("r-buscar").focus())}
@@ -3408,7 +3410,7 @@ $("linkform").addEventListener("submit",e=>{
   $("l-url").value="";$("l-tit").value="";$("linkform").hidden=true;
 });
 $("add-img").onclick=()=>{destinoArchivo="hoja";$("file").click()};
-$("volver").onclick=()=>{if(navRef.length){const u=navRef.pop(),st=navRef;cerrar();navRef=st;if(data[u.k]&&data[u.k].some(x=>x.id===u.id))abrir(u.k,u.id);pintarVolver();return}cerrar()};
+$("volver").onclick=()=>{if(navRef.length){const u=navRef.pop(),st=navRef;navegandoRef=true;try{cerrar()}finally{navegandoRef=false}navRef=st;if(data[u.k]&&data[u.k].some(x=>x.id===u.id))abrir(u.k,u.id);pintarVolver();return}cerrar()};
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape"){
     for(const p of ["panel-diacal","panel-menu","panel-keep","panel-dictar","panel-mas","panel-export","panel-compartir","panel-claude","linkform","panel-mezcla","panel-cats","panel-cal"])if(!$(p).hidden){$(p).hidden=true;return}
@@ -3951,6 +3953,25 @@ function recibirListasVivo(bl){if(!colTareas||!tareasCargadas)return false;let c
       listasNuevas.add(b.ref);listas.push({id:b.ref,...o,lista:o.lista.map(t=>({...t}))});colTareas.doc(b.ref).set(o).catch(()=>{});cambio=true;continue}
     if((x.mod||0)>(L.mod||L.creado||0)&&!editandoLista(L.id)){L.titulo=x.titulo||"";L.lista=limpiarItems(x.lista).map(t=>({...t}));if(x.precios)L.precios=true;else delete L.precios;L.mod=x.mod;guardarLista(L,true);cambio=true}}
   if(cambio)pintarTareas();return cambio}
+/* Post-its que viven adentro de uno compartido: se comparten solos (cada uno con su propio link por dentro) y el bloque lleva
+   vref (su código compartido) y vsnap (texto, categoría) para que del otro lado se cree el mismo post-it, con el mismo id. */
+let refsVivoT=null;
+function programarRefsVivo(){clearTimeout(refsVivoT);refsVivoT=setTimeout(()=>{if(abierto&&abierto.k==="ideas"&&abierto.doc.vivo&&!window.__invitado)asegurarRefsVivo().catch(e=>console.error(e))},900)}
+async function refsConVivo(bl,prof,vistos){const m=await modVivo();let cambio=false;const out=[];
+  for(const b of bl||[]){if(b.t!=="ref"||kDe(b)!=="ideas"||!b.ref){out.push(b);continue}const c=data.ideas.find(x=>x.id===b.ref);if(!c){out.push(b);continue}
+    let vid=c.vivo;
+    if(!vid&&prof<4&&!vistos.has(c.id)){vistos.add(c.id);const nb=(await refsConVivo(c.bloques,prof+1,vistos)).bl;vid=await m.crear(camposVivo({...c,bloques:nb}));await cols.ideas.doc(c.id).update({vivo:vid,bloques:nb})}
+    const snap={texto:(c.texto||"").slice(0,500),tipo:c.tipo||"otro",numero:c.numero||""};if(c.colorPropio)snap.c=c.colorPropio;
+    if(vid&&(b.vref!==vid||JSON.stringify(b.vsnap)!==JSON.stringify(snap))){out.push({...b,vref:vid,vsnap:snap});cambio=true}else out.push(b)}
+  return {bl:out,cambio}}
+async function asegurarRefsVivo(){const id=abierto.id;const r=await refsConVivo(abierto.doc.bloques,0,new Set([id]));if(!r.cambio||!abierto||abierto.id!==id)return;
+  const mp=new Map(r.bl.filter(b=>b.vref).map(b=>[b.id,b]));let ch=false;
+  abierto.doc.bloques=abierto.doc.bloques.map(b=>{const x=mp.get(b.id);if(x&&(b.vref!==x.vref||JSON.stringify(b.vsnap)!==JSON.stringify(x.vsnap))){ch=true;return {...b,vref:x.vref,vsnap:x.vsnap}}return b});if(ch)guardarBloques()}
+function recibirRefsVivo(bl){if(!cols.ideas||!abierto)return;const padre=abierto.id;
+  for(const b of bl||[]){if(b.t!=="ref"||!b.vref||kDe(b)!=="ideas"||!b.ref)continue;if(data.ideas.some(x=>x.id===b.ref)||refNuevos.has(b.ref))continue;
+    const sn=b.vsnap||{},numero=data.ideas.reduce((a,x)=>Math.max(a,x.numero||0),0)+1;refNuevos.add(b.ref);
+    const o={texto:sn.texto||"",tipo:sn.tipo||"otro",creado:Date.now(),numero,vivo:b.vref,dentro:padre,anidado:1,compartido:true};if(sn.c)o.colorPropio=sn.c;
+    cols.ideas.doc(b.ref).set(o).catch(()=>{refNuevos.delete(b.ref)})}}
 /* abrir un post-it compartido en tu plancha: «Guardar en mi plancha» desde el link */
 const tieneCuenta=()=>{try{return !!(localStorage.getItem("gh_token")||localStorage.getItem("idt-cuenta")||localStorage.getItem("plancha_modo"))}catch(_){return false}};
 function botonAdoptar(){if(!window.__invitado||!tieneCuenta()||document.getElementById("adoptar-vivo"))return;const b=el("button","adoptar-vivo","＋ Guardar en mi plancha");b.id="adoptar-vivo";b.type="button";
@@ -3964,7 +3985,7 @@ async function revisarAdopcion(){let id=null;try{id=localStorage.getItem("adopta
     setTimeout(()=>{if(data.ideas.some(x=>x.id===nid))abrir("ideas",nid)},300)}catch(e){console.error(e);toast("No pude sumarlo a tu plancha. Probá de nuevo.")}}
 const camposVivo=d=>({texto:d.texto||"",bloques:embeberListas(d.bloques||[]),hilos:d.hilos||[],trazos:d.trazos||[],tipo:d.tipo||"otro",estado:d.estado||null,numero:d.numero||"",creado:d.creado||Date.now(),titulo:`Idea #${d.numero||"?"}`});
 let genteVivo=[];function chipVivo(lista){if(lista)genteVivo=lista;else lista=genteVivo;let c=$("h-titulo").querySelector(".vivo-chip");if(!abierto||!abierto.doc.vivo){c?.remove();return}
-  if(!c){c=el("span","vivo-chip");$("h-titulo").append(c)}const n=(lista||[]).length;c.textContent=n?`En vivo · ${lista.map(p=>p.nombre).join(", ")}`:"En vivo";
+  if(!c){c=el("span","vivo-chip");$("h-titulo").append(c)}const n=(lista||[]).length;c.textContent=n?`Compartido · acá: ${lista.map(p=>p.nombre).join(", ")}`:"Compartido";
   $("vivo-gente").textContent=n?`Ahora: ${lista.map(p=>p.nombre).join(", ")}`:"Nadie más conectado ahora."}
 /* mouses de los demás en el tablero */
 const FLECHA_MOUSE=c=>`<svg width="18" height="20" viewBox="0 0 18 20"><path d="M2 1.5l13.5 9.2-6.3.9-3.3 5.6z" fill="${c}" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
@@ -3977,7 +3998,7 @@ function pintarMouses(lista){const capa=$("capa-hoja");let cont=capa.querySelect
 $("vp-hoja").addEventListener("pointermove",e=>{if(vivoAct&&abierto&&abierto.doc.vivo===vivoAct.id&&e.pointerType==="mouse"){const p=lzHoja.aMundo(e.clientX,e.clientY);vivoAct.mouse(p.x,p.y)}},{passive:true});
 $("vp-hoja").addEventListener("pointerleave",()=>{if(vivoAct)vivoAct.mouse(null,null)});
 /* cuando otro cambia piezas, hilos o dibujos */
-function aplicarFotoVivo(S,f){if(!abierto||abierto.doc.vivo!==S.id)return;recibirListasVivo(f.bloques);const d=abierto.doc;
+function aplicarFotoVivo(S,f){if(!abierto||abierto.doc.vivo!==S.id)return;recibirListasVivo(f.bloques);recibirRefsVivo(f.bloques);const d=abierto.doc;
   const nuevo=JSON.parse(JSON.stringify(d));nuevo.bloques=f.bloques||[];nuevo.hilos=f.hilos||[];nuevo.trazos=f.trazos||[];if(f.tipo)nuevo.tipo=f.tipo;if(f.estado!==undefined)nuevo.estado=f.estado;
   const firma=o=>JSON.stringify([o.bloques,o.hilos,o.trazos,o.tipo||"",o.estado||null]);if(firma(nuevo)===firma(d))return;prepararDoc(nuevo);
   vivoSilencio=true;try{for(const k of CAMPOS_VIVO)if(JSON.stringify(nuevo[k])!==JSON.stringify(d[k]))guardarHoja(k,nuevo[k])}finally{vivoSilencio=false}
@@ -3987,7 +4008,7 @@ function aplicarFotoVivo(S,f){if(!abierto||abierto.doc.vivo!==S.id)return;recibi
   aplicarRemoto(nuevo);if(enTexto){const t=$("capa-hoja").querySelector(".principal textarea");if(t){t.focus({preventScroll:true});t.setSelectionRange(s0,s1)}}}
 async function sesionVivo(id){if(vivoAct&&vivoAct.id===id)return vivoAct;
   if(window.__sesionVivo&&window.__sesionVivo.id===id)vivoAct=window.__sesionVivo;
-  else{if(vivoAct){vivoAct.cerrar();vivoAct=null}const m=await modVivo();vivoAct=await m.sesion({id,nombre:miNombreVivo()})}
+  else{if(vivoAct){if(window.__sesionVivo===vivoAct)window.__sesionVivo=null;vivoAct.cerrar();vivoAct=null}const m=await modVivo();vivoAct=await m.sesion({id,nombre:miNombreVivo()})}
   const S=vivoAct;if(!S._enganchada){S._enganchada=true;S.onGente(chipVivo);S.onCambio(f=>aplicarFotoVivo(S,f));S.onMouse(pintarMouses)}return S}
 /* las imágenes del post-it pasan a Supabase para que las vean todos */
 async function migrarImagenesVivo(S){if(window.__invitado||!abierto||abierto.doc.vivo!==S.id)return;const d=abierto.doc,m=await modVivo(),pend=d.bloques.filter(b=>b.t==="img"&&b.a&&!m.esImgVivo(b.a));let n=0;
@@ -3996,18 +4017,18 @@ async function migrarImagenesVivo(S){if(window.__invitado||!abierto||abierto.doc
   if(n){guardarBloques();pintarHoja()}}
 async function enlazarVivo(t,doc){const id=doc.vivo;if(!id)return;if(!vivoAct||vivoAct.id!==id)genteVivo=[];chipVivo();
   try{const S=await sesionVivo(id);if(!abierto||abierto.doc.vivo!==id)return;
-    if(!S._sincro){S._sincro=true;if(window.__invitado)recibirListasVivo(S.foto().bloques);else{if(S.vacio())S.ponerTodo(camposVivo(abierto.doc));else aplicarFotoVivo(S,S.foto());migrarImagenesVivo(S);setTimeout(()=>{if(!abierto||abierto.doc.vivo!==id)return;const nb=embeberListas(abierto.doc.bloques);if(JSON.stringify(nb)!==JSON.stringify(abierto.doc.bloques)){abierto.doc.bloques=nb;guardarBloques()}},400)}}
+    if(!S._sincro){S._sincro=true;if(window.__invitado)aplicarFotoVivo(S,S.foto());else{programarRefsVivo();if(S.vacio())S.ponerTodo(camposVivo(abierto.doc));else aplicarFotoVivo(S,S.foto());migrarImagenesVivo(S);setTimeout(()=>{if(!abierto||abierto.doc.vivo!==id)return;const nb=embeberListas(abierto.doc.bloques);if(JSON.stringify(nb)!==JSON.stringify(abierto.doc.bloques)){abierto.doc.bloques=nb;guardarBloques()}},400)}}
     const tt=$("capa-hoja").querySelector(".principal textarea")||t;
     S.vincular(tt,{capa:tt.parentElement,onTexto:(v,cambio)=>{if(!abierto||abierto.doc.vivo!==id)return;autosize(tt);if(cambio&&abierto.doc.texto!==v){abierto.doc.texto=v;guardarLuego("texto",()=>abierto.doc.texto)}pintarHilos()}})}
-  catch(e){console.error(e);toast(String(e.message).includes("no existe")?"Este post-it ya no está compartido.":"No se pudo conectar en vivo. Revisá la conexión.")}}
+  catch(e){console.error(e);toast(String(e.message).includes("no existe")?"Este post-it ya no está compartido.":"No se pudo conectar con el post-it compartido. Revisá la conexión.")}}
 function cerrarVivo(){if(vivoAct&&!window.__invitado){vivoAct.cerrar();vivoAct=null;genteVivo=[]}pintarMouses([])}
 function abrirPanelVivo(){if(!abierto)return;$("vivo-link").value=URL_VIVO+"#vivo="+abierto.doc.vivo;$("panel-vivo").hidden=false;$("panel-mas").hidden=true}
 $("h-vivo").onclick=async()=>{if(!abierto||abierto.k!=="ideas")return;const d=abierto.doc;
   if(d.vivo){abrirPanelVivo();return}
   const b=$("h-vivo");b.disabled=true;b.textContent="Creando…";
   try{vaciarPendientes();const m=await modVivo();const id=await m.crear(camposVivo(d));d.vivo=id;guardarHoja("vivo",id);b.setAttribute("aria-pressed","true");
-    const t=$("capa-hoja").querySelector(".principal textarea");if(t)enlazarVivo(t,d);abrirPanelVivo();const n=nodosNota.get("ideas:"+abierto.id);if(n)n._firma=null;toast("Listo: este post-it ya se puede editar en vivo.")}
-  catch(e){console.error(e);toast("No se pudo crear. Revisá la conexión.")}finally{b.disabled=false;b.replaceChildren(el("span","vivo-pt"),"En vivo · editar con otros")}};
+    const t=$("capa-hoja").querySelector(".principal textarea");if(t)enlazarVivo(t,d);abrirPanelVivo();const n=nodosNota.get("ideas:"+abierto.id);if(n)n._firma=null;toast("Listo: ya está compartido. Copiá el link y pasáselo a quien quieras.")}
+  catch(e){console.error(e);toast("No se pudo crear. Revisá la conexión.")}finally{b.disabled=false;b.replaceChildren(el("span","vivo-pt"),"Compartir")}};
 $("cerrar-vivo").onclick=()=>{$("panel-vivo").hidden=true};
 $("vivo-copiar").onclick=async()=>{try{await navigator.clipboard.writeText($("vivo-link").value);toast("Link copiado.")}catch(_){$("vivo-link").select();toast("Copialo a mano: ya está marcado.")}};
 {let seguro=false,tm;$("vivo-dejar").onclick=()=>{const b=$("vivo-dejar");if(!abierto)return;
@@ -4069,7 +4090,7 @@ const AYUDA=[
   [{chip:"•••"},"Las opciones de la idea: categoría, estado (Semilla, En desarrollo, En marcha, Descartada), Exportar, Compartir, la versión texto (la A) y «Cómo se usa?». Para despegar un post-it, hacelo desde la plancha: con la × de su esquina, o elegilo y tocá «Borrar»."],
   [{chip:"Exportar"},"Copia el texto o lo descarga como .txt para seguir en Docs o Word."],
   [{chip:"Compartir"},"Te da un link directo a esa nota, que abre solo en tus dispositivos."],
-  [{h:'<span class="ay-chip" style="background:#1f9d6b;color:#fff">● En vivo</span>'},"Para trabajar un post-it con otra gente al mismo tiempo. Mirá la pestaña «En vivo»."],
+  [{h:'<span class="ay-chip" style="background:#1f9d6b;color:#fff">● Compartir</span>'},"Para trabajar un post-it con otra gente. Mirá la pestaña «Compartir»."],
   [{chip:"Vínculo"},"Pone adentro un post-it o una frase que vive en otro lado. Está explicado bien en la pestaña «Vínculos»."],
   [{chip:"Post-it nuevo"},"En el «+»: creás un post-it de verdad, de la categoría que elijas, desde adentro de este. Queda en la plancha (o en la pila de esa categoría) y acá adentro como vínculo."],
   [{chip:"Frase nueva"},"En el «+»: creás una frase desde acá. Queda en Frases y acá adentro como vínculo."],
@@ -4127,13 +4148,13 @@ const AYUDA=[
   [null,"Si el mismo guion está abierto en dos lados y uno queda viejo, la web no deja que pise al otro: te avisa y elegís qué hacer."],
   [{chip:"Compartir"},"Link para leer o para editar juntos en vivo. Archivo: PDF, Final Draft, Fountain y todos tus guiones."],
   [{chip:"Exportar PDF…"},"En Archivo (o Ctrl+P, ⌘+P en Mac). Elegís todo el guion, la página donde estás o algunas páginas: 10-15, 23-28, o 20- para ir hasta el final. Cada página sale con su número de siempre."]]},
- {t:"En vivo",it:[
-  [null,"Trabajás un post-it con otra gente al mismo tiempo, como en Miro o Google Docs. Cada uno desde su compu o su celu."],
-  [{h:'<span class="ay-chip" style="background:#1f9d6b;color:#fff">● En vivo</span>'},"Adentro de una idea, en •••. Se crea un link para ese post-it."],
+ {t:"Compartir",it:[
+  [null,"Trabajás un post-it con otra gente, como en Miro o Google Docs. Cada uno desde su compu o su celu. Si están los dos adentro a la vez, se ve al instante."],
+  [{h:'<span class="ay-chip" style="background:#1f9d6b;color:#fff">● Compartir</span>'},"Adentro de una idea, en •••. Se crea un link para ese post-it."],
   [{chip:"Copiar link"},"Mandáselo a quien quieras. No necesita cuenta: entra, pone su nombre y listo."],
-  ["Todo el tablero","Todo lo de adentro se comparte: texto, post-its, notas, links, imágenes, flechas y dibujos. Lo que cambia uno lo ve el otro al toque."],
+  ["Todo el tablero","Todo lo de adentro se comparte: texto, post-its, notas, links, imágenes, flechas, dibujos, listas y los post-its que viven adentro. Lo que cambia uno lo ve el otro."],
   [{h:'<span class="ay-mouse"><svg width="16" height="18" viewBox="0 0 18 20" aria-hidden="true"><path d="M2 1.5l13.5 9.2-6.3.9-3.3 5.6z" fill="#e0457b" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg><span>Fercho</span></span>'},"Ves el mouse de cada uno con su nombre. En el texto grande, también dónde está escribiendo."],
-  [{h:'<span class="ay-chip" style="background:#1f9d6b;color:#fff">En vivo · Fercho</span>'},"Arriba dice quién está conectado ahora."],
+  [{h:'<span class="ay-chip" style="background:#1f9d6b;color:#fff">Compartido · acá: Fercho</span>'},"Arriba dice quién está adentro ahora."],
   [{chip:"＋ Guardar en mi plancha"},"Si te pasan el link y tenés cuenta, lo sumás a tu plancha: queda como un post-it tuyo y lo editan los dos, con fotos y listas. Lo que cambia uno le aparece al otro."],
   ["Solo ese post-it","El que entra no ve nada más de tu banco: ni otras ideas, ni frases, ni el diario."],
   ["Se guarda solo","Todo lo que hacen queda guardado en tu banco, aunque después dejes de compartir."],
@@ -4224,6 +4245,9 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:112,f:"23 de noviembre",it:[
+  ["*«En vivo» ahora se llama «Compartir».* Es lo mismo: pasás el link y editan juntos. Y ahora viaja todo: también los post-its que viven adentro del que compartís (y los de adentro de esos). El que lo guarda en su plancha los tiene igual que vos.",null,1],
+  ["El botón que antes decía «Compartir» (un link a la nota que solo abre en tus dispositivos) ahora se llama «Mi link».",null,3]]},
  {n:111,f:"23 de noviembre",it:[
   ["*Post-its compartidos en tu plancha.* Si alguien te pasa el link de un post-it en vivo y tenés cuenta, arriba te aparece *Guardar en mi plancha*: queda como un post-it tuyo y lo editan los dos. Lo que cambia uno le aparece al otro, con las fotos y las listas de adentro.",null,1],
   ["Los post-its que viven adentro de otro ahora se ven como un post-it normal, con una flechita chica para abrirlos.",null,3]]},
