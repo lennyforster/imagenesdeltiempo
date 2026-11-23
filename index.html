@@ -975,7 +975,7 @@ html.plano .lp-fila:hover .lp-t,html.plano .lp-fila:focus-visible .lp-t{text-dec
 
 /* Referencias: un post-it que vive en un lado y aparece en otros */
 .bref{background:var(--c,#fff4a8);min-height:150px;padding:0 12px 12px;display:grid;align-content:start;gap:6px;cursor:grab;transform:rotate(var(--r,0deg));border-radius:2px;
-  box-shadow:0 1px 1px rgba(0,0,0,.12),0 10px 14px -8px rgba(20,10,0,.55);background-image:linear-gradient(170deg,rgba(255,255,255,.35),transparent 40%);outline:1.5px dashed rgba(43,37,32,.4);outline-offset:-6px}
+  box-shadow:0 1px 1px rgba(0,0,0,.12),0 10px 14px -8px rgba(20,10,0,.55);background-image:linear-gradient(170deg,rgba(255,255,255,.35),transparent 40%)}
 .bref .grip{height:18px;border:0;background:none}
 .bref .ref-txt{margin:0;font:500 16px/1.25 var(--hand);color:var(--ink);white-space:pre-wrap;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden}
 .bref .ref-extra{font:500 10.5px var(--mono);color:var(--soft)}
@@ -1027,6 +1027,8 @@ body.tr-ordenando{cursor:grabbing;user-select:none;-webkit-user-select:none}
 .tr-cerrar{border:0;border-radius:999px;min-width:22px;height:22px;padding:0 6px;background:rgba(43,37,32,.08);color:var(--soft);font:600 13px/22px var(--ui);cursor:pointer;flex:none}
 .tr-cerrar.sure{background:var(--danger);color:#fff;font-size:11px}
 .tr-pie{display:grid;gap:6px;justify-items:start}
+.adoptar-vivo{position:fixed;z-index:40;right:16px;top:16px;border:0;border-radius:999px;background:#1f6b4a;color:#fff;font:700 14px var(--ui);padding:10px 16px;box-shadow:0 8px 20px rgba(0,0,0,.3);cursor:pointer}
+@media (max-width:600px){.adoptar-vivo{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);right:50%;transform:translateX(50%)}}
 .tr-pesos{border:0;border-radius:999px;min-width:22px;height:22px;padding:0 7px;background:rgba(43,37,32,.08);color:var(--soft);font:700 12px/22px var(--ui);cursor:pointer;flex:none;white-space:nowrap}
 .tr-pesos.on{background:#1f6b4a;color:#fff}.tr-pesos.sug{background:#fff1c7;color:#7a5a12}
 .tareas.con-precios:not(.plana):not(.en-hoja){min-width:300px}
@@ -1167,6 +1169,8 @@ body.barra-abierta .barra-extra.h-extra:not(.abierta){display:none}
 @media (prefers-reduced-motion:reduce){#h-vivo .vivo-pt{animation:none}}
 
 .bref .ref-ic{font:700 13px/1 var(--ui);color:var(--soft);opacity:.8}
+.bref .meta .ref-ir{border:0;background:rgba(43,37,32,.08);color:var(--ink);width:22px;height:22px;border-radius:50%;display:inline-grid;place-items:center;font:700 12px/1 var(--ui);cursor:pointer;padding:0;opacity:.75;flex:none}
+.bref .meta .ref-ir:hover{opacity:1;background:rgba(43,37,32,.16)}
 
 .pila-ed{position:absolute;top:6px;right:6px;z-index:3;min-width:24px;height:24px;border-radius:999px;border:0;padding:0;background:rgba(43,37,32,.1);color:rgba(43,37,32,.6);font:600 13px/24px var(--ui);cursor:pointer;opacity:0;transition:opacity .15s}
 .pila:hover .pila-ed,.bpila:hover .pila-ed,.bpila.sel .pila-ed{opacity:1}
@@ -3299,11 +3303,11 @@ const refsA=id=>data.ideas.filter(i=>i.id!==id&&(i.bloques||[]).some(b=>b.t==="r
 const quitarComillas=t=>(t||"").replace(/^[«“"]|[»”"]$/g,"");
 function pintarRef(n,b){const k=kDe(b),i=data[k].find(x=>x.id===b.ref);const imV=n.querySelector(":scope>.ref-img");n.querySelectorAll(":scope>.grip,:scope>.ref-tag,:scope>.meta,:scope>.ref-txt,:scope>.ref-extra,:scope>.ref-abrir,:scope>.ref-img").forEach(x=>x.remove());n.classList.toggle("roto",!i);n.classList.toggle("ref-frase",k==="frases");
   const fr=[el("div","grip")];
-  if(i){n.style.setProperty("--c",colorDe(k,i));const m=el("div","meta"),ic=el("span","ref-ic","↗");ic.title=k==="frases"?"Vínculo a una frase (vive en Frases)":"Vínculo a un post-it (vive en su lugar)";ic.setAttribute("aria-label",ic.title);m.append(el("span",null,k==="frases"?"Frase #"+(i.numero||"?"):"#"+(i.numero||"?")+" · "+label(i.tipo)),ic);
+  if(i){n.style.setProperty("--c",colorDe(k,i));const m=el("div","meta"),ic=el("button","ref-ir","↗");ic.type="button";ic.title=k==="frases"?"Abrir la frase":"Abrir este post-it";ic.setAttribute("aria-label",ic.title);ic.onclick=e=>{e.stopPropagation();irARef(b.ref,k)};ic.addEventListener("pointerdown",e=>e.stopPropagation());m.append(el("span",null,k==="frases"?"Frase #"+(i.numero||"?"):"#"+(i.numero||"?")+" · "+label(i.tipo)),ic);
     fr.push(m,el("p","ref-txt",k==="frases"?"“"+quitarComillas(i.texto)+"”":(i.texto||"(sin texto)")));
     const ib=k==="ideas"&&(i.bloques||[]).find(x=>x.t==="img"&&x.a);if(ib){let im=imV&&imV.dataset.ref===ib.a?imV:null;if(!im){im=el("img","ref-img");im.alt="";im.draggable=false;im.dataset.ref=ib.a;im.onload=()=>pintarHilos();im.onerror=()=>im.remove();cargarImg(im,ib.a)}fr.push(im)}
     if(k==="frases"){if(i.autor)fr.push(el("span","ref-extra","— "+i.autor))}else{const ex=resumenExtra(i);if(ex)fr.push(el("span","ref-extra",ex.replace(/^\+ /,"")))}
-    const ab=el("button","ref-abrir","Abrir ↗");ab.type="button";ab.onclick=e=>{e.stopPropagation();irARef(b.ref,k)};fr.push(ab);n.title="Tocalo dos veces para abrirlo"}
+    n.title="Tocá la flechita (o tocalo dos veces) para abrirlo"}
   else{n.style.removeProperty("--c");fr.push(el("p","ref-txt",refNuevos.has(b.ref)?"…":window.__invitado?"Algo de otra parte de la plancha.":(k==="frases"?"Esta frase se borró.":"Este post-it se borró.")+" Podés quitar el vínculo."))}
   n.prepend(...fr)}
 function refrescarRefs(){for(const id of [...refNuevos])if(data.ideas.some(x=>x.id===id)||data.frases.some(x=>x.id===id))refNuevos.delete(id);
@@ -3934,7 +3938,31 @@ const modVivo=()=>vivoMod||(vivoMod=import("./vivo.js?v=3"));
 const NOMBRES_REPO={"banco-de-ideas-datos":"Lenny","banco-de-ideas-datos-2":"Helena","banco-de-ideas-datos-3":"Toby","banco-de-ideas-datos-4":"Shu","banco-de-ideas-datos-5":"Ivan","banco-de-ideas-datos-6":"Sofía","banco-de-ideas-datos-7":"Fercho","banco-de-ideas-datos-8":"Bere"};
 const miNombreVivo=()=>{try{return localStorage.getItem("vivo_nombre")||NOMBRES_REPO[localStorage.getItem("gh_repo")]||"Alguien"}catch(_){return "Alguien"}};
 const CAMPOS_VIVO=["bloques","hilos","trazos","tipo","estado"];
-const camposVivo=d=>({texto:d.texto||"",bloques:d.bloques||[],hilos:d.hilos||[],trazos:d.trazos||[],tipo:d.tipo||"otro",estado:d.estado||null,numero:d.numero||"",creado:d.creado||Date.now(),titulo:`Idea #${d.numero||"?"}`});
+/* Listas adentro de un post-it compartido: viajan adentro del bloque (b.lst) para que los demás las vean y las editen.
+   Cada uno además la tiene como lista propia, con el mismo id. Gana la versión más nueva (mod). */
+const lstDe=L=>({titulo:L.titulo||"",lista:limpiarItems(L.lista),precios:!!L.precios,mod:L.mod||L.creado||0});
+function embeberListas(bl){return (bl||[]).map(b=>{if(b.t!=="tar"||!b.ref)return b;const L=listas.find(z=>z.id===b.ref);if(!L)return b;if(b.lst&&(b.lst.mod||0)>(L.mod||L.creado||0))return b;
+  const lst=lstDe(L);return JSON.stringify(b.lst)===JSON.stringify(lst)?b:{...b,lst}})}
+function empujarListaVivo(id){if(!abierto||!abierto.doc.vivo||!abierto.doc.bloques.some(b=>b.t==="tar"&&b.ref===id))return;const nb=embeberListas(abierto.doc.bloques);
+  if(JSON.stringify(nb)===JSON.stringify(abierto.doc.bloques))return;abierto.doc.bloques=nb;guardarBloques()}
+function recibirListasVivo(bl){if(!colTareas||!tareasCargadas)return false;let cambio=false;
+  for(const b of bl||[]){if(b.t!=="tar"||!b.ref||!b.lst)continue;const x=b.lst;let L=listas.find(z=>z.id===b.ref);
+    if(!L){if(listasNuevas.has(b.ref))continue;const o={titulo:x.titulo||"",tablero:"ideas",enPlancha:false,creado:Date.now(),lista:limpiarItems(x.lista),mod:x.mod||Date.now()};if(x.precios)o.precios=true;
+      listasNuevas.add(b.ref);listas.push({id:b.ref,...o,lista:o.lista.map(t=>({...t}))});colTareas.doc(b.ref).set(o).catch(()=>{});cambio=true;continue}
+    if((x.mod||0)>(L.mod||L.creado||0)&&!editandoLista(L.id)){L.titulo=x.titulo||"";L.lista=limpiarItems(x.lista).map(t=>({...t}));if(x.precios)L.precios=true;else delete L.precios;L.mod=x.mod;guardarLista(L,true);cambio=true}}
+  if(cambio)pintarTareas();return cambio}
+/* abrir un post-it compartido en tu plancha: «Guardar en mi plancha» desde el link */
+const tieneCuenta=()=>{try{return !!(localStorage.getItem("gh_token")||localStorage.getItem("idt-cuenta")||localStorage.getItem("plancha_modo"))}catch(_){return false}};
+function botonAdoptar(){if(!window.__invitado||!tieneCuenta()||document.getElementById("adoptar-vivo"))return;const b=el("button","adoptar-vivo","＋ Guardar en mi plancha");b.id="adoptar-vivo";b.type="button";
+  b.title="Lo tenés en tu plancha y lo editan juntos: lo que cambia uno le aparece al otro";b.onclick=()=>{try{localStorage.setItem("adoptar_vivo",window.__invitado)}catch(_){}location.href=URL_VIVO};document.body.append(b)}
+async function revisarAdopcion(){let id=null;try{id=localStorage.getItem("adoptar_vivo")}catch(_){}if(!id||window.__invitado||!cols.ideas)return;
+  if(!window.__ideasListas||!tareasCargadas){setTimeout(revisarAdopcion,500);return}try{localStorage.removeItem("adoptar_vivo")}catch(_){}
+  let i=data.ideas.find(x=>x.vivo===id);if(i){abrir("ideas",i.id);return}
+  try{const m=await modVivo();if(!(await m.existe(id))){toast("Ese post-it ya no está compartido.");return}let tx="";try{const r=await m.textos([id]);tx=(r[0]&&(r[0].texto||r[0].t))||""}catch(_){}
+    const numero=data.ideas.reduce((a,x)=>Math.max(a,x.numero||0),0)+1,nid="vivo-"+bid()+bid();
+    await cols.ideas.doc(nid).set({texto:tx,tipo:"otro",creado:Date.now(),numero,vivo:id,compartido:true});toast(`Listo: quedó en tu plancha como #${numero}. Lo que cambie uno le aparece al otro.`);
+    setTimeout(()=>{if(data.ideas.some(x=>x.id===nid))abrir("ideas",nid)},300)}catch(e){console.error(e);toast("No pude sumarlo a tu plancha. Probá de nuevo.")}}
+const camposVivo=d=>({texto:d.texto||"",bloques:embeberListas(d.bloques||[]),hilos:d.hilos||[],trazos:d.trazos||[],tipo:d.tipo||"otro",estado:d.estado||null,numero:d.numero||"",creado:d.creado||Date.now(),titulo:`Idea #${d.numero||"?"}`});
 let genteVivo=[];function chipVivo(lista){if(lista)genteVivo=lista;else lista=genteVivo;let c=$("h-titulo").querySelector(".vivo-chip");if(!abierto||!abierto.doc.vivo){c?.remove();return}
   if(!c){c=el("span","vivo-chip");$("h-titulo").append(c)}const n=(lista||[]).length;c.textContent=n?`En vivo · ${lista.map(p=>p.nombre).join(", ")}`:"En vivo";
   $("vivo-gente").textContent=n?`Ahora: ${lista.map(p=>p.nombre).join(", ")}`:"Nadie más conectado ahora."}
@@ -3949,7 +3977,7 @@ function pintarMouses(lista){const capa=$("capa-hoja");let cont=capa.querySelect
 $("vp-hoja").addEventListener("pointermove",e=>{if(vivoAct&&abierto&&abierto.doc.vivo===vivoAct.id&&e.pointerType==="mouse"){const p=lzHoja.aMundo(e.clientX,e.clientY);vivoAct.mouse(p.x,p.y)}},{passive:true});
 $("vp-hoja").addEventListener("pointerleave",()=>{if(vivoAct)vivoAct.mouse(null,null)});
 /* cuando otro cambia piezas, hilos o dibujos */
-function aplicarFotoVivo(S,f){if(!abierto||abierto.doc.vivo!==S.id)return;const d=abierto.doc;
+function aplicarFotoVivo(S,f){if(!abierto||abierto.doc.vivo!==S.id)return;recibirListasVivo(f.bloques);const d=abierto.doc;
   const nuevo=JSON.parse(JSON.stringify(d));nuevo.bloques=f.bloques||[];nuevo.hilos=f.hilos||[];nuevo.trazos=f.trazos||[];if(f.tipo)nuevo.tipo=f.tipo;if(f.estado!==undefined)nuevo.estado=f.estado;
   const firma=o=>JSON.stringify([o.bloques,o.hilos,o.trazos,o.tipo||"",o.estado||null]);if(firma(nuevo)===firma(d))return;prepararDoc(nuevo);
   vivoSilencio=true;try{for(const k of CAMPOS_VIVO)if(JSON.stringify(nuevo[k])!==JSON.stringify(d[k]))guardarHoja(k,nuevo[k])}finally{vivoSilencio=false}
@@ -3968,7 +3996,7 @@ async function migrarImagenesVivo(S){if(window.__invitado||!abierto||abierto.doc
   if(n){guardarBloques();pintarHoja()}}
 async function enlazarVivo(t,doc){const id=doc.vivo;if(!id)return;if(!vivoAct||vivoAct.id!==id)genteVivo=[];chipVivo();
   try{const S=await sesionVivo(id);if(!abierto||abierto.doc.vivo!==id)return;
-    if(!window.__invitado&&!S._sincro){S._sincro=true;if(S.vacio())S.ponerTodo(camposVivo(abierto.doc));else aplicarFotoVivo(S,S.foto());migrarImagenesVivo(S)}
+    if(!S._sincro){S._sincro=true;if(window.__invitado)recibirListasVivo(S.foto().bloques);else{if(S.vacio())S.ponerTodo(camposVivo(abierto.doc));else aplicarFotoVivo(S,S.foto());migrarImagenesVivo(S);setTimeout(()=>{if(!abierto||abierto.doc.vivo!==id)return;const nb=embeberListas(abierto.doc.bloques);if(JSON.stringify(nb)!==JSON.stringify(abierto.doc.bloques)){abierto.doc.bloques=nb;guardarBloques()}},400)}}
     const tt=$("capa-hoja").querySelector(".principal textarea")||t;
     S.vincular(tt,{capa:tt.parentElement,onTexto:(v,cambio)=>{if(!abierto||abierto.doc.vivo!==id)return;autosize(tt);if(cambio&&abierto.doc.texto!==v){abierto.doc.texto=v;guardarLuego("texto",()=>abierto.doc.texto)}pintarHilos()}})}
   catch(e){console.error(e);toast(String(e.message).includes("no existe")?"Este post-it ya no está compartido.":"No se pudo conectar en vivo. Revisá la conexión.")}}
@@ -4106,6 +4134,7 @@ const AYUDA=[
   ["Todo el tablero","Todo lo de adentro se comparte: texto, post-its, notas, links, imágenes, flechas y dibujos. Lo que cambia uno lo ve el otro al toque."],
   [{h:'<span class="ay-mouse"><svg width="16" height="18" viewBox="0 0 18 20" aria-hidden="true"><path d="M2 1.5l13.5 9.2-6.3.9-3.3 5.6z" fill="#e0457b" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg><span>Fercho</span></span>'},"Ves el mouse de cada uno con su nombre. En el texto grande, también dónde está escribiendo."],
   [{h:'<span class="ay-chip" style="background:#1f9d6b;color:#fff">En vivo · Fercho</span>'},"Arriba dice quién está conectado ahora."],
+  [{chip:"＋ Guardar en mi plancha"},"Si te pasan el link y tenés cuenta, lo sumás a tu plancha: queda como un post-it tuyo y lo editan los dos, con fotos y listas. Lo que cambia uno le aparece al otro."],
   ["Solo ese post-it","El que entra no ve nada más de tu banco: ni otras ideas, ni frases, ni el diario."],
   ["Se guarda solo","Todo lo que hacen queda guardado en tu banco, aunque después dejes de compartir."],
   [{chip:"Dejar de compartir"},"Tocás dos veces y el link deja de andar al toque."]]},
@@ -4195,6 +4224,9 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:111,f:"23 de noviembre",it:[
+  ["*Post-its compartidos en tu plancha.* Si alguien te pasa el link de un post-it en vivo y tenés cuenta, arriba te aparece *Guardar en mi plancha*: queda como un post-it tuyo y lo editan los dos. Lo que cambia uno le aparece al otro, con las fotos y las listas de adentro.",null,1],
+  ["Los post-its que viven adentro de otro ahora se ven como un post-it normal, con una flechita chica para abrirlos.",null,3]]},
  {n:110,f:"23 de noviembre",it:[
   ["*Opciones que no suman.* En una lista con precios, si un renglón es una alternativa (por ejemplo, dos cámaras para elegir una), tocás la *Σ* al lado del precio y deja de sumarse al total. En el celu es el mismo botoncito.",null,2]]},
  {n:109,f:"23 de noviembre",it:[
@@ -5081,7 +5113,7 @@ function menuEtiquetas(boton,L,id){document.getElementById("etq-menu")?.remove()
 const refsLista=id=>data.ideas.filter(i=>(i.bloques||[]).some(b=>b.t==="tar"&&b.ref===id));
 const firmaLista=(L,modo)=>JSON.stringify([etiquetas().map(e=>e.id+e.color+e.nombre).join(),L.titulo||"",!!L.precios,limpiarItems(L.lista),!!L.enPlancha,modo==="hoja"?abierto&&abierto.id:"",refsLista(L.id).map(i=>i.id+":"+(i.numero||"")+":"+(i.texto||"").slice(0,30))]);
 const editandoLista=id=>[...document.querySelectorAll('[data-lista="'+id+'"]')].some(tecleaEn);
-function guardarLista(L){if(!colTareas||!L||!L.id)return;const o={titulo:L.titulo||"",tablero:"ideas",enPlancha:!!L.enPlancha,creado:L.creado||Date.now(),lista:limpiarItems(L.lista)};if(L.precios)o.precios=true;
+function guardarLista(L,remoto){if(!colTareas||!L||!L.id)return;if(!remoto)L.mod=Date.now();const o={titulo:L.titulo||"",tablero:"ideas",enPlancha:!!L.enPlancha,creado:L.creado||Date.now(),lista:limpiarItems(L.lista)};if(L.precios)o.precios=true;if(L.mod)o.mod=L.mod;if(!remoto)setTimeout(()=>empujarListaVivo(L.id),0);
   if(typeof L.x==="number"&&typeof L.y==="number"){o.x=L.x;o.y=L.y}if(L.w)o.w=L.w;colTareas.doc(L.id).set(o).catch(()=>toast("No se guardaron las tareas. Revisá la conexión."))}
 async function nuevaLista(extra){if(!colTareas)return null;const o={titulo:"",tablero:"ideas",enPlancha:false,creado:Date.now(),lista:[],...extra};
   try{const r=await colTareas.add(o);listasNuevas.add(r.id);return r.id}catch(_){toast("No se pudo crear la lista.");return null}}
@@ -5651,7 +5683,7 @@ drawComposer();setVista(vista);try{if(localStorage.getItem("pestana")==="diario"
   for(const k of ["ideas","frases"]){
     cols[k]=db.collection(k);
     cols[k].orderBy("creado","desc").onSnapshot(s=>{
-      data[k]=s.docs.map(d=>({id:d.id,...d.data(),_pend:!!(d.metadata&&d.metadata.hasPendingWrites)}));pintarMain();sincronizarAbierto(k);refrescarRefs();if(hpPila&&!$("hpila").hidden){if(abierto&&abierto.doc.bloques.some(x=>x.id===hpPila))pintarVistaHP();else cerrarPilaHoja()}if(k==="ideas"){pintarTareas();window.__ideasListas=true;if(window.__invitado)setTimeout(abrirInvitado,0);setTimeout(revisarVivos,1500);if(window.revisarEntradas)setTimeout(window.revisarEntradas,0)}
+      data[k]=s.docs.map(d=>({id:d.id,...d.data(),_pend:!!(d.metadata&&d.metadata.hasPendingWrites)}));pintarMain();sincronizarAbierto(k);refrescarRefs();if(hpPila&&!$("hpila").hidden){if(abierto&&abierto.doc.bloques.some(x=>x.id===hpPila))pintarVistaHP();else cerrarPilaHoja()}if(k==="ideas"){pintarTareas();window.__ideasListas=true;if(window.__invitado){setTimeout(abrirInvitado,0);setTimeout(botonAdoptar,0)}else setTimeout(revisarAdopcion,0);setTimeout(revisarVivos,1500);if(window.revisarEntradas)setTimeout(window.revisarEntradas,0)}
       if(!$("panel-cal").hidden&&!escribiendo())pintarCalMain();
       if(linkInicial){const i=data[k].find(x=>x.id===linkInicial);if(i){linkInicial=null;abrir(k,i.id)}}
       if(k===vista&&!encuadrado[k]&&data[k].length){lzMain.encuadrar(lzMain.limites());encuadrado[k]=true}
