@@ -1027,6 +1027,16 @@ body.tr-ordenando{cursor:grabbing;user-select:none;-webkit-user-select:none}
 .tr-cerrar{border:0;border-radius:999px;min-width:22px;height:22px;padding:0 6px;background:rgba(43,37,32,.08);color:var(--soft);font:600 13px/22px var(--ui);cursor:pointer;flex:none}
 .tr-cerrar.sure{background:var(--danger);color:#fff;font-size:11px}
 .tr-pie{display:grid;gap:6px;justify-items:start}
+.tr-pesos{border:0;border-radius:999px;min-width:22px;height:22px;padding:0 7px;background:rgba(43,37,32,.08);color:var(--soft);font:700 12px/22px var(--ui);cursor:pointer;flex:none;white-space:nowrap}
+.tr-pesos.on{background:#1f6b4a;color:#fff}.tr-pesos.sug{background:#fff1c7;color:#7a5a12}
+.tareas.con-precios:not(.plana):not(.en-hoja){min-width:300px}
+.tareas.con-precios .tr-item{grid-template-columns:10px 20px minmax(0,1fr) 78px auto}
+.tr-precio{width:78px;border:0;border-bottom:1px dashed rgba(43,37,32,.25);background:none;font:600 13px var(--mono);color:var(--ink);text-align:right;padding:1px 0;user-select:text;-webkit-user-select:text;touch-action:auto}
+.tr-precio:focus{outline:none;border-bottom-color:var(--ink)}.tr-precio::placeholder{color:rgba(43,37,32,.3)}
+.tr-item.hecha .tr-precio{color:var(--soft);text-decoration:line-through}
+.tr-total{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;border-top:1.5px solid var(--ink);margin-top:8px;padding-top:7px;font:500 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--soft)}
+.tr-total b{margin-left:auto;font:700 17px var(--mono);color:var(--ink);letter-spacing:0;text-transform:none}
+.tr-total small{flex-basis:100%;text-align:right;font:500 11px var(--mono);text-transform:none;letter-spacing:0}
 .tr-en{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font:500 10px var(--mono);color:var(--soft);text-transform:uppercase;padding-top:6px}
 .tr-en button{font:500 12px var(--ui);text-transform:none;border:0;border-radius:999px;padding:2px 8px;background:var(--c);color:var(--ink);cursor:pointer;box-shadow:0 0 0 1px rgba(43,37,32,.25);max-width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .btar{background:none;box-shadow:none;padding:0}
@@ -4122,6 +4132,7 @@ const AYUDA=[
   [{chip:"⋮⋮"},"Para cambiar el orden, agarrá una tarea de los puntitos de la izquierda y arrastrala adonde quieras. Con el teclado: Alt + ↑ / ↓ mientras escribís en la tarea."],
   [{chip:"×"},"Arriba a la derecha de la lista: la saca de la plancha. Si está adentro de algún post-it, sigue ahí; si no, se borra (te pregunta antes)."],
   [{chip:"🔗"},"Un renglón puede ser un link: pegalo en «+ agregar (o pegá un link)» y aparece con su foto y su título. Si la página no da el título (eBay, por ejemplo), tocá el renglón y ponele un nombre vos. La foto o el dominio lo abren."],
+  [{chip:"$"},"Para las listas de compras: tocás el $ al lado del nombre de la lista y cada renglón tiene su precio. Abajo ves el total y cuánto falta comprar (lo tachado ya está comprado)."],
   [{chip:"Etiquetas"},"Pasá por un renglón y tocá la etiquetita al lado de la ×: Urgente, Importante, Algún día, o creá las tuyas con nombre y color. Las tuyas sirven en todas tus listas."],
   [{chip:"Lista"},"Adentro de un post-it, en el «+»: armás una lista nueva ahí o ponés una que ya existe. Es la misma lista en los dos lados: si tachás o borrás algo adentro, cambia afuera también."],
   [{chip:"En la plancha"},"Para que una lista de adentro de un post-it se vea en la plancha principal, poné un vínculo a ese post-it en la plancha."]]},
@@ -4148,7 +4159,7 @@ const AYUDA=[
   [null,"En el celu la web abre como una app pensada para anotar rápido. La plancha, los hilos y el guion quedan para la compu."],
   [{chip:"Anotar"},"Escribís y elegís a dónde va: Idea (con su categoría y, si querés, una foto), Diario (con la hora), Frase o Lista."],
   [{chip:"Ideas"},"Buscás, filtrás por categoría y abrís cada idea para cambiarle el texto, la categoría o el estado, o sumarle algo adentro."],
-  [{chip:"Listas"},"Agregás renglones, los tachás con el círculo y deslizás a la izquierda para sacarlos."],
+  [{chip:"Listas"},"Agregás renglones, los tachás con el círculo y deslizás a la izquierda para sacarlos. Con «$ Precios» le ponés precio a cada cosa y ves el total."],
   [{chip:"🎙"},"Tocás el micrófono, hablás y lo tocás de nuevo: el texto aparece escrito para que lo revises. Anda mejor que el dictado del celu."],
   [null,"Tocando el círculo de arriba a la derecha: Novedades, Ver la web completa y Salir."]]},
  {t:"Contacto",it:[
@@ -4179,6 +4190,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:109,f:"23 de noviembre",it:[
+  ["*Precios en las listas.* Para las listas de compras: tocás el *$* al lado del nombre de la lista (en el celu, «$ Precios») y cada renglón tiene su casillero de precio. Abajo te suma el total y cuánto te falta comprar. Si la lista se llama «compras», «súper», «regalos» o parecido, te lo sugiere solo.",null,1]]},
  {n:108,f:"22 de noviembre",it:[
   ["*La web se actualiza sola.* Si la tenés como ícono en el celu, ya no hace falta borrarla y volver a ponerla: cuando subo algo nuevo, se recarga sola la próxima vez que la abrís (si estás escribiendo, espera a que termines). Lo que tengas a medio escribir en Anotar queda guardado.",null,1]]},
  {n:107,f:"22 de noviembre",it:[
@@ -5017,7 +5030,12 @@ function asaOrden(h,f,L){h.addEventListener("pointerdown",e=>{if(e.button)return
   const up=()=>{document.removeEventListener("pointermove",mv,true);document.removeEventListener("pointerup",up,true);document.removeEventListener("pointercancel",up,true);f.classList.remove("tr-arr");document.body.classList.remove("tr-ordenando");
     if(movio)ordenarTareas(L,[...cont.querySelectorAll(":scope>.tr-item:not(.hecha)")].map(x=>x.dataset.id))};
   document.addEventListener("pointermove",mv,true);document.addEventListener("pointerup",up,true);document.addEventListener("pointercancel",up,true)})}
-const limpiarItems=l=>(l||[]).map(t=>{const r={id:t.id,v:t.v||"",hecho:t.hecho||null};if(t.dia)r.dia=t.dia;if(t.url){r.url=t.url;if(t.tt)r.tt=t.tt;if(t.img)r.img=t.img;if(t.meta)r.meta=t.meta}if(Array.isArray(t.tags)&&t.tags.length)r.tags=[...t.tags];return r});
+const limpiarItems=l=>(l||[]).map(t=>{const r={id:t.id,v:t.v||"",hecho:t.hecho||null};if(t.dia)r.dia=t.dia;if(t.url){r.url=t.url;if(t.tt)r.tt=t.tt;if(t.img)r.img=t.img;if(t.meta)r.meta=t.meta}if(Array.isArray(t.tags)&&t.tags.length)r.tags=[...t.tags];if(typeof t.precio==="number"&&isFinite(t.precio))r.precio=t.precio;return r});
+/* precios en las listas de compras: «12.500», «$ 1.200,50», «3500» → número; y al revés, para mostrar */
+const leerPrecio=x=>{let s=String(x||"").replace(/[^\d.,]/g,"");if(!s)return null;if(/,\d{1,2}$/.test(s))s=s.replace(/\./g,"").replace(",",".");else if(/\.\d{1,2}$/.test(s)&&!/\.\d{3}/.test(s))s=s.replace(/,/g,"");else s=s.replace(/[.,]/g,"");const n=parseFloat(s);return isFinite(n)?n:null};
+const fmtPrecio=n=>"$ "+(+n||0).toLocaleString("es-AR",{maximumFractionDigits:2});
+const totalLista=L=>{let tot=0,falta=0,hay=0;for(const t of L.lista||[])if(typeof t.precio==="number"){hay++;tot+=t.precio;if(!t.hecho)falta+=t.precio}return {tot,falta,hay}};
+const pareceCompras=L=>/compra|super|mercado|regalo|comprar|chino|verduler|ferreter|farmacia|gastos?\b|presupuesto/i.test(L.titulo||"");
 /* un renglón de lista puede ser texto o un link (con su foto y su título); el texto que se muestra: */
 const txtItem=t=>(t.v||"").trim()||t.tt||(t.url?hostDe(t.url):"");
 const soloLinks=txt=>{const us=linksDe(txt);return us.length&&!txt.replace(/https?:\/\/[^\s<>"']+|\bwww\.[^\s<>"']+/gi,"").replace(/[\s,;·|]+/g,"")?us:null};
@@ -5054,9 +5072,9 @@ function menuEtiquetas(boton,L,id){document.getElementById("etq-menu")?.remove()
   pintar();setTimeout(()=>document.addEventListener("pointerdown",fuera,true),0);
   m.addEventListener("keydown",e=>{if(e.key==="Escape"){e.stopPropagation();cerrar()}})}
 const refsLista=id=>data.ideas.filter(i=>(i.bloques||[]).some(b=>b.t==="tar"&&b.ref===id));
-const firmaLista=(L,modo)=>JSON.stringify([etiquetas().map(e=>e.id+e.color+e.nombre).join(),L.titulo||"",limpiarItems(L.lista),!!L.enPlancha,modo==="hoja"?abierto&&abierto.id:"",refsLista(L.id).map(i=>i.id+":"+(i.numero||"")+":"+(i.texto||"").slice(0,30))]);
+const firmaLista=(L,modo)=>JSON.stringify([etiquetas().map(e=>e.id+e.color+e.nombre).join(),L.titulo||"",!!L.precios,limpiarItems(L.lista),!!L.enPlancha,modo==="hoja"?abierto&&abierto.id:"",refsLista(L.id).map(i=>i.id+":"+(i.numero||"")+":"+(i.texto||"").slice(0,30))]);
 const editandoLista=id=>[...document.querySelectorAll('[data-lista="'+id+'"]')].some(tecleaEn);
-function guardarLista(L){if(!colTareas||!L||!L.id)return;const o={titulo:L.titulo||"",tablero:"ideas",enPlancha:!!L.enPlancha,creado:L.creado||Date.now(),lista:limpiarItems(L.lista)};
+function guardarLista(L){if(!colTareas||!L||!L.id)return;const o={titulo:L.titulo||"",tablero:"ideas",enPlancha:!!L.enPlancha,creado:L.creado||Date.now(),lista:limpiarItems(L.lista)};if(L.precios)o.precios=true;
   if(typeof L.x==="number"&&typeof L.y==="number"){o.x=L.x;o.y=L.y}if(L.w)o.w=L.w;colTareas.doc(L.id).set(o).catch(()=>toast("No se guardaron las tareas. Revisá la conexión."))}
 async function nuevaLista(extra){if(!colTareas)return null;const o={titulo:"",tablero:"ideas",enPlancha:false,creado:Date.now(),lista:[],...extra};
   try{const r=await colTareas.add(o);listasNuevas.add(r.id);return r.id}catch(_){toast("No se pudo crear la lista.");return null}}
@@ -5068,6 +5086,9 @@ function armarLista(cont,L,modo){cont.dataset.lista=L.id;cont._f=firmaLista(L,mo
   const ti=el("input","tr-tit");ti.type="text";ti.value=L.titulo||"";ti.placeholder="Lista";ti.setAttribute("aria-label","Nombre de la lista");
   ti.oninput=()=>{L.titulo=ti.value;clearTimeout(L._tt);L._tt=setTimeout(()=>guardarLista(L),700)};ti.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();ti.blur();setTimeout(()=>{const n=[...document.querySelectorAll(`[data-lista="${L.id}"] .tr-nueva`)].find(z=>z.getClientRects().length);n&&n.focus()},60)}};ti.onblur=()=>{clearTimeout(L._tt);guardarLista(L);setTimeout(()=>pintarTareas(),0)};
   cab.append(ti,el("span","tr-cnt",pend.length?(pend.length===1?"1 por hacer":`${pend.length} por hacer`):todas.length?"todo hecho":""));
+  {const pb=el("button","tr-pesos"+(L.precios?" on":!L.precios&&pareceCompras(L)?" sug":""),L.precios?"$":pareceCompras(L)?"$ Sumar precios":"$");pb.type="button";pb.title=L.precios?"Sacar los precios de esta lista":"Ponerle precio a cada cosa y ver el total";pb.setAttribute("aria-label",pb.title);
+    pb.onclick=e=>{e.stopPropagation();L.precios=!L.precios;guardarLista(L);pintarTareas(L.id);if(L.precios)setTimeout(()=>{const n=document.querySelector(`[data-lista="${L.id}"] .tr-precio`);n&&n.focus()},80)};cab.insertBefore(pb,cab.children[1])}
+  cont.classList.toggle("con-precios",!!L.precios);
   if(modo!=="hoja"){const x=el("button","tr-cerrar","×");x.type="button";x.title="Sacar de la plancha";x.setAttribute("aria-label","Sacar la lista de la plancha");x.onclick=()=>sacarListaDePlancha(L,x);cab.append(x)}
   const filas=[...pend,...hechas].map(t0=>{const id=t0.id,t=new Proxy({},{get:(_,p)=>(L.lista.find(z=>z.id===id)||t0)[p],set:(_,p,v)=>{(L.lista.find(z=>z.id===id)||t0)[p]=v;return true},deleteProperty:(_,p)=>{delete (L.lista.find(z=>z.id===id)||t0)[p];return true}});const f=el("div","tr-item"+(t.hecho?" hecha":""));f.dataset.id=id;
     const h=el("span","tr-mov",t.hecho?"":"⋮⋮");if(!t.hecho){h.title="Arrastrá para cambiar el orden";h.setAttribute("aria-hidden","true");asaOrden(h,f,L)}
@@ -5087,11 +5108,16 @@ function armarLista(cont,L,modo){cont.dataset.lista=L.id;cont._f=firmaLista(L,mo
     const eb=el("button","tr-eb");eb.type="button";eb.title="Etiquetas (Urgente, Importante…)";eb.setAttribute("aria-label",eb.title);eb.innerHTML='<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><path d="M2 2h5.5L14 8.5 8.5 14 2 7.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="5" cy="5" r="1.1" fill="currentColor"/></svg>';eb.onclick=e=>{e.stopPropagation();menuEtiquetas(eb,L,id)};
     const acc=el("div","tr-acc");acc.append(eb,x);
     if(tg.some(e=>e.id==="urgente"))f.classList.add("urgente");
-    f.append(h,ok,cuerpo,acc);requestAnimationFrame(()=>autosize(v));return f});
+    if(L.precios){const pr=el("input","tr-precio");pr.type="text";pr.inputMode="decimal";pr.placeholder="$";pr.setAttribute("aria-label","Precio");pr.value=typeof t.precio==="number"?(+t.precio).toLocaleString("es-AR",{maximumFractionDigits:2}):"";
+      pr.oninput=()=>{const n=leerPrecio(pr.value);if(n===null)delete t.precio;else t.precio=n;pintarTotal();clearTimeout(t._tp);t._tp=setTimeout(()=>guardarLista(L),700)};
+      pr.onkeydown=e=>{e.stopPropagation();if(e.key==="Enter"){e.preventDefault();pr.blur();const ps=[...cont.querySelectorAll(".tr-precio")],i=ps.indexOf(pr);if(ps[i+1])ps[i+1].focus()}};
+      pr.onblur=()=>{clearTimeout(t._tp);guardarLista(L);if(typeof t.precio==="number")pr.value=(+t.precio).toLocaleString("es-AR",{maximumFractionDigits:2})};f.append(h,ok,cuerpo,pr,acc)}
+    else f.append(h,ok,cuerpo,acc);requestAnimationFrame(()=>autosize(v));return f});
+  const totEl=el("div","tr-total");const pintarTotal=()=>{const {tot,falta,hay}=totalLista(L);totEl.replaceChildren(el("span",null,"Total"),el("b",null,fmtPrecio(tot)));if(hay&&falta!==tot)totEl.append(el("small",null,"falta comprar "+fmtPrecio(falta)))};
   const nu=el("input","tr-nueva");nu.type="text";nu.placeholder="+ agregar (o pegá un link)";nu.setAttribute("aria-label","Agregar a la lista");
   nu.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();const v=nu.value.trim();if(!v)return;const us=soloLinks(v);if(us)for(const u of us)L.lista.push(itemLink(u));else L.lista.push({id:bid(),v,hecho:null});guardarLista(L);pintarTareas(L.id);enfocarLista(L.id)}};
   nu.addEventListener("paste",e=>{const tx=(e.clipboardData&&e.clipboardData.getData("text/plain"))||"",us=soloLinks(tx.trim());if(!us||nu.value.trim())return;e.preventDefault();e.stopPropagation();for(const u of us)L.lista.push(itemLink(u));guardarLista(L);pintarTareas(L.id);enfocarLista(L.id)});
-  cont.replaceChildren(cab,...filas,nu);
+  cont.replaceChildren(cab,...filas,nu);if(L.precios){pintarTotal();cont.append(totEl)}
   const pie=el("div","tr-pie");
   if(hechas.length){const lb=el("button","tr-limpiar","Borrar las tachadas");lb.type="button";lb.onclick=()=>{L.lista=L.lista.filter(t=>!t.hecho);guardarLista(L);pintarTareas()};pie.append(lb)}
   if(modo==="hoja"&&L.enPlancha){const pb=el("button","tr-limpiar","Sacarla de la plancha");pb.type="button";pb.title=L.enPlancha?"Tocá para sacarla de la plancha (acá queda)":"La misma lista aparece en la plancha de ideas";
@@ -7206,6 +7232,6 @@ if(window.__demo){(function(){
   window.buscarActualizacion=revisar})();
 </script>
 <script src="dictado.js?v=1"></script>
-<script src="celu.js?v=8"></script>
+<script src="celu.js?v=9"></script>
 </body>
 </html>

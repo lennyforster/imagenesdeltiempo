@@ -226,6 +226,17 @@ input,textarea{font:inherit;color:inherit}
 .lk{display:flex;gap:10px;align-items:center;text-decoration:none;color:inherit}
 .lk img{width:44px;height:44px;border-radius:8px;object-fit:cover;flex:none;background:#e7dfd1}
 .lk .t{font:600 15px/1.3 var(--ui);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.lk .u{font:500 12px var(--ui);color:var(--soft)}
+.l-sub{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:2px}
+.pesos-btn{flex:none;font:700 13px var(--ui);padding:6px 11px;border-radius:999px;background:rgba(43,37,32,.07);color:var(--soft)}
+.pesos-btn.sug{background:#fff1c7;color:#7a5a12}.pesos-btn.on{background:transparent;color:var(--soft);font-weight:600;text-decoration:underline}
+.precio{flex:none;width:88px;border:0;border-bottom:1.5px dashed rgba(43,37,32,.2);outline:0;background:transparent;font:600 16px var(--ui);text-align:right;padding:1px 0;color:var(--ink);font-variant-numeric:tabular-nums}
+.precio:focus{border-bottom-color:var(--mat)}.precio::placeholder{color:#c9bfb1}
+.it.hecha .precio{color:var(--soft);text-decoration:line-through}
+.tot-bar{position:sticky;bottom:calc(var(--sb) + 10px);margin:14px 0 0;display:flex;align-items:baseline;flex-wrap:wrap;gap:8px;background:var(--ink);color:var(--paper);border-radius:14px;padding:12px 16px;box-shadow:0 10px 24px -10px rgba(0,0,0,.45);font:600 13px var(--ui);text-transform:uppercase;letter-spacing:.06em}
+.tot-bar[hidden]{display:none}
+.tot-bar b{margin-left:auto;font:800 22px var(--hand);letter-spacing:0;text-transform:none;font-variant-numeric:tabular-nums}
+.tot-bar small{flex-basis:100%;text-align:right;font:500 13px var(--ui);text-transform:none;letter-spacing:0;opacity:.75}
+.l-tot{margin-top:6px;font:700 14px var(--ui);color:var(--mat)}
 .hechas-btn{display:flex;align-items:center;gap:6px;font:700 13px var(--ui);text-transform:uppercase;letter-spacing:.06em;color:var(--soft);margin:20px 4px 8px}
 .hechas-btn svg{transition:transform .2s}.hechas-btn.ab svg{transform:rotate(90deg)}
 .peligro-btn{display:block;margin:30px auto 0;font:600 15px var(--ui);color:var(--red);padding:10px 16px;border-radius:10px}.peligro-btn.sure{background:var(--red);color:#fff}
@@ -489,24 +500,29 @@ function armarListas(){const p=P.listas;p.replaceChildren();
 function pintarListasC(){if(!listUI.c)return;const ls=listasOrden();listUI.sub.textContent=listo?(ls.length===1?"1 lista":ls.length+" listas"):"Cargando…";const c=listUI.c;c.replaceChildren();
   if(!ls.length){c.append(h("div",{class:"grupo"},h("div",{class:"vacio-box"},h("b",null,"Ninguna lista todavía"),"Tocá el + para armar la primera.")));return}
   for(const L of ls){const pend=(L.lista||[]).filter(t=>!t.hecho);const ul=h("ul");for(const t of pend.slice(0,3))ul.append(h("li",null,txtItem(t)||"…"));
-    c.append(h("button",{type:"button",class:"l-card",onclick:()=>abrirLista(L.id)},h("div",{class:"t"},nombreLista(L),h("span",null,pend.length?pend.length+" por hacer":(L.lista||[]).length?"todo hecho":"vacía")),pend.length?ul:null))}}
+    c.append(h("button",{type:"button",class:"l-card",onclick:()=>abrirLista(L.id)},h("div",{class:"t"},nombreLista(L),h("span",null,pend.length?pend.length+" por hacer":(L.lista||[]).length?"todo hecho":"vacía")),pend.length?ul:null,L.precios&&totalLista(L).hay?h("div",{class:"l-tot"},"Total "+fmtPrecio(totalLista(L).tot)):null))}}
 function abrirLista(id,volver,nueva){marcarUsoLista(id);abrirCapa(volver||"Listas",(cu,der,capa)=>{const d=h("div",{class:"det",style:"padding-top:0"});cu.append(d);
   const L0=()=>misListas().find(l=>l.id===id);
   const tit=h("input",{class:"l-tit",type:"text",placeholder:"Nombre de la lista","aria-label":"Nombre de la lista",enterkeyhint:"next"});let tT2=null;
   const gTit=()=>{clearTimeout(tT2);const L=L0();if(L&&(L.titulo||"")!==tit.value){L.titulo=tit.value;guardarLista(L)}};
   tit.oninput=()=>{clearTimeout(tT2);tT2=setTimeout(gTit,700)};tit.onblur=gTit;tit.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();add.focus()}};
   const cnt=h("div",{class:"meta",style:"margin:2px 0 0"});
+  const pesos=h("button",{type:"button",class:"pesos-btn",onclick:()=>{const L=L0();if(!L)return;L.precios=!L.precios;guardarLista(L);try{pintarTareas()}catch(_){}vibrar();capa._pintar(true)}});
+  const totBar=h("div",{class:"tot-bar"});
+  capa._total=()=>{const L=L0();if(!L)return;totBar.hidden=!L.precios;if(!L.precios)return;const {tot,falta,hay}=totalLista(L);totBar.replaceChildren(h("span",null,"Total"),h("b",null,fmtPrecio(tot)),hay&&falta!==tot?h("small",null,"Falta comprar "+fmtPrecio(falta)):null)};
   const add=h("textarea",{rows:1,placeholder:"Agregar…","aria-label":"Agregar a la lista",enterkeyhint:"done",oninput:()=>autosize(add),onkeydown:e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();agregar()}}});
   const agregar=()=>{const v=add.value.trim();if(!v)return;const L=L0();if(!L)return;sumarALista(L,v);add.value="";autosize(add);vibrar();capa._pintar(true)};
-  const items=h("div");d.append(tit,cnt,h("div",{class:"l-add"},h("span",{class:"mas"},ico(I.mas,22)),add,botonMic(()=>add,true)),items);
+  const items=h("div");d.append(tit,h("div",{class:"l-sub"},cnt,pesos),h("div",{class:"l-add"},h("span",{class:"mas"},ico(I.mas,22)),add,botonMic(()=>add,true)),items);
   let verHechas=false;
   capa._alCerrar=()=>{gTit();const L=L0();if(L&&!(L.titulo||"").trim()&&!(L.lista||[]).length&&!L.enPlancha&&!refsLista(L.id).length)colTareas.doc(L.id).delete().catch(()=>{})};
   capa._pintar=forzarItems=>{const L=L0();if(!L){cerrarCapa(capa);return}if(root.activeElement!==tit)tit.value=L.titulo||"";
     const todas=L.lista||[],pend=todas.filter(t=>!t.hecho),hechas=todas.filter(t=>t.hecho);cnt.textContent=pend.length?(pend.length===1?"1 por hacer":pend.length+" por hacer"):todas.length?"Todo hecho.":"Vacía. Escribí abajo del título.";
-    const firma=JSON.stringify([limpiarItems(todas),verHechas,etiquetas().map(e=>e.id+e.color)]);const ed=root.activeElement&&items.contains(root.activeElement);if(!forzarItems&&(items._f===firma||ed))return;items._f=firma;items.replaceChildren();
+    pesos.textContent=L.precios?"Sacar precios":(pareceCompras(L)?"$ Sumar precios":"$ Precios");pesos.classList.toggle("on",!!L.precios);pesos.classList.toggle("sug",!L.precios&&pareceCompras(L));capa._total();
+    const firma=JSON.stringify([limpiarItems(todas),verHechas,!!L.precios,etiquetas().map(e=>e.id+e.color)]);const ed=root.activeElement&&items.contains(root.activeElement);if(!forzarItems&&(items._f===firma||ed))return;items._f=firma;items.replaceChildren();
     if(pend.length){const g=h("div",{class:"items"});for(const t of pend)g.append(filaItem(L,t,capa));items.append(g)}
     if(hechas.length){const b=h("button",{type:"button",class:"hechas-btn"+(verHechas?" ab":""),onclick:()=>{verHechas=!verHechas;capa._pintar(true)}},ico(I.chev,16),"Hechas ("+hechas.length+")");items.append(b);
       if(verHechas){const g=h("div",{class:"items"});for(const t of hechas)g.append(filaItem(L,t,capa));items.append(g)}}
+    items.append(totBar);
     const refs=refsLista(L.id);
     if(refs.length)items.append(h("div",{class:"nota-ref"},"Esta lista está adentro de "+refs.map(i=>"#"+i.numero).join(", ")+"."));
     else if(todas.length||(L.titulo||"").trim()){let sure=false;const bb=h("button",{type:"button",class:"peligro-btn",onclick:()=>{if(!sure){sure=true;bb.classList.add("sure");bb.textContent="¿Seguro? Tocá de nuevo";setTimeout(()=>{sure=false;bb.classList.remove("sure");bb.textContent="Borrar la lista"},3000);return}
@@ -523,6 +539,11 @@ function filaItem(L,t,capa){const w=h("div",{class:"it-w"}),bor=h("div",{class:"
     if(t.url)cuerpo.append(h("a",{class:"lk",href:t.url,target:"_blank",rel:"noopener",style:"margin-top:4px"},h("div",{class:"u"},"↗ "+hostDe(t.url))))}
   if((t.tags||[]).length){const tg=h("div",{class:"tags"});for(const id of t.tags){const e=etqDe(id);if(e)tg.append(h("span",{style:"background:"+e.color},e.nombre))}cuerpo.append(tg)}
   row.append(tl,cuerpo);
+  if(L.precios){const pr=h("input",{class:"precio",type:"text",inputmode:"decimal",placeholder:"$","aria-label":"Precio",enterkeyhint:"next"});pr.value=typeof t.precio==="number"?(+t.precio).toLocaleString("es-AR",{maximumFractionDigits:2}):"";let tG=null;
+    const g=()=>{clearTimeout(tG);const it=(L.lista||[]).find(z=>z.id===t.id);if(!it)return;const n=leerPrecio(pr.value);if(n===null){if(!("precio" in it))return;delete it.precio}else{if(it.precio===n)return;it.precio=n}guardarLista(L);try{pintarTareas()}catch(_){}};
+    pr.oninput=()=>{const it=(L.lista||[]).find(z=>z.id===t.id);if(it){const n=leerPrecio(pr.value);if(n===null)delete it.precio;else it.precio=n}capa._total();clearTimeout(tG);tG=setTimeout(g,800)};
+    pr.onblur=()=>{g();const it=(L.lista||[]).find(z=>z.id===t.id);if(it&&typeof it.precio==="number")pr.value=(+it.precio).toLocaleString("es-AR",{maximumFractionDigits:2})};
+    pr.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();const ps=[...root.querySelectorAll(".capa.in .precio")],i=ps.indexOf(pr);if(ps[i+1])ps[i+1].focus();else pr.blur()}};row.append(pr)}
   /* deslizar a la izquierda para borrar */
   let x0=null,y0=0,dx=0,mov=false;
   row.addEventListener("touchstart",e=>{const p=e.touches[0];x0=p.clientX;y0=p.clientY;dx=0;mov=false},{passive:true});
