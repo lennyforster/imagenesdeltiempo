@@ -4311,6 +4311,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:120,f:"23 de noviembre",it:[
+  ["Guion: arreglé un error con el zoom del navegador. Si no lo tenías al 100%, el texto se iba corriendo para arriba página tras página y al final quedaba pegado al borde. Ahora cada página arranca siempre en su margen.",null,2]]},
  {n:119,f:"23 de noviembre",it:[
   ["Guion: *ahora tiene el formato de las convocatorias* (INCAA, concursos, fondos): 2,5 cm de margen arriba, abajo y a los costados, diálogos con 5 cm a cada lado, todo alineado a la izquierda y las páginas numeradas desde la 1. Así lo mandás directo sin tocar nada. Los guiones nuevos ya arrancan así; en uno que ya tenías lo cambiás en *Archivo → Formato y página*. Si querés el de Final Draft, elegís «Industria».",null,1]]},
  {n:118,f:"23 de noviembre",it:[
@@ -6340,10 +6342,17 @@ function paginar(ps,hs,H){const res=new Array(ps.length),forz=new Set();let pag=
     if(y>H){const k=Math.floor((y-1)/H);pag+=k;y-=k*H;if(y>=H){pag++;y=0}}
     i++}
   return {res,N:pag+1}}
+/* con el zoom del navegador (o la escala de pantalla) los renglones no miden 16 px exactos y el error se suma página tras página:
+   se mide (de una sola vez) dónde quedó el primer párrafo de cada página y se corrige su margen, así cada página arranca siempre a su margen */
+function corregirDeriva(ps,res){if(!ps.length)return;const er=ed.getBoundingClientRect(),s=er.height/(ed.offsetHeight||1);if(!(s>0))return;
+  const ini=[];for(let i=0;i<ps.length;i++)if(i===0||res[i].pag!==res[i-1].pag)ini.push(i);
+  const e=ini.map(i=>(ps[i].getBoundingClientRect().top-er.top)/s-res[i].top);let prev=0;
+  ini.forEach((i,k)=>{const c=e[k]-prev;prev=e[k];if(Math.abs(c)>.01)ps[i].style.marginTop=(Math.round((parseFloat(ps[i].style.marginTop||"0")-c)*100)/100)+"px"})}
 function maquetar(){if(!G)return;margenes();const pg=PAGINAS[opc.pagina]||PAGINAS.a4,H=Math.floor((pg.h-MT-MB)/LH)*LH,PASO=pg.h+GAP;
   ed.className=clasesTexto();varsPagina(escala);ed.style.width=pg.w+"px";ed.style.paddingTop=MT+"px";marcarCont();
   const ps=bloques(),hs=ps.map(p=>(p._h=p.offsetHeight));const {res,N}=paginar(ps,hs,H);
   let fin=MT;for(let i=0;i<ps.length;i++){const r=res[i];const top=r.pag*PASO+MT+r.y;r.top=top;const mt=Math.round((top-fin)*100)/100;const v=mt+"px";if(ps[i].style.marginTop!==v)ps[i].style.marginTop=v;fin=top+r.h}
+  corregirDeriva(ps,res);
   /* hojas */
   const conPortada=opc.portada!==false,off=conPortada?PASO:0;ed.style.top=off+"px";chips.style.top=off+"px";
   pintarPortadaHoja(pg,conPortada,PASO);
