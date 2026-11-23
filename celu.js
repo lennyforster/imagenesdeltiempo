@@ -452,7 +452,7 @@ function pintarBloques(cont,i){const firma=JSON.stringify(i.bloques||[]);if(cont
     else if(b.t==="link"&&b.url){const a=h("a",{class:"bl-link",href:b.url,target:"_blank",rel:"noopener"});if(b.img)a.append(h("img",{src:b.img,alt:"",loading:"lazy",onerror:e=>e.target.remove()}));a.append(h("div",null,h("div",{class:"t"},b.titulo||b.tt||hostDe(b.url)),h("div",{class:"u"},hostDe(b.url))));g.append(a)}
     else if(b.t==="links"&&(b.items||[]).length){for(const x of b.items){if(!x.url)continue;const a=h("a",{class:"bl-link",href:x.url,target:"_blank",rel:"noopener"});if(x.img)a.append(h("img",{src:x.img,alt:"",loading:"lazy",onerror:e=>e.target.remove()}));a.append(h("div",null,h("div",{class:"t"},x.titulo||x.tt||hostDe(x.url)),h("div",{class:"u"},hostDe(x.url))));g.append(a)}}
     else if(b.t==="ref"&&b.ref){const k=b.k==="frases"?"frases":"ideas",x=(k==="frases"?frases():todasIdeas()).find(z=>z.id===b.ref);if(x)g.append(h("div",{class:"grupo"},filaIdea(x,k)));else otros++}
-    else if(b.t==="tar"&&b.ref){const L=misListas().find(l=>l.id===b.ref);if(L){const pend=(L.lista||[]).filter(t=>!t.hecho).length;g.append(h("button",{type:"button",class:"bl-lista",onclick:()=>abrirLista(L.id,"Idea")},ico(I.listas,20),h("span",null,nombreLista(L)),h("small",null,pend?pend+" por hacer":"todo hecho"),ico(I.chev,16)))}}
+    else if(b.t==="tar"&&b.ref){const L=misListas().find(l=>l.id===b.ref);if(L){const pend=(L.lista||[]).filter(t=>!t.hecho).length;g.append(h("button",{type:"button",class:"bl-lista",onclick:()=>abrirLista(L.id,"Idea")},ico(I.listas,20),h("span",null,nombreLista(L)),ico(I.chev,16)))}}
     else otros++}
   cont.append(h("h3",null,"Adentro"),g);
   if(otros)cont.append(h("div",{class:"bl-nota"},otros===1?"Hay una cosa más adentro (un dibujo, un hilo, un guion…) que se ve en la compu.":`Hay ${otros} cosas más adentro (dibujos, hilos, guiones…) que se ven en la compu.`))}
@@ -502,7 +502,7 @@ function armarListas(){const p=P.listas;p.replaceChildren();
 function pintarListasC(){if(!listUI.c)return;const ls=listasOrden();listUI.sub.textContent=listo?(ls.length===1?"1 lista":ls.length+" listas"):"Cargando…";const c=listUI.c;c.replaceChildren();
   if(!ls.length){c.append(h("div",{class:"grupo"},h("div",{class:"vacio-box"},h("b",null,"Ninguna lista todavía"),"Tocá el + para armar la primera.")));return}
   for(const L of ls){const pend=(L.lista||[]).filter(t=>!t.hecho);const ul=h("ul");for(const t of pend.slice(0,3))ul.append(h("li",null,txtItem(t)||"…"));
-    c.append(h("button",{type:"button",class:"l-card",onclick:()=>abrirLista(L.id)},h("div",{class:"t"},nombreLista(L),h("span",null,pend.length?pend.length+" por hacer":(L.lista||[]).length?"todo hecho":"vacía")),pend.length?ul:null,L.precios&&totalLista(L).hay?h("div",{class:"l-tot"},"Total "+fmtPrecio(totalLista(L).tot)):null))}}
+    c.append(h("button",{type:"button",class:"l-card",onclick:()=>abrirLista(L.id)},h("div",{class:"t"},nombreLista(L),(L.lista||[]).length?null:h("span",null,"vacía")),pend.length?ul:null,L.precios&&totalLista(L).hay?h("div",{class:"l-tot"},"Total "+fmtPrecio(totalLista(L).tot)):null))}}
 function abrirLista(id,volver,nueva){marcarUsoLista(id);abrirCapa(volver||"Listas",(cu,der,capa)=>{const d=h("div",{class:"det",style:"padding-top:0"});cu.append(d);
   const L0=()=>misListas().find(l=>l.id===id);
   const tit=h("input",{class:"l-tit",type:"text",placeholder:"Nombre de la lista","aria-label":"Nombre de la lista",enterkeyhint:"next"});let tT2=null;
@@ -518,7 +518,7 @@ function abrirLista(id,volver,nueva){marcarUsoLista(id);abrirCapa(volver||"Lista
   let verHechas=false;
   capa._alCerrar=()=>{gTit();const L=L0();if(L&&!(L.titulo||"").trim()&&!(L.lista||[]).length&&!L.enPlancha&&!refsLista(L.id).length)colTareas.doc(L.id).delete().catch(()=>{})};
   capa._pintar=forzarItems=>{const L=L0();if(!L){cerrarCapa(capa);return}if(root.activeElement!==tit)tit.value=L.titulo||"";
-    const todas=L.lista||[],pend=todas.filter(t=>!t.hecho),hechas=todas.filter(t=>t.hecho);cnt.textContent=pend.length?(pend.length===1?"1 por hacer":pend.length+" por hacer"):todas.length?"Todo hecho.":"Vacía. Escribí abajo del título.";
+    const todas=L.lista||[],pend=todas.filter(t=>!t.hecho),hechas=todas.filter(t=>t.hecho);cnt.textContent=todas.length?"":"Vacía. Escribí abajo del título.";
     pesos.textContent=L.precios?"Sacar precios":(pareceCompras(L)?"$ Sumar precios":"$ Precios");pesos.classList.toggle("on",!!L.precios);pesos.classList.toggle("sug",!L.precios&&pareceCompras(L));capa._total();
     const firma=JSON.stringify([limpiarItems(todas),verHechas,!!L.precios,etiquetas().map(e=>e.id+e.color)]);const ed=root.activeElement&&items.contains(root.activeElement);if(!forzarItems&&(items._f===firma||ed))return;items._f=firma;items.replaceChildren();
     if(pend.length){const g=h("div",{class:"items"});for(const t of pend)g.append(filaItem(L,t,capa));items.append(g)}

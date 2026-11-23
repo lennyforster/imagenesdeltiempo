@@ -4269,6 +4269,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:117,f:"23 de noviembre",it:[
+  ["Las listas ya no dicen «4 por hacer»: ahora sirven para cualquier cosa, no solo tareas.",null,3]]},
  {n:116,f:"23 de noviembre",it:[
   ["*Los dibujos se pueden seleccionar.* Fuera del modo lápiz, tocás un trazo y queda marcado: lo borrás con *Borrar dibujo*, o con la tecla Supr. Se deshace con Ctrl+Z.",null,2]]},
  {n:115,f:"23 de noviembre",it:[
@@ -5180,7 +5182,7 @@ function armarLista(cont,L,modo){cont.dataset.lista=L.id;cont._f=firmaLista(L,mo
   const cab=el("div","tr-cab");cab.title=modo==="plana"?"":"Arrastrá de acá para mover";
   const ti=el("input","tr-tit");ti.type="text";ti.value=L.titulo||"";ti.placeholder="Lista";ti.setAttribute("aria-label","Nombre de la lista");
   ti.oninput=()=>{L.titulo=ti.value;clearTimeout(L._tt);L._tt=setTimeout(()=>guardarLista(L),700)};ti.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();ti.blur();setTimeout(()=>{const n=[...document.querySelectorAll(`[data-lista="${L.id}"] .tr-nueva`)].find(z=>z.getClientRects().length);n&&n.focus()},60)}};ti.onblur=()=>{clearTimeout(L._tt);guardarLista(L);setTimeout(()=>pintarTareas(),0)};
-  cab.append(ti,el("span","tr-cnt",pend.length?(pend.length===1?"1 por hacer":`${pend.length} por hacer`):todas.length?"todo hecho":""));
+  cab.append(ti);
   {const pb=el("button","tr-pesos"+(L.precios?" on":!L.precios&&pareceCompras(L)?" sug":""),L.precios?"$":pareceCompras(L)?"$ Sumar precios":"$");pb.type="button";pb.title=L.precios?"Sacar los precios de esta lista":"Ponerle precio a cada cosa y ver el total";pb.setAttribute("aria-label",pb.title);
     pb.onclick=e=>{e.stopPropagation();L.precios=!L.precios;guardarLista(L);pintarTareas(L.id);if(L.precios)setTimeout(()=>{const n=document.querySelector(`[data-lista="${L.id}"] .tr-precio`);n&&n.focus()},80)};cab.insertBefore(pb,cab.children[1])}
   cont.classList.toggle("con-precios",!!L.precios);
@@ -5261,7 +5263,7 @@ function migrarTareasViejas(d){if(migrandoTar||!d||d.migrado||!Array.isArray(d.l
 function abrirPanelTar(){if(!abierto||abierto.k!=="ideas")return;$("linkform").hidden=true;$("panel-ref").hidden=true;$("panel-tar").hidden=false;const ya=new Set(abierto.doc.bloques.filter(b=>b.t==="tar").map(b=>b.ref)),L=$("tar-lista");L.replaceChildren();
   const ls=listas.filter(l=>!ya.has(l.id)).sort((a,b)=>(b.creado||0)-(a.creado||0));$("tar-hay").hidden=!ls.length;
   for(const l of ls){const b=el("button","r-fila");b.type="button";const pend=(l.lista||[]).filter(t=>!t.hecho).length,dn=refsLista(l.id).map(i=>"#"+i.numero).concat(l.enPlancha?["plancha"]:[]).join(", ");
-    b.append(el("i"),el("span","r-n","☐ "+pend),el("span","r-t",nombreLista(l)+((l.lista||[]).length?" — "+(l.lista||[]).slice(0,3).map(txtItem).join(", "):"")),el("span","r-c",dn));b.querySelector("i").style.setProperty("--c","#fffdf6");b.onclick=()=>{ponerLista(l.id);$("panel-tar").hidden=true};L.append(b)}}
+    b.append(el("i"),el("span","r-n",String((l.lista||[]).length)),el("span","r-t",nombreLista(l)+((l.lista||[]).length?" — "+(l.lista||[]).slice(0,3).map(txtItem).join(", "):"")),el("span","r-c",dn));b.querySelector("i").style.setProperty("--c","#fffdf6");b.onclick=()=>{ponerLista(l.id);$("panel-tar").hidden=true};L.append(b)}}
 function ponerLista(id){if(!abierto)return;const c=centroNuevo();let x=Math.round(c.x-130),y=Math.round(c.y-90);for(let n=0;n<40&&abierto.doc.bloques.some(b=>Math.abs(b.x-x)<150&&Math.abs(b.y-y)<120);n++){x+=280;if(n%4===3){x-=1120;y+=240}}agregarBloque({id:bid(),t:"tar",ref:id,x,y,w:260})}
 $("add-tar").onclick=abrirPanelTar;$("cerrar-tar").onclick=()=>{$("panel-tar").hidden=true};
 $("tar-nueva").onclick=async()=>{if(!abierto)return;const dest=abierto.id,id=await nuevaLista({enPlancha:false});if(!id||!abierto||abierto.id!==dest)return;$("panel-tar").hidden=true;ponerLista(id);setTimeout(()=>enfocarLista(id,".tr-tit"),250)};
@@ -7329,6 +7331,6 @@ if(window.__demo){(function(){
   window.buscarActualizacion=revisar})();
 </script>
 <script src="dictado.js?v=1"></script>
-<script src="celu.js?v=10"></script>
+<script src="celu.js?v=11"></script>
 </body>
 </html>
