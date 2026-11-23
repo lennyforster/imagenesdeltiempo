@@ -460,6 +460,11 @@ html.plano .mas-fila{border-top:1px solid #333!important}
 #zoom-hoja{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 64px)}
 @media (max-width:560px){#zoom-hoja .todo,#zoom-main .todo{display:none}.herramientas{left:12px;right:12px;transform:none;max-width:none}.tool-lbl{display:none}.vistaseg .seg-lbl{display:none}}
 .comp-btns{display:flex;gap:8px}
+.mic-pc{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:38px;padding-left:10px!important;padding-right:10px!important}
+.mic-pc .mic-t:empty{display:none}.mic-pc .mic-t{font-variant-numeric:tabular-nums}
+.mic-pc.grab{background:#c8372d!important;color:#fff!important}.mic-pc.grab svg{animation:micLat .8s infinite alternate}
+.mic-pc.pensando{opacity:.6;pointer-events:none}.mic-pc.pensando svg{animation:micLat .5s infinite alternate}
+@keyframes micLat{to{opacity:.35}}
 .mic-ico{display:inline-flex;vertical-align:-2px;margin-right:6px}
 .panel.dictar{z-index:30;top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 70px)}
 .d-txt{width:100%;min-height:150px;resize:vertical;font:500 1.05rem/1.45 var(--hand);color:var(--ink);border:1px solid rgba(43,37,32,.2);border-radius:8px;padding:10px;background:#fff}
@@ -2116,7 +2121,7 @@ window.claude={use:async n=>{if(INVITADO&&n==="db"){if(!listo)listo=conectar();r
 </div>
 
 <div class="composer">
-  <div class="comp-btns"><button class="btn amarillo" id="abrir-composer" type="button">+ Nueva idea</button><button class="btn oscuro" id="abrir-dictar" type="button" hidden><span class="mic-ico"></span>Dictar</button></div>
+  <div class="comp-btns"><button class="btn amarillo" id="abrir-composer" type="button">+ Nueva idea</button><button class="btn oscuro mic-pc" id="mic-pc" type="button" title="Dictar con la voz" aria-label="Dictar con la voz"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg><span class="mic-t"></span></button><button class="btn oscuro" id="abrir-dictar" type="button" hidden><span class="mic-ico"></span>Dictar</button></div>
   <form id="nueva" hidden>
     <div class="meta"><span id="lbl">Nueva idea</span><button type="button" class="cerrar" id="cerrar-composer" aria-label="Cerrar">×</button></div>
     <textarea id="texto" placeholder="¿Qué se te ocurrió?" aria-labelledby="lbl"></textarea>
@@ -2857,6 +2862,10 @@ function ordenar(k,modo){
   else lista.forEach((i,n)=>mover(i,(n%5)*240,Math.floor(n/5)*250));
   pintarMain();lzMain.encuadrar(lzMain.limites());
 }
+{const b=$("mic-pc"),tt=b.querySelector(".mic-t"),normal=()=>{b.classList.remove("grab","pensando");tt.textContent="";b.title="Dictar con la voz"};
+  const o={onTick:s=>{b.classList.add("grab");b.title="Terminar de dictar";tt.textContent=Math.floor(s/60)+":"+String(s%60).padStart(2,"0")},onPensando:()=>{normal();b.classList.add("pensando")},onError:m=>toast(m),onFin:normal,
+    onTexto:async t=>{if(!cols.ideas){toast("Todavía estoy cargando tu plancha.");return}try{const r=await anotarPorVoz(t);toast(r?"Listo: "+r+". (Ctrl+Z lo deshace)":"No entendí qué anotar: «"+t+"»")}catch(_){toast("No se pudo guardar lo que dictaste: «"+t+"»")}}};
+  b.onclick=()=>{if(!window.Dictado){toast("El dictado no cargó. Recargá la página.");return}if(Dictado.de(o))Dictado.parar();else Dictado.empezar(o)}}
 $("abrir-composer").onclick=()=>{$("nueva").hidden=false;document.querySelector(".comp-btns").hidden=true;$("texto").focus()};
 $("cerrar-composer").onclick=()=>{$("nueva").hidden=true;document.querySelector(".comp-btns").hidden=false};
 $("texto").addEventListener("keydown",e=>{if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)){e.preventDefault();$("nueva").requestSubmit()}});
@@ -3860,10 +3869,30 @@ function leerDictado(t){t=t.trim().replace(/\s+/g," ");const n=sinTilde(t),corta
   let m=/^(querido diario|diario)\b/.exec(n);if(m)return {tipo:"diario",texto:corta(m[0].length)};
   m=/^(agregale|agrega|sumale|suma|anotale|anota)( esto)? (a|en) (la )?(idea )?(numero |nro |n )?(\d+)\b/.exec(n);if(m)return {tipo:"agregar",numero:+m[7],texto:corta(m[0].length)};
   m=/^frase( de ([^:,.]+?))?\s*[:,.]/.exec(n)||/^frase\b/.exec(n);if(m){const autor=m[2]?t.slice(m[0].indexOf(m[2]),m[0].indexOf(m[2])+m[2].length).trim():"";return {tipo:"frase",autor,texto:corta(m[0].length).replace(/^["«“]|["»”]$/g,"")}}
+  m=/^(agregale |agrega |suma |sumale |anota |anotale )?(a |en )?(la )?lista\b( de)?/.exec(n);if(m){const resto=corta(m[0].length),rn=sinTilde(resto);
+    const L=[...listas].map(l=>[l,sinTilde((l.titulo||"").trim())]).filter(([,nm])=>nm&&(rn===nm||rn.startsWith(nm+" ")||rn.startsWith(nm+",")||rn.startsWith(nm+":")||rn.startsWith(nm+"."))).sort((a,b)=>b[1].length-a[1].length)[0];
+    if(L)return {tipo:"lista",lista:L[0].id,texto:resto.slice(L[1].length).replace(/^[\s,.:;\-–—]+/,"").trim()};
+    const sep=/^([^:,.]{1,40})[:,.]\s*(.+)$/s.exec(resto);return sep?{tipo:"lista",nombre:sep[1].trim(),texto:sep[2].trim()}:{tipo:"lista",nombre:"",texto:resto}}
   const lista=[...cats].sort((a,b)=>b.nombre.length-a.nombre.length);
   for(const c of lista){const nom=sinTilde(c.nombre).trim();if(!nom)continue;const r=new RegExp("^((una |un )?idea (de |para )(un |una )?|para (un |una )?|(un |una )?)"+nom.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"s?\\b");const mm=r.exec(n);if(mm)return {tipo:"idea",cat:c.id,texto:corta(mm[0].length)}}
+  m=/^(nota|idea)( nueva)?\b/.exec(n);if(m)return {tipo:"idea",cat:"otro",texto:corta(m[0].length)};
   return {tipo:"idea",cat:"otro",texto:t}}
 const mayus=t=>t?t.charAt(0).toUpperCase()+t.slice(1):t;
+/* «lista de compras: leche, pan» dictado: suma los renglones a esa lista (o arma una nueva con ese nombre) */
+async function listaPorVoz(d){let L=d.lista?listas.find(l=>l.id===d.lista):null;
+  if(!L){const id=await nuevaLista({titulo:d.nombre?mayus(d.nombre):"Lista"});if(!id)return null;await new Promise(r=>setTimeout(r,80));L=listas.find(l=>l.id===id);if(!L)return null}
+  if(!Array.isArray(L.lista))L.lista=[];const items=d.texto.split(/\s*(?:,|\by\b(?=[^,]*$)|\n)\s*/).map(x=>x.trim().replace(/[.]+$/,"")).filter(Boolean).map(v=>({id:bid(),v:mayus(v),hecho:null}));
+  if(!items.length)return null;const i=L.lista.findIndex(t=>t.hecho);L.lista.splice(i<0?L.lista.length:i,0,...items);guardarLista(L);pintarTareas();
+  return (items.length===1?"sumado a ":`${items.length} cosas sumadas a `)+((L.titulo||"").trim()||"la lista")}
+/* lo que dictás con el micrófono de la compu: se lee igual que el atajo («diario…», «frase de…», «idea para un corto…», «lista…», «agregale a la 12…») y se guarda solo */
+async function anotarPorVoz(t){const d=leerDictado(t),id="voz-"+bid()+bid(),creado=Date.now();
+  if(d.tipo==="diario"){if(!d.texto)return null;if(!anotarEnDiario(mayus(d.texto)))return "el diario todavía no cargó: probá en un toque";return "anotado en el diario"}
+  if(d.tipo==="frase"){if(!d.texto)return null;const numero=data.frases.reduce((a,i)=>Math.max(a,i.numero||0),0)+1;await cols.frases.doc(id).set({texto:mayus(d.texto),autor:d.autor?d.autor.replace(/\b\w/g,x=>x.toUpperCase()):"",creado,numero,origen:"voz"});return "frase nueva"}
+  if(d.tipo==="lista")return d.texto?await listaPorVoz(d):null;
+  if(d.tipo==="agregar"){const it=data.ideas.find(i=>i.numero===d.numero);
+    if(it&&d.texto){const bl=[...(it.bloques||[])],y=bl.reduce((a,b)=>Math.max(a,(b.y||0)+200),0);bl.push({id,t:"txt",v:mayus(d.texto),x:480,y,w:300});await cols.ideas.doc(it.id).update({bloques:bl});return `sumado a la #${d.numero}`}}
+  const texto=mayus(d.texto||t);if(!texto)return null;const numero=data.ideas.reduce((a,i)=>Math.max(a,i.numero||0),0)+1;await cols.ideas.doc(id).set({texto,tipo:d.cat||"otro",creado,numero,origen:"voz"});
+  return "idea #"+numero+(d.cat&&d.cat!=="otro"?" en "+label(d.cat):"")}
 /* "Diario, …" dictado: un bloque nuevo en la página de ese día, con la hora en que lo dijiste */
 function diarioDesdeCelu(id,texto,creado){const f=new Date(creado-3*36e5),k=claveDia(f.getFullYear(),f.getMonth(),f.getDate()),c=new Date(creado),h=pad(c.getHours())+":"+pad(c.getMinutes());
   const e=entradaDia(k),base=e?JSON.parse(JSON.stringify(e)):{fecha:k,texto:"",bloques:[]};let tramos=Array.isArray(base.tramos)&&base.tramos.length?base.tramos:migrarTramos(base);
@@ -3879,6 +3908,7 @@ window.onEntradas=lista=>{if(!cols.ideas||!cols.frases||!window.__ideasListas)re
       else if(d.tipo==="agregar"){const it=data.ideas.find(i=>i.numero===d.numero);
         if(it&&d.texto){const bl=[...(it.bloques||[])],y=bl.reduce((a,b)=>Math.max(a,(b.y||0)+200),0);bl.push({id,t:"txt",v:mayus(d.texto),x:480,y,w:300});cols.ideas.doc(it.id).update({bloques:bl});hechos.push(`sumado a la #${d.numero}`)}
         else{const numero=data.ideas.reduce((a,i)=>Math.max(a,i.numero||0),0)+1;cols.ideas.doc(id).set({texto:mayus(t),tipo:"otro",creado,numero,origen:"atajo"});hechos.push("idea nueva (no encontré la #"+d.numero+")")}}
+      else if(d.tipo==="lista"){if(!tareasCargadas)continue;if(d.texto){listaPorVoz(d).catch(()=>{});hechos.push("lista")}}
       else if(d.tipo==="frase"&&cols.frases&&d.texto){const numero=data.frases.reduce((a,i)=>Math.max(a,i.numero||0),0)+1;cols.frases.doc(id).set({texto:mayus(d.texto),autor:d.autor?d.autor.replace(/\b\w/g,x=>x.toUpperCase()):"",creado,numero,origen:"atajo"});hechos.push("frase nueva")}
       else{const numero=data.ideas.reduce((a,i)=>Math.max(a,i.numero||0),0)+1;cols.ideas.doc(id).set({texto:mayus(d.texto||t),tipo:d.cat||"otro",creado,numero,origen:"atajo"});hechos.push(d.cat&&d.cat!=="otro"?label(d.cat):"idea nueva")}}
     window.borrarEntrada(path)}
@@ -3958,6 +3988,7 @@ const AYUDA=[
  {t:"Lo básico",it:[
   [null,"Arriba a la izquierda: Ideas y Diario. La flechita de al lado abre las Frases, todos tus guiones y la línea de tiempo."],
   [{h:'<span class="ay-seg"><b>Ideas</b><span>Diario</span><span>⌄</span></span>'},"Cambiás de sección. La flechita del costado abre las Frases, tus guiones y la línea de tiempo."],
+  [{chip:"🎙"},"El micrófono, al lado de «+ Nueva idea»: lo tocás, hablás y lo tocás de nuevo. Se guarda solo según cómo arranques: «Diario, …», «Frase de …: …», «Idea para un corto: …», «Lista de compras: leche, pan», «Agregale a la 12 que …». Si no, queda como idea."],
   [{chip:"+ Nueva idea",c:"amarillo"},"Escribís una idea nueva y elegís su categoría. Con "+CMD+"+Enter la pegás."],
   ["Doble clic en el fondo","Escribís un post-it ahí mismo. Enter lo pega, Esc lo cancela. En el celu es doble toque."],
   [{h:'<span class="ay-post"></span>'},"Tocá un post-it para abrirlo: adentro tenés una hoja entera para desarrollar la idea. Arrastralo para moverlo."],
@@ -4148,6 +4179,9 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:107,f:"22 de noviembre",it:[
+  ["*Micrófono en la compu.* Al lado de «+ Nueva idea» hay un micrófono: lo tocás, hablás y lo tocás de nuevo. Se guarda solo, según cómo arranques: «Diario, …», «Frase de Borges: …», «Idea para un corto: …», «Lista de compras: leche, pan y café», «Agregale a la 12 que…». Si no decís nada de eso, queda como idea.",null,1],
+  ["En el celu pasa lo mismo: si en Anotar arrancás diciendo «diario», «frase», «lista» o «idea», se elige solo a dónde va.",null,2]]},
  {n:106,f:"22 de noviembre",it:[
   ["*Dictado por voz en el celu.* Tocás el micrófono, hablás y lo tocás de nuevo: el texto aparece escrito para que lo revises y lo guardes. No usa el dictado del iPhone, usa uno que entiende mucho mejor el castellano. Está en Anotar, en el Diario, en las Listas y adentro de cada idea.",null,1]]},
  {n:105,f:"22 de noviembre",it:[
@@ -7156,6 +7190,7 @@ if(window.__demo){(function(){
 
 </script>
 
-<script src="celu.js?v=6"></script>
+<script src="dictado.js?v=1"></script>
+<script src="celu.js?v=7"></script>
 </body>
 </html>

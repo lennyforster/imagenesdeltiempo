@@ -296,35 +296,25 @@ const listasOrden=()=>{const u=usoListas();return [...misListas()].sort((a,b)=>(
 const sigNumero=arr=>arr.reduce((a,i)=>Math.max(a,+i.numero||0),0)+1;
 const colorCat=i=>i.colorPropio||cat(i.tipo).color;
 
-/* ================= DICTADO (Whisper vía el Worker; no usa el del iPhone) ================= */
-const URL_DICTAR="https://imagenes-del-tiempo.rental-bff.workers.dev/dictar";
-let grab=null;/* {rec,stream,trozos,boton,destino,t0,tick} */
-function botonMic(destino,chico){const b=h("button",{type:"button",class:"mic"+(chico?" chico":""),"aria-label":"Dictar con la voz"},ico(I.mic,chico?20:22));b.onclick=()=>{if(grab&&grab.boton===b)pararGrab();else empezarGrab(b,destino)};return b}
-const tipoAudio=()=>{if(typeof MediaRecorder==="undefined")return null;for(const t of ["audio/mp4","audio/webm;codecs=opus","audio/webm","audio/ogg"])if(MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t))return t;return ""};
-async function empezarGrab(b,destino){if(grab)pararGrab();const tipo=tipoAudio();if(tipo===null||!navigator.mediaDevices){aviso("Este navegador no deja grabar audio.");return}
-  let stream;try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}})}catch(_){aviso("Necesito permiso para usar el micrófono. Fijate en la configuración del navegador.");return}
-  const rec=tipo?new MediaRecorder(stream,{mimeType:tipo}):new MediaRecorder(stream);const g={rec,stream,trozos:[],boton:b,destino,t0:Date.now()};grab=g;
-  rec.ondataavailable=e=>{if(e.data&&e.data.size)g.trozos.push(e.data)};rec.onstop=()=>transcribir(g);rec.start(1000);vibrar();
-  const pintarT=()=>{const s=Math.floor((Date.now()-g.t0)/1000);b.replaceChildren(ico(I.stop,16),Math.floor(s/60)+":"+String(s%60).padStart(2,"0"));if(s>=600)pararGrab()};
-  b.classList.add("grab");b.setAttribute("aria-label","Terminar de dictar");pintarT();g.tick=setInterval(pintarT,500)}
-function pararGrab(){const g=grab;if(!g)return;grab=null;clearInterval(g.tick);try{g.rec.stop()}catch(_){}g.stream.getTracks().forEach(t=>t.stop());const b=g.boton;b.classList.remove("grab");b.classList.add("pensando");b.replaceChildren(ico(I.mic,b.classList.contains("chico")?20:22));vibrar()}
-async function cabecerasDictado(){const hd={};try{const m=await import("./cuenta.js?v=4");const t=await m.token();if(t)hd.Authorization="Bearer "+t}catch(_){}
-  const gh=LSg("gh_token"),repo=LSg("gh_repo");if(gh&&repo){hd["X-GH"]=gh;hd["X-GH-Repo"]=repo}return hd}
-async function transcribir(g){const b=g.boton,fin=()=>{b.classList.remove("pensando");b.setAttribute("aria-label","Dictar con la voz")};
-  const tipo=(g.rec.mimeType||g.trozos[0]&&g.trozos[0].type||"audio/webm"),blob=new Blob(g.trozos,{type:tipo});
-  if(Date.now()-g.t0<700||blob.size<2000){fin();aviso("Mantené un poco más: tocás, hablás y tocás de nuevo.");return}
-  try{const r=await fetch(URL_DICTAR,{method:"POST",headers:{...(await cabecerasDictado()),"Content-Type":tipo.split(";")[0]},body:blob});
-    if(r.status===429){aviso("Se usó mucho el dictado en poco rato. Probá en unos minutos.");return}
-    if(r.status===401){aviso("No pude verificar tu cuenta para dictar. Probá salir y volver a entrar.");return}
-    if(!r.ok)throw 0;const {texto}=await r.json();let t=(texto||"").trim();
-    /* Whisper a veces «escucha» frases fijas cuando no hay voz (ruido, silencio): esas no cuentan */
-    if(/^(¡?gracias( por ver( el video)?)?[.!]*|subt[ií]tulos.*amara\.org.*|¡?suscr[ií]bete.*|\.+)$/i.test(t))t="";
-    if(!t){aviso("No escuché nada. Probá de nuevo, más cerca del micrófono.");return}
-    const ta=g.destino();if(!ta){aviso("Dictado: "+t);return}
-    const a=ta.value,i0=ta.selectionStart!=null&&root.activeElement===ta?ta.selectionStart:a.length,i1=ta.selectionEnd!=null&&root.activeElement===ta?ta.selectionEnd:a.length;
-    const antes=a.slice(0,i0),sep=antes&&!/\s$/.test(antes)?" ":"";ta.value=antes+sep+t+a.slice(i1);ta.dispatchEvent(new Event("input"));vibrar()}
-  catch(_){aviso("No pude pasar el audio a texto. Revisá la conexión y probá de nuevo.")}finally{fin()}}
-document.addEventListener("visibilitychange",()=>{if(document.hidden&&grab)pararGrab()});
+/* ================= DICTADO (dictado.js: Whisper vía el Worker; no usa el del iPhone) ================= */
+function botonMic(destino,chico,alTexto){const b=h("button",{type:"button",class:"mic"+(chico?" chico":""),"aria-label":"Dictar con la voz"},ico(I.mic,chico?20:22));
+  const normal=()=>{b.classList.remove("grab","pensando");b.setAttribute("aria-label","Dictar con la voz");b.replaceChildren(ico(I.mic,chico?20:22))};
+  const o={onTick:s=>{b.classList.add("grab");b.setAttribute("aria-label","Terminar de dictar");b.replaceChildren(ico(I.stop,16),Math.floor(s/60)+":"+String(s%60).padStart(2,"0"))},
+    onPensando:()=>{normal();b.classList.add("pensando");vibrar()},onError:m=>aviso(m),onFin:normal,
+    onTexto:t=>{if(alTexto&&alTexto(t))return;const ta=destino();if(!ta){aviso("Dictado: "+t);return}
+      const a=ta.value,foc=root.activeElement===ta,i0=foc&&ta.selectionStart!=null?ta.selectionStart:a.length,i1=foc&&ta.selectionEnd!=null?ta.selectionEnd:a.length;
+      const antes=a.slice(0,i0),sep=antes&&!/\s$/.test(antes)?" ":"";ta.value=antes+sep+t+a.slice(i1);ta.dispatchEvent(new Event("input"));vibrar()}};
+  b.onclick=()=>{if(!window.Dictado){aviso("El dictado no cargó. Recargá la página.");return}if(Dictado.de(o))Dictado.parar();else{vibrar();Dictado.empezar(o)}};return b}
+/* en Anotar, si arrancás diciendo «diario…», «frase…», «lista…» o «idea/nota…», se elige solo a dónde va */
+function rutearDictado(t){const n=sinT(t),corta=k=>t.slice(k).replace(/^[\s,.:;\-–—]+/,"").trim();let m;
+  if(comp.ta.value.trim())return false;
+  if((m=/^(querido diario|diario)\b/.exec(n))){dest="diario";comp.ta.value=mayus(corta(m[0].length))}
+  else if((m=/^frase\b/.exec(n))){dest="frase";let r=corta(m[0].length);const a=/^de ([^:,.]+?)\s*[:,.]\s*/i.exec(r);if(a){r=r.slice(a[0].length);dest="frase";pintarComp();if(comp.autor)comp.autor.value=a[1].trim()}comp.ta.value=mayus(r)}
+  else if((m=/^(nota|idea)( nueva)?\b/.exec(n))){dest="idea";comp.ta.value=mayus(corta(m[0].length))}
+  else if((m=/^(a la )?lista\b/.exec(n))){dest="lista";let r=corta(m[0].length);const ls=listasOrden();const L=ls.find(l=>{const nm=sinT(nombreLista(l)).trim();return nm&&sinT(r).startsWith(nm)});
+    if(L){listaSel=L.id;LSs("celu_lista",L.id);r=r.slice(nombreLista(L).length).replace(/^[\s,.:;\-–—]+/,"")}comp.ta.value=mayus(r)}
+  else return false;
+  LSs("celu_dest",dest);pintarComp();vibrar();return true}
 
 /* ================= ANOTAR ================= */
 let dest=LSg("celu_dest")||"idea",catSel=LSg("celu_cat")||"otro",listaSel=LSg("celu_lista")||"",fotoSel=null;
@@ -342,7 +332,7 @@ function armarInicio(){const p=P.inicio;p.replaceChildren();
   comp.prev=h("div");
   comp.btnFoto=h("button",{type:"button",class:"foto","aria-label":"Sumar una foto",onclick:()=>comp.foto.click()},ico(I.foto,22));
   comp.btn=h("button",{type:"button",class:"guardar",onclick:guardarComp},"Guardar");
-  comp.mic=botonMic(()=>comp.ta);
+  comp.mic=botonMic(()=>comp.ta,false,t=>rutearDictado(t));
   c.append(ds,comp.ta,comp.prev,comp.ctx,h("div",{class:"comp-pie"},comp.mic,comp.btnFoto,comp.btn),comp.foto);
   comp.ds=ds;
   pintarComp();pintarRecientes()}
