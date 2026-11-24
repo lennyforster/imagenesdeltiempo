@@ -4317,6 +4317,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:127,f:"24 de noviembre",it:[
+  ["Arreglado: al cambiarle la etiqueta a un renglón, el menú saltaba arriba a la izquierda. Ahora se queda al lado del renglón.",null,3]]},
  {n:126,f:"24 de noviembre",it:[
   ["En las listas angostas ahora *se ve el título entero*: si no entra, baja al renglón de abajo. Los botones de al lado quedaron como iconitos (!, $ y ×).",null,2]]},
  {n:125,f:"24 de noviembre",it:[
@@ -5233,7 +5235,10 @@ function menuEtiquetas(boton,L,id){document.getElementById("etq-menu")?.remove()
         const t=(L.lista||[]).find(z=>z.id===id);if(t){t.tags=[...new Set([...(t.tags||[]),e.id])];guardarLista(L);pintarTareas()}pintar()};
       ok.onclick=crear;inp.onkeydown=ev=>{ev.stopPropagation();if(ev.key==="Enter"){ev.preventDefault();crear()}else if(ev.key==="Escape"){ev.preventDefault();pintar()}};
       f.append(inp,cs,ok);nu.replaceWith(f);inp.focus()};
-    const r=boton.getBoundingClientRect();m.style.left=Math.min(innerWidth-m.offsetWidth-8,r.left)+"px";m.style.top=(r.bottom+6+m.offsetHeight>innerHeight-8?Math.max(8,r.top-6-m.offsetHeight):r.bottom+6)+"px"};
+    /* al cambiar una etiqueta la lista se vuelve a dibujar (y con «!» prendido el renglón cambia de lugar): el menú sigue al botón nuevo de ese renglón */
+    if(!boton.isConnected||!boton.getClientRects().length){const nb=[...document.querySelectorAll('[data-lista="'+L.id+'"] .tr-item[data-id="'+id+'"] .tr-eb')].find(z=>z.getClientRects().length);if(nb)boton=nb}
+    if(!boton.isConnected||!boton.getClientRects().length){if(m.style.top)return;cerrar();return}
+    const r=boton.getBoundingClientRect();m.style.left=Math.max(8,Math.min(innerWidth-m.offsetWidth-8,r.left))+"px";m.style.top=(r.bottom+6+m.offsetHeight>innerHeight-8?Math.max(8,r.top-6-m.offsetHeight):r.bottom+6)+"px"};
   pintar();setTimeout(()=>document.addEventListener("pointerdown",fuera,true),0);
   m.addEventListener("keydown",e=>{if(e.key==="Escape"){e.stopPropagation();cerrar()}})}
 /* ordenar por importancia: Urgente arriba, después Importante, lo sin marcar y al final Algún día. Si la lista lo tiene prendido (L.imp), se reordena sola cada vez que se guarda */
