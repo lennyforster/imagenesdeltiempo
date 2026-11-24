@@ -222,7 +222,7 @@ input,textarea{font:inherit;color:inherit}
 .it textarea{flex:1;min-width:0;border:0;outline:0;resize:none;background:transparent;font:500 16px/1.4 var(--ui);padding:1px 0;height:24px;overflow:hidden}
 .it.hecha textarea,.it.hecha .lk .t{color:var(--soft);text-decoration:line-through;text-decoration-color:rgba(43,37,32,.35)}
 .it .cuerpo{flex:1;min-width:0}
-.it .tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}.it .tags span{font:700 11px var(--ui);color:#fff;padding:2px 7px;border-radius:999px}
+.it .tags{flex:none;display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end;max-width:110px;margin-top:2px}.it .tags span.ic{min-width:20px;padding:2px 5px;text-align:center;font-weight:800}.it .tags span{font:700 11px var(--ui);color:#fff;padding:2px 7px;border-radius:999px}
 .lk{display:flex;gap:10px;align-items:center;text-decoration:none;color:inherit}
 .lk img{width:44px;height:44px;border-radius:8px;object-fit:cover;flex:none;background:#e7dfd1}
 .lk .t{font:600 15px/1.3 var(--ui);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.lk .u{font:500 12px var(--ui);color:var(--soft)}
@@ -542,8 +542,9 @@ function filaItem(L,t,capa){const w=h("div",{class:"it-w"}),bor=h("div",{class:"
     ta.oninput=()=>{fit();clearTimeout(tG);tG=setTimeout(g,700)};ta.onblur=()=>{g();if(!ta.value.trim()){const i=L.lista.findIndex(z=>z.id===t.id);if(i>=0&&!L.lista[i].url){L.lista.splice(i,1);guardarLista(L);try{pintarTareas()}catch(_){}capa._pintar(true)}}};
     ta.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();ta.blur()}};const fit=()=>{ta.style.height="24px";ta.style.height=ta.scrollHeight+"px"};requestAnimationFrame(fit);cuerpo.append(ta);
     if(t.url)cuerpo.append(h("a",{class:"lk",href:t.url,target:"_blank",rel:"noopener",style:"margin-top:4px"},h("div",{class:"u"},"↗ "+hostDe(t.url))))}
-  if((t.tags||[]).length){const tg=h("div",{class:"tags"});for(const id of t.tags){const e=etqDe(id);if(e)tg.append(h("span",{style:"background:"+e.color},e.nombre))}cuerpo.append(tg)}
-  row.append(tl,cuerpo);
+  /* etiquetas al costado: las fijas como iconito (!!, !, …); con «! Importancia» prendido ya las muestra el puntito */
+  let tg=null;{const ids=(t.tags||[]).filter(id=>!(L.imp&&!t.hecho&&ICO_ETQ[id]));if(ids.length){tg=h("div",{class:"tags"});for(const id of ids){const e=etqDe(id);if(!e)continue;const ic=ICO_ETQ[id];tg.append(h("span",{class:ic?"ic":"",style:"background:"+e.color,title:e.nombre,"aria-label":e.nombre},ic||e.nombre))}if(!tg.children.length)tg=null}}
+  row.append(tl,cuerpo);if(tg)row.append(tg);
   /* con «! Importancia» prendido, el puntito de cada renglón va pasando: nada → Importante → Urgente → Algún día → nada */
   if(L.imp&&!t.hecho){const FIJ=["importante","urgente","algundia"],r=rangoImp(t),cual=["urgente","importante",null,"algundia"][r],e=cual&&etqDe(cual);
     const pt=h("button",{type:"button",class:"imp-pt"+(e?" con":""),"aria-label":(e?e.nombre:"Sin importancia")+". Tocá para cambiarla",style:e?"--e:"+e.color:""});

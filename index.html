@@ -294,7 +294,7 @@ textarea::placeholder,input::placeholder{color:rgba(43,37,32,.45)}
 .tr-acc{display:flex;gap:4px;align-items:center;min-height:20px}
 .tr-eb{border:0;background:none;color:var(--soft);cursor:pointer;padding:0;width:16px;height:18px;display:grid;place-items:center;opacity:0}
 .tr-item:hover .tr-eb,.tr-item:focus-within .tr-eb{opacity:.8}@media (hover:none){.tr-eb{opacity:.5}}
-.tr-cuerpo{min-width:0;display:grid;gap:3px}
+.tr-cuerpo{min-width:0;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;align-items:start}
 .tr-lk{display:grid;grid-template-columns:48px minmax(0,1fr);gap:9px;align-items:start;min-width:0}
 .tr-mini{width:48px;aspect-ratio:16/10;border-radius:3px;overflow:hidden;background:#e9e4da;display:block;margin-top:1px}
 .tr-mini img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
@@ -305,8 +305,10 @@ textarea::placeholder,input::placeholder{color:rgba(43,37,32,.45)}
 .tr-host{font:500 10.5px var(--mono);color:var(--soft);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tr-host:hover{color:var(--link)}
 .tr-item.hecha .tr-mini{opacity:.45}
-.tr-tags{display:flex;flex-wrap:wrap;gap:4px;padding-top:2px}
+.tr-tags{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:3px;padding-top:1px;max-width:120px}
+.tr-lk-tx>.tr-tags{justify-content:flex-start;max-width:none}
 .tr-tag{border:0;border-radius:999px;padding:1px 7px;background:var(--e);color:#fff;font:600 10px/16px var(--ui);letter-spacing:.02em;cursor:pointer}
+.tr-tag.ic{min-width:18px;height:18px;padding:0 4px;font:800 11px/18px var(--ui);letter-spacing:0;text-align:center}
 .tr-item.hecha .tr-tag{opacity:.45}
 .tr-item.urgente:not(.hecha) .tr-ok{border-color:#c8372d}
 .tareas.destino,.pieza.btar.destino{box-shadow:0 0 0 3px var(--link),0 12px 18px -10px rgba(20,10,0,.55)}
@@ -4315,6 +4317,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:125,f:"24 de noviembre",it:[
+  ["En las listas, *Urgente*, *Importante* y *Algún día* ahora son un iconito al costado del renglón (!!, ! y …), no una etiqueta abajo. La lista queda mucho más corta. Si pasás el mouse por arriba, te dice cuál es.",null,2]]},
  {n:124,f:"24 de noviembre",it:[
   ["*Listas por importancia.* Tocás el *!* al lado del nombre de la lista y se ordena sola: lo *Urgente* arriba, después lo *Importante*, lo que no marcaste y al final lo de *Algún día*. Cada vez que le cambiás la etiqueta a algo, se reacomoda. En el celu también: tocás «! Importancia» y con el puntito de cada renglón le vas cambiando la importancia.",null,1]]},
  {n:123,f:"23 de noviembre",it:[
@@ -5208,6 +5212,8 @@ const ETQ_COLORES=["#c8372d","#d9822b","#c9a227","#3f8f4f","#2f7f8f","#3b5fb0","
 let etqPropias=[],docEtq=null,tEtq=null;
 const etiquetas=()=>[...ETQ_FIJAS,...etqPropias];
 const etqDe=id=>etiquetas().find(e=>e.id===id);
+/* las fijas se muestran como un iconito al costado del renglón (no abajo, para que la lista no se alargue); las propias, como una etiquetita chica */
+const ICO_ETQ={urgente:"!!",importante:"!",algundia:"…"};
 function guardarEtq(){if(!docEtq)return;clearTimeout(tEtq);tEtq=setTimeout(()=>docEtq.set({lista:etqPropias}).catch(()=>toast("No se guardaron las etiquetas.")),400)}
 function menuEtiquetas(boton,L,id){document.getElementById("etq-menu")?.remove();const m=el("div","etq-menu");m.setAttribute("role","menu");m.id="etq-menu";document.body.append(m);
   const cerrar=()=>{m.remove();document.removeEventListener("pointerdown",fuera,true)},fuera=e=>{if(!m.contains(e.target)&&e.target!==boton)cerrar()};
@@ -5268,7 +5274,7 @@ function armarLista(cont,L,modo){cont.dataset.lista=L.id;cont._f=firmaLista(L,mo
       const mini=el("a","tr-mini");mini.href=t.url;mini.target="_blank";mini.rel="noopener noreferrer";mini.title="Abrir";
       if(t.img){const im=el("img");im.alt="";im.referrerPolicy="no-referrer";im.loading="lazy";im.draggable=false;im.onerror=()=>{mini.replaceChildren(host.slice(0,1));mini.classList.add("sin")};im.src=t.img;mini.append(im)}else{mini.classList.add("sin");mini.append(host.slice(0,1))}
       const tx=el("div","tr-lk-tx"),hl=el("a","tr-host",host+" ↗");hl.href=t.url;hl.target="_blank";hl.rel="noopener noreferrer";hl.title=t.url;tx.append(v,hl);cuerpo.append(mini,tx);completarItem(L,t)}
-    const tg=(t.tags||[]).map(etqDe).filter(Boolean);if(tg.length){const w=el("div","tr-tags");for(const e of tg){const c=el("button","tr-tag",e.nombre);c.type="button";c.style.setProperty("--e",e.color);c.title="Cambiar etiquetas";c.onclick=ev=>{ev.stopPropagation();menuEtiquetas(c,L,id)};w.append(c)}
+    const tg=(t.tags||[]).map(etqDe).filter(Boolean);if(tg.length){const w=el("div","tr-tags");for(const e of tg){const ic=ICO_ETQ[e.id],c=el("button","tr-tag"+(ic?" ic":""),ic||e.nombre);c.type="button";c.style.setProperty("--e",e.color);c.title=e.nombre+" · tocá para cambiar las etiquetas";c.setAttribute("aria-label",e.nombre);c.onclick=ev=>{ev.stopPropagation();menuEtiquetas(c,L,id)};w.append(c)}
       if(cuerpo===v){const cc=el("div","tr-cuerpo");cc.append(v,w);cuerpo=cc}else cuerpo.querySelector(".tr-lk-tx").append(w)}
     const eb=el("button","tr-eb");eb.type="button";eb.title="Etiquetas (Urgente, Importante…)";eb.setAttribute("aria-label",eb.title);eb.innerHTML='<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><path d="M2 2h5.5L14 8.5 8.5 14 2 7.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="5" cy="5" r="1.1" fill="currentColor"/></svg>';eb.onclick=e=>{e.stopPropagation();menuEtiquetas(eb,L,id)};
     const acc=el("div","tr-acc");acc.append(eb,x);
@@ -7413,6 +7419,6 @@ if(window.__demo){(function(){
   window.buscarActualizacion=revisar})();
 </script>
 <script src="dictado.js?v=1"></script>
-<script src="celu.js?v=13"></script>
+<script src="celu.js?v=14"></script>
 </body>
 </html>
