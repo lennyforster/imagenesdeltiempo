@@ -1037,7 +1037,7 @@ body.invitado.en-ref #volver{display:revert!important}
 .adoptar-vivo{position:fixed;z-index:40;right:16px;top:16px;border:0;border-radius:999px;background:#1f6b4a;color:#fff;font:700 14px var(--ui);padding:10px 16px;box-shadow:0 8px 20px rgba(0,0,0,.3);cursor:pointer}
 @media (max-width:600px){.adoptar-vivo{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);right:50%;transform:translateX(50%)}}
 .tr-pesos{border:0;border-radius:999px;min-width:22px;height:22px;padding:0 7px;background:rgba(43,37,32,.08);color:var(--soft);font:700 12px/22px var(--ui);cursor:pointer;flex:none;white-space:nowrap}
-.tr-pesos.on{background:#1f6b4a;color:#fff}.tr-pesos.sug{background:#fff1c7;color:#7a5a12}
+.tr-pesos.on{background:#1f6b4a;color:#fff}.tr-imp{font-weight:800}.tr-imp.on{background:#c8372d}.tr-pesos.sug{background:#fff1c7;color:#7a5a12}
 .tareas.con-precios:not(.plana):not(.en-hoja){min-width:300px}
 .tareas.con-precios .tr-item{grid-template-columns:10px 20px minmax(0,1fr) 78px auto}
 .tr-precio{width:78px;border:0;border-bottom:1px dashed rgba(43,37,32,.25);background:none;font:600 13px var(--mono);color:var(--ink);text-align:right;padding:1px 0;user-select:text;-webkit-user-select:text;touch-action:auto}
@@ -4009,16 +4009,16 @@ const miNombreVivo=()=>{try{return localStorage.getItem("vivo_nombre")||NOMBRES_
 const CAMPOS_VIVO=["bloques","hilos","trazos","tipo","estado"];
 /* Listas adentro de un post-it compartido: viajan adentro del bloque (b.lst) para que los demás las vean y las editen.
    Cada uno además la tiene como lista propia, con el mismo id. Gana la versión más nueva (mod). */
-const lstDe=L=>({titulo:L.titulo||"",lista:limpiarItems(L.lista),precios:!!L.precios,mod:L.mod||L.creado||0});
+const lstDe=L=>({titulo:L.titulo||"",lista:limpiarItems(L.lista),precios:!!L.precios,imp:!!L.imp,mod:L.mod||L.creado||0});
 function embeberListas(bl){return (bl||[]).map(b=>{if(b.t!=="tar"||!b.ref)return b;const L=listas.find(z=>z.id===b.ref);if(!L)return b;if(b.lst&&(b.lst.mod||0)>(L.mod||L.creado||0))return b;
   const lst=lstDe(L);return JSON.stringify(b.lst)===JSON.stringify(lst)?b:{...b,lst}})}
 function empujarListaVivo(id){if(!abierto||!abierto.doc.vivo||!abierto.doc.bloques.some(b=>b.t==="tar"&&b.ref===id))return;const nb=embeberListas(abierto.doc.bloques);
   if(JSON.stringify(nb)===JSON.stringify(abierto.doc.bloques))return;abierto.doc.bloques=nb;guardarBloques()}
 function recibirListasVivo(bl){if(!colTareas||!tareasCargadas)return false;let cambio=false;
   for(const b of bl||[]){if(b.t!=="tar"||!b.ref||!b.lst)continue;const x=b.lst;let L=listas.find(z=>z.id===b.ref);
-    if(!L){if(listasNuevas.has(b.ref))continue;const o={titulo:x.titulo||"",tablero:"ideas",enPlancha:false,creado:Date.now(),lista:limpiarItems(x.lista),mod:x.mod||Date.now()};if(x.precios)o.precios=true;
+    if(!L){if(listasNuevas.has(b.ref))continue;const o={titulo:x.titulo||"",tablero:"ideas",enPlancha:false,creado:Date.now(),lista:limpiarItems(x.lista),mod:x.mod||Date.now()};if(x.precios)o.precios=true;if(x.imp)o.imp=true;
       listasNuevas.add(b.ref);listas.push({id:b.ref,...o,lista:o.lista.map(t=>({...t}))});colTareas.doc(b.ref).set(o).catch(()=>{});cambio=true;continue}
-    if((x.mod||0)>(L.mod||L.creado||0)&&!editandoLista(L.id)){L.titulo=x.titulo||"";L.lista=limpiarItems(x.lista).map(t=>({...t}));if(x.precios)L.precios=true;else delete L.precios;L.mod=x.mod;guardarLista(L,true);cambio=true}}
+    if((x.mod||0)>(L.mod||L.creado||0)&&!editandoLista(L.id)){L.titulo=x.titulo||"";L.lista=limpiarItems(x.lista).map(t=>({...t}));if(x.precios)L.precios=true;else delete L.precios;if(x.imp)L.imp=true;else delete L.imp;L.mod=x.mod;guardarLista(L,true);cambio=true}}
   if(cambio)pintarTareas();return cambio}
 /* Post-its que viven adentro de uno compartido: se comparten solos (cada uno con su propio link por dentro) y el bloque lleva
    vref (su código compartido) y vsnap (texto, categoría) para que del otro lado se cree el mismo post-it, con el mismo id. */
@@ -4258,6 +4258,7 @@ const AYUDA=[
   [{chip:"🔗"},"Un renglón puede ser un link: pegalo en «+ agregar (o pegá un link)» y aparece con su foto y su título. Si la página no da el título (eBay, por ejemplo), tocá el renglón y ponele un nombre vos. La foto o el dominio lo abren."],
   [{chip:"$"},"Para las listas de compras: tocás el $ al lado del nombre de la lista y cada renglón tiene su precio. Abajo ves el total y cuánto falta comprar (lo tachado ya está comprado). Si un renglón es una opción que no querés sumar, tocá la Σ al lado del precio."],
   [{chip:"Etiquetas"},"Pasá por un renglón y tocá la etiquetita al lado de la ×: Urgente, Importante, Algún día, o creá las tuyas con nombre y color. Las tuyas sirven en todas tus listas."],
+  [{chip:"!"},"Al lado del nombre de la lista: la ordena por importancia. Urgente arriba, después Importante, lo que no tiene etiqueta y al final Algún día. Queda prendido y se reacomoda sola cuando cambiás una etiqueta. En el celu, con «! Importancia» arriba de la lista, y tocando el puntito de cada renglón."],
   [{chip:"Lista"},"Adentro de un post-it, en el «+»: armás una lista nueva ahí o ponés una que ya existe. Es la misma lista en los dos lados: si tachás o borrás algo adentro, cambia afuera también."],
   [{chip:"En la plancha"},"Para que una lista de adentro de un post-it se vea en la plancha principal, poné un vínculo a ese post-it en la plancha."]]},
  {t:"Atajos",it:[
@@ -4314,6 +4315,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:124,f:"24 de noviembre",it:[
+  ["*Listas por importancia.* Tocás el *!* al lado del nombre de la lista y se ordena sola: lo *Urgente* arriba, después lo *Importante*, lo que no marcaste y al final lo de *Algún día*. Cada vez que le cambiás la etiqueta a algo, se reacomoda. En el celu también: tocás «! Importancia» y con el puntito de cada renglón le vas cambiando la importancia.",null,1]]},
  {n:123,f:"23 de noviembre",it:[
   ["En el celu, la lista de Ideas muestra solo los post-its de la plancha principal: los que están adentro de una pila o de otro post-it ya no aparecen ahí.",null,3]]},
  {n:122,f:"23 de noviembre",it:[
@@ -5225,10 +5228,16 @@ function menuEtiquetas(boton,L,id){document.getElementById("etq-menu")?.remove()
     const r=boton.getBoundingClientRect();m.style.left=Math.min(innerWidth-m.offsetWidth-8,r.left)+"px";m.style.top=(r.bottom+6+m.offsetHeight>innerHeight-8?Math.max(8,r.top-6-m.offsetHeight):r.bottom+6)+"px"};
   pintar();setTimeout(()=>document.addEventListener("pointerdown",fuera,true),0);
   m.addEventListener("keydown",e=>{if(e.key==="Escape"){e.stopPropagation();cerrar()}})}
+/* ordenar por importancia: Urgente arriba, después Importante, lo sin marcar y al final Algún día. Si la lista lo tiene prendido (L.imp), se reordena sola cada vez que se guarda */
+const rangoImp=t=>{const g=t.tags||[];return g.includes("urgente")?0:g.includes("importante")?1:g.includes("algundia")?3:2};
+function ordenarPorImp(L){if(!Array.isArray(L.lista))return;const r=L.lista.map((t,i)=>[rangoImp(t),i,t]);r.sort((a,b)=>a[0]-b[0]||a[1]-b[1]);L.lista=r.map(x=>x[2])}
+function alternarImp(L){L.imp=!L.imp;guardarLista(L);try{pintarTareas(L.id)}catch(_){}
+  const marcadas=(L.lista||[]).some(t=>rangoImp(t)!==2);
+  toast(!L.imp?"Listo, ya no se ordena sola. Queda como está y la movés a mano.":marcadas?"Ordenada: lo urgente arriba, lo de algún día abajo. Se reacomoda sola cuando cambiás una etiqueta.":"Prendido. Ponele a cada renglón Urgente, Importante o Algún día y se ordena sola.")}
 const refsLista=id=>data.ideas.filter(i=>(i.bloques||[]).some(b=>b.t==="tar"&&b.ref===id));
-const firmaLista=(L,modo)=>JSON.stringify([etiquetas().map(e=>e.id+e.color+e.nombre).join(),L.titulo||"",!!L.precios,limpiarItems(L.lista),!!L.enPlancha,modo==="hoja"?abierto&&abierto.id:"",refsLista(L.id).map(i=>i.id+":"+(i.numero||"")+":"+(i.texto||"").slice(0,30))]);
+const firmaLista=(L,modo)=>JSON.stringify([etiquetas().map(e=>e.id+e.color+e.nombre).join(),L.titulo||"",!!L.precios,!!L.imp,limpiarItems(L.lista),!!L.enPlancha,modo==="hoja"?abierto&&abierto.id:"",refsLista(L.id).map(i=>i.id+":"+(i.numero||"")+":"+(i.texto||"").slice(0,30))]);
 const editandoLista=id=>[...document.querySelectorAll('[data-lista="'+id+'"]')].some(tecleaEn);
-function guardarLista(L,remoto){if(!colTareas||!L||!L.id)return;if(!remoto)L.mod=Date.now();const o={titulo:L.titulo||"",tablero:"ideas",enPlancha:!!L.enPlancha,creado:L.creado||Date.now(),lista:limpiarItems(L.lista)};if(L.precios)o.precios=true;if(L.mod)o.mod=L.mod;if(!remoto)setTimeout(()=>empujarListaVivo(L.id),0);
+function guardarLista(L,remoto){if(!colTareas||!L||!L.id)return;if(!remoto)L.mod=Date.now();if(L.imp)ordenarPorImp(L);const o={titulo:L.titulo||"",tablero:"ideas",enPlancha:!!L.enPlancha,creado:L.creado||Date.now(),lista:limpiarItems(L.lista)};if(L.precios)o.precios=true;if(L.imp)o.imp=true;if(L.mod)o.mod=L.mod;if(!remoto)setTimeout(()=>empujarListaVivo(L.id),0);
   if(typeof L.x==="number"&&typeof L.y==="number"){o.x=L.x;o.y=L.y}if(L.w)o.w=L.w;colTareas.doc(L.id).set(o).catch(()=>toast("No se guardaron las tareas. Revisá la conexión."))}
 async function nuevaLista(extra){if(!colTareas)return null;const o={titulo:"",tablero:"ideas",enPlancha:false,creado:Date.now(),lista:[],...extra};
   try{const r=await colTareas.add(o);listasNuevas.add(r.id);return r.id}catch(_){toast("No se pudo crear la lista.");return null}}
@@ -5241,11 +5250,13 @@ function armarLista(cont,L,modo){cont.dataset.lista=L.id;cont._f=firmaLista(L,mo
   ti.oninput=()=>{L.titulo=ti.value;clearTimeout(L._tt);L._tt=setTimeout(()=>guardarLista(L),700)};ti.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();ti.blur();setTimeout(()=>{const n=[...document.querySelectorAll(`[data-lista="${L.id}"] .tr-nueva`)].find(z=>z.getClientRects().length);n&&n.focus()},60)}};ti.onblur=()=>{clearTimeout(L._tt);guardarLista(L);setTimeout(()=>pintarTareas(),0)};
   cab.append(ti);
   {const pb=el("button","tr-pesos"+(L.precios?" on":!L.precios&&pareceCompras(L)?" sug":""),L.precios?"$":pareceCompras(L)?"$ Sumar precios":"$");pb.type="button";pb.title=L.precios?"Sacar los precios de esta lista":"Ponerle precio a cada cosa y ver el total";pb.setAttribute("aria-label",pb.title);
-    pb.onclick=e=>{e.stopPropagation();L.precios=!L.precios;guardarLista(L);pintarTareas(L.id);if(L.precios)setTimeout(()=>{const n=document.querySelector(`[data-lista="${L.id}"] .tr-precio`);n&&n.focus()},80)};cab.insertBefore(pb,cab.children[1])}
+    pb.onclick=e=>{e.stopPropagation();L.precios=!L.precios;guardarLista(L);pintarTareas(L.id);if(L.precios)setTimeout(()=>{const n=document.querySelector(`[data-lista="${L.id}"] .tr-precio`);n&&n.focus()},80)};cab.insertBefore(pb,cab.children[1])
+    const ib=el("button","tr-pesos tr-imp"+(L.imp?" on":""),"!");ib.type="button";ib.title=L.imp?"Se ordena por importancia. Tocá para ordenarla a mano":"Ordenar por importancia: Urgente arriba, Algún día abajo";ib.setAttribute("aria-label",ib.title);ib.setAttribute("aria-pressed",L.imp?"true":"false");
+    ib.onclick=e=>{e.stopPropagation();alternarImp(L)};cab.insertBefore(ib,pb)}
   cont.classList.toggle("con-precios",!!L.precios);
   if(modo!=="hoja"){const x=el("button","tr-cerrar","×");x.type="button";x.title="Sacar de la plancha";x.setAttribute("aria-label","Sacar la lista de la plancha");x.onclick=()=>sacarListaDePlancha(L,x);cab.append(x)}
   const filas=[...pend,...hechas].map(t0=>{const id=t0.id,t=new Proxy({},{get:(_,p)=>(L.lista.find(z=>z.id===id)||t0)[p],set:(_,p,v)=>{(L.lista.find(z=>z.id===id)||t0)[p]=v;return true},deleteProperty:(_,p)=>{delete (L.lista.find(z=>z.id===id)||t0)[p];return true}});const f=el("div","tr-item"+(t.hecho?" hecha":""));f.dataset.id=id;
-    const h=el("span","tr-mov",t.hecho?"":"⋮⋮");if(!t.hecho){h.title="Arrastrá para cambiar el orden";h.setAttribute("aria-hidden","true");asaOrden(h,f,L)}
+    const h=el("span","tr-mov",t.hecho?"":"⋮⋮");if(!t.hecho){h.title=L.imp?"Se ordena por importancia: podés moverlo entre los que tienen la misma etiqueta":"Arrastrá para cambiar el orden";h.setAttribute("aria-hidden","true");asaOrden(h,f,L)}
     const ok=el("button","tr-ok",t.hecho?"✓":"");ok.type="button";ok.setAttribute("aria-label",t.hecho?"Destachar":"Tachar");ok.title=t.hecho?"Destachar":"Hecha: se tacha y queda anotada en el diario";ok.onclick=()=>tildarTarea(L,t);
     const v=el("textarea","tr-v");v.rows=1;v.value=t.url?((t.v||"").trim()||t.tt||""):(t.v||"");v.setAttribute("aria-label",t.url?"Título del link":"Renglón");if(t.url)v.placeholder="Ponele un nombre";
     v.oninput=()=>{t.v=v.value;autosize(v);clearTimeout(t._tm);t._tm=setTimeout(()=>guardarLista(L),700)};
@@ -7402,6 +7413,6 @@ if(window.__demo){(function(){
   window.buscarActualizacion=revisar})();
 </script>
 <script src="dictado.js?v=1"></script>
-<script src="celu.js?v=12"></script>
+<script src="celu.js?v=13"></script>
 </body>
 </html>

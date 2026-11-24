@@ -228,6 +228,8 @@ input,textarea{font:inherit;color:inherit}
 .lk .t{font:600 15px/1.3 var(--ui);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.lk .u{font:500 12px var(--ui);color:var(--soft)}
 .l-sub{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:2px}
 .pesos-btn{flex:none;font:700 13px var(--ui);padding:6px 11px;border-radius:999px;background:rgba(43,37,32,.07);color:var(--soft)}
+.l-bts{display:flex;gap:6px;flex:none}.pesos-btn.imp-btn.on{background:#c8372d;color:#fff;text-decoration:none;font-weight:700}
+.imp-pt{flex:none;width:26px;height:26px;margin-left:2px;border-radius:50%;position:relative}.imp-pt::after{content:"";position:absolute;inset:8px;border-radius:50%;border:1.5px solid var(--soft)}.imp-pt.con::after{background:var(--e);border-color:var(--e)}
 .pesos-btn.sug{background:#fff1c7;color:#7a5a12}.pesos-btn.on{background:transparent;color:var(--soft);font-weight:600;text-decoration:underline}
 .precio{flex:none;width:88px;border:0;border-bottom:1.5px dashed rgba(43,37,32,.2);outline:0;background:transparent;font:600 16px var(--ui);text-align:right;padding:1px 0;color:var(--ink);font-variant-numeric:tabular-nums}
 .precio:focus{border-bottom-color:var(--mat)}.precio::placeholder{color:#c9bfb1}
@@ -510,17 +512,18 @@ function abrirLista(id,volver,nueva){marcarUsoLista(id);abrirCapa(volver||"Lista
   tit.oninput=()=>{clearTimeout(tT2);tT2=setTimeout(gTit,700)};tit.onblur=gTit;tit.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();add.focus()}};
   const cnt=h("div",{class:"meta",style:"margin:2px 0 0"});
   const pesos=h("button",{type:"button",class:"pesos-btn",onclick:()=>{const L=L0();if(!L)return;L.precios=!L.precios;guardarLista(L);try{pintarTareas()}catch(_){}vibrar();capa._pintar(true)}});
+  const impB=h("button",{type:"button",class:"pesos-btn imp-btn",onclick:()=>{const L=L0();if(!L)return;vibrar();alternarImp(L);capa._pintar(true)}},"! Importancia");
   const totBar=h("div",{class:"tot-bar"});
   capa._total=()=>{const L=L0();if(!L)return;totBar.hidden=!L.precios;if(!L.precios)return;const {tot,falta,hay,fuera}=totalLista(L);const extra=[hay&&falta!==tot?"Falta comprar "+fmtPrecio(falta):"",fuera?(fuera===1?"1 opción sin sumar":fuera+" opciones sin sumar"):""].filter(Boolean).join(" · ");totBar.replaceChildren(h("span",null,"Total"),h("b",null,fmtPrecio(tot)),extra?h("small",null,extra):null)};
   const add=h("textarea",{rows:1,placeholder:"Agregar…","aria-label":"Agregar a la lista",enterkeyhint:"done",oninput:()=>autosize(add),onkeydown:e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();agregar()}}});
   const agregar=()=>{const v=add.value.trim();if(!v)return;const L=L0();if(!L)return;sumarALista(L,v);add.value="";autosize(add);vibrar();capa._pintar(true)};
-  const items=h("div");d.append(tit,h("div",{class:"l-sub"},cnt,pesos),h("div",{class:"l-add"},h("span",{class:"mas"},ico(I.mas,22)),add,botonMic(()=>add,true)),items);
+  const items=h("div");d.append(tit,h("div",{class:"l-sub"},cnt,h("div",{class:"l-bts"},impB,pesos)),h("div",{class:"l-add"},h("span",{class:"mas"},ico(I.mas,22)),add,botonMic(()=>add,true)),items);
   let verHechas=false;
   capa._alCerrar=()=>{gTit();const L=L0();if(L&&!(L.titulo||"").trim()&&!(L.lista||[]).length&&!L.enPlancha&&!refsLista(L.id).length)colTareas.doc(L.id).delete().catch(()=>{})};
   capa._pintar=forzarItems=>{const L=L0();if(!L){cerrarCapa(capa);return}if(root.activeElement!==tit)tit.value=L.titulo||"";
     const todas=L.lista||[],pend=todas.filter(t=>!t.hecho),hechas=todas.filter(t=>t.hecho);cnt.textContent=todas.length?"":"Vacía. Escribí abajo del título.";
-    pesos.textContent=L.precios?"Sacar precios":(pareceCompras(L)?"$ Sumar precios":"$ Precios");pesos.classList.toggle("on",!!L.precios);pesos.classList.toggle("sug",!L.precios&&pareceCompras(L));capa._total();
-    const firma=JSON.stringify([limpiarItems(todas),verHechas,!!L.precios,etiquetas().map(e=>e.id+e.color)]);const ed=root.activeElement&&items.contains(root.activeElement);if(!forzarItems&&(items._f===firma||ed))return;items._f=firma;items.replaceChildren();
+    pesos.textContent=L.precios?"Sacar precios":(pareceCompras(L)?"$ Sumar precios":"$ Precios");pesos.classList.toggle("on",!!L.precios);pesos.classList.toggle("sug",!L.precios&&pareceCompras(L));impB.classList.toggle("on",!!L.imp);impB.setAttribute("aria-pressed",L.imp?"true":"false");capa._total();
+    const firma=JSON.stringify([limpiarItems(todas),verHechas,!!L.precios,!!L.imp,etiquetas().map(e=>e.id+e.color)]);const ed=root.activeElement&&items.contains(root.activeElement);if(!forzarItems&&(items._f===firma||ed))return;items._f=firma;items.replaceChildren();
     if(pend.length){const g=h("div",{class:"items"});for(const t of pend)g.append(filaItem(L,t,capa));items.append(g)}
     if(hechas.length){const b=h("button",{type:"button",class:"hechas-btn"+(verHechas?" ab":""),onclick:()=>{verHechas=!verHechas;capa._pintar(true)}},ico(I.chev,16),"Hechas ("+hechas.length+")");items.append(b);
       if(verHechas){const g=h("div",{class:"items"});for(const t of hechas)g.append(filaItem(L,t,capa));items.append(g)}}
@@ -541,6 +544,12 @@ function filaItem(L,t,capa){const w=h("div",{class:"it-w"}),bor=h("div",{class:"
     if(t.url)cuerpo.append(h("a",{class:"lk",href:t.url,target:"_blank",rel:"noopener",style:"margin-top:4px"},h("div",{class:"u"},"↗ "+hostDe(t.url))))}
   if((t.tags||[]).length){const tg=h("div",{class:"tags"});for(const id of t.tags){const e=etqDe(id);if(e)tg.append(h("span",{style:"background:"+e.color},e.nombre))}cuerpo.append(tg)}
   row.append(tl,cuerpo);
+  /* con «! Importancia» prendido, el puntito de cada renglón va pasando: nada → Importante → Urgente → Algún día → nada */
+  if(L.imp&&!t.hecho){const FIJ=["importante","urgente","algundia"],r=rangoImp(t),cual=["urgente","importante",null,"algundia"][r],e=cual&&etqDe(cual);
+    const pt=h("button",{type:"button",class:"imp-pt"+(e?" con":""),"aria-label":(e?e.nombre:"Sin importancia")+". Tocá para cambiarla",style:e?"--e:"+e.color:""});
+    pt.onclick=()=>{const it=(L.lista||[]).find(z=>z.id===t.id);if(!it)return;const sig={importante:"urgente",urgente:"algundia",algundia:null}[cual||""]??(cual?null:"importante");
+      const resto=(it.tags||[]).filter(g=>!FIJ.includes(g));it.tags=sig?[...resto,sig]:resto;if(!it.tags.length)delete it.tags;vibrar();guardarLista(L);try{pintarTareas()}catch(_){}capa._pintar(true)};
+    row.append(pt)}
   if(L.precios){const pr=h("input",{class:"precio",type:"text",inputmode:"decimal",placeholder:"$","aria-label":"Precio",enterkeyhint:"next"});pr.value=typeof t.precio==="number"?(+t.precio).toLocaleString("es-AR",{maximumFractionDigits:2}):"";let tG=null;
     const g=()=>{clearTimeout(tG);const it=(L.lista||[]).find(z=>z.id===t.id);if(!it)return;const n=leerPrecio(pr.value);if(n===null){if(!("precio" in it))return;delete it.precio}else{if(it.precio===n)return;it.precio=n}guardarLista(L);try{pintarTareas()}catch(_){}};
     pr.oninput=()=>{const it=(L.lista||[]).find(z=>z.id===t.id);if(it){const n=leerPrecio(pr.value);if(n===null)delete it.precio;else it.precio=n}capa._total();clearTimeout(tG);tG=setTimeout(g,800)};
