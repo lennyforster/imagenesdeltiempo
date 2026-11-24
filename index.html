@@ -1502,6 +1502,18 @@ body.gu-mitad.gu-lado-guion .toast{left:calc(var(--gu-corte,50%) / 2);max-width:
 .gu-corte::before{content:"";position:absolute;left:6px;top:0;bottom:0;width:2px;background:rgba(255,253,246,.25);transition:background .15s,width .15s,left .15s}
 .gu-corte::after{content:"";position:absolute;left:3px;top:50%;width:8px;height:44px;margin-top:-22px;border-radius:999px;background:#fffdf6;box-shadow:0 2px 8px rgba(0,0,0,.35)}
 .gu-corte:hover::before,.gu-corte.on::before{background:#ffe76a;width:4px;left:5px}
+/* ◧ adentro de un post-it: plancha general | post-it */
+.h-mitad{display:none;font-size:15px;line-height:1;min-width:36px}
+@media (min-width:760px){.h-mitad:not([hidden]){display:inline-block}}
+body.gu-mitad .h-mitad{display:none!important}
+.h-mitad[aria-pressed="true"]{background:#ffe76a;color:#1b1b1b}
+body.pi-mitad #detalle{left:var(--pi-corte,50%);transform:translateZ(0);box-shadow:-6px 0 22px rgba(0,0,0,.35)}
+body.pi-mitad #detalle .panel{left:50%!important;width:min(420px,calc(100% - 24px))!important}
+.pi-corte{display:none;position:fixed;top:0;bottom:0;left:var(--pi-corte,50%);width:14px;margin-left:-7px;z-index:21;cursor:col-resize;touch-action:none}
+body.pi-mitad .pi-corte{display:block}
+.pi-corte::before{content:"";position:absolute;left:6px;top:0;bottom:0;width:2px;background:rgba(255,253,246,.25);transition:background .15s,width .15s,left .15s}
+.pi-corte::after{content:"";position:absolute;left:3px;top:50%;width:8px;height:44px;margin-top:-22px;border-radius:999px;background:#fffdf6;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.pi-corte:hover::before,.pi-corte.on::before{background:#ffe76a;width:4px;left:5px}
 body.gu-arrastrando,body.gu-arrastrando *{cursor:col-resize!important;user-select:none!important}
 body.gu-lectura .gu-mw{display:none!important}
 body.gu-lectura .gu-texto{-webkit-user-select:none;user-select:none}
@@ -2214,6 +2226,7 @@ window.claude={use:async n=>{if(INVITADO&&n==="db"){if(!listo)listo=conectar();r
     <span class="sep"></span>
     <button class="btn oscuro" id="h-dictar" type="button" hidden><span class="mic-ico"></span>Dictar</button>
     <button class="btn rojo" id="btn-claude" type="button">Pensar con Claude</button>
+    <button class="btn h-mitad" id="h-mitad" type="button" aria-pressed="false" title="Plancha general al lado (mitad y mitad)" aria-label="Plancha general al lado">◧</button>
     <button class="btn" id="h-mas" type="button" aria-label="Más opciones de esta idea">•••</button>
   </div>
   <div class="herramientas" role="toolbar" aria-label="Agregar a la nota">
@@ -2818,7 +2831,7 @@ async function borrarDePlancha(nodos){
 }
 lzMain.onSeleccion=(r,sumar)=>selPoner(lzMain,[...nodosNota.values(),...nodosDeco.values(),...nodosPila.values()].filter(n=>n.isConnected&&seTocan(cajaNodo(n),r)),sumar);
 lzMain.onBorrarSel=ns=>borrarDePlancha(ns);
-document.addEventListener("keydown",e=>{if(escribiendo())return;const lz=abierto?lzHoja:lzMain;if(!lz.sel.size)return;
+document.addEventListener("keydown",e=>{if(escribiendo())return;const lz=lzAct();if(!lz.sel.size)return;
   if(e.key==="Escape"){selLimpiar(lz);e.preventDefault();e.stopImmediatePropagation()}
   else if(e.key==="Delete"||e.key==="Backspace"){lz._bsBorrar&&lz._bsBorrar.click();e.preventDefault();e.stopImmediatePropagation()}},true);
 lzMain.onBgTap=()=>{if(selFlecha){selFlecha=null;pintarFlechas()}if(selDeco||selHilo){selDeco=null;borrarDeco=null;selHilo=null;pintarMain()}};
@@ -3043,7 +3056,7 @@ $("file").onchange=e=>{const f=e.target.files&&e.target.files[0];e.target.value=
 document.addEventListener("paste",e=>{if(enDiario){const fi=[...(e.clipboardData?.files||[])].filter(x=>x.type.startsWith("image/"));if(fi.length){e.preventDefault();const p=pagActual();fi.forEach(f=>imagenEnDia(f,p));return}
     const tx=((e.clipboardData&&e.clipboardData.getData("text/plain"))||"").trim();if(!escribiendo()&&/^https?:\/\/\S+$/i.test(tx)){e.preventDefault();linkEnDia(pagActual(),tx)}return}
   if(escribiendo()&&!abierto)return;const fs=[...(e.clipboardData?.files||[])].filter(x=>x.type.startsWith("image/"));if(!fs.length)return;e.preventDefault();
-  const p=puntoPegar(abierto?lzHoja:lzMain);fs.forEach((f,n)=>{const q={x:p.x+n*30,y:p.y+n*30};if(abierto)bloqueImagen(f,q);else decoEnPlancha(f,q)})});
+  const p=puntoPegar(lzAct());fs.forEach((f,n)=>{const q={x:p.x+n*30,y:p.y+n*30};if(enHoja())bloqueImagen(f,q);else decoEnPlancha(f,q)})});
 
 /* ---------- Plancha de un post-it ---------- */
 const lzHoja=new Lienzo($("vp-hoja"),$("capa-hoja"),$("zoom-hoja"));lzHoja.vp.addEventListener("pointerdown",e=>selGrupo(lzHoja,e),true);
@@ -3435,10 +3448,41 @@ $("linkform").addEventListener("submit",e=>{
 });
 $("add-img").onclick=()=>{destinoArchivo="hoja";$("file").click()};
 $("volver").onclick=()=>{if(navRef.length){const u=navRef.pop(),st=navRef;navegandoRef=true;try{cerrar()}finally{navegandoRef=false}navRef=st;if(data[u.k]&&data[u.k].some(x=>x.id===u.id))abrir(u.k,u.id);pintarVolver();return}cerrar()};
+/* ◧ adentro de un post-it: la plancha general a la izquierda y el post-it a la derecha, mitad y mitad (como en el guion) */
+let piMitad=false,piLado="hoja",piFr=.5,piMainAntes=null;try{const v=parseFloat(localStorage.getItem("pi_corte"));if(v>=.15&&v<=.85)piFr=v}catch(_){}
+const piX=()=>Math.round(Math.max(300,Math.min(innerWidth-380,innerWidth*piFr)));
+const enHoja=()=>!!abierto&&!(piMitad&&piLado==="plancha");
+const lzAct=()=>enHoja()?lzHoja:lzMain;
+function piPoner(){document.body.style.setProperty("--pi-corte",piX()+"px")}
+function piBoton(){const b=$("h-mitad");if(!b)return;b.setAttribute("aria-pressed",piMitad?"true":"false");b.title=piMitad?"Volver a ver el post-it en pantalla completa":"Plancha general al lado (mitad y mitad)"}
+function piEntrar(){if(piMitad||!abierto||abierto.k==="diario"||innerWidth<760||document.body.classList.contains("gu-mitad"))return;piPoner();const x=piX();piMitad=true;piLado="hoja";document.body.classList.add("pi-mitad");
+  try{lzHoja.tx-=x/2;lzHoja.apply();lzHoja.guardar()}catch(_){}piMainAntes={s:lzMain.s,tx:lzMain.tx,ty:lzMain.ty};try{lzMain.encuadrar(lzMain.limites&&lzMain.limites())}catch(_){}piBoton()}
+function piSalir(){if(!piMitad)return;const x=piX();piMitad=false;document.body.classList.remove("pi-mitad");try{if(abierto){lzHoja.tx+=x/2;lzHoja.apply();lzHoja.guardar()}}catch(_){}if(piMainAntes){Object.assign(lzMain,piMainAntes);piMainAntes=null;try{lzMain.apply();lzMain.guardar()}catch(_){}}piBoton()}
+$("h-mitad").onclick=()=>{if(piMitad)piSalir();else piEntrar()};
+/* lo que tocás último manda: Supr, copiar, pegar, duplicar van a ese lado */
+addEventListener("pointerdown",e=>{if(piMitad)piLado=e.clientX<piX()?"plancha":"hoja"},true);
+addEventListener("resize",()=>{if(!piMitad)return;if(innerWidth<760){piSalir();return}piPoner()});
+/* la plancha general, mientras está a la izquierda, mide solo su mitad (para centrar, crear cosas y el «Volver a los post-its») */
+{const r0=lzMain.rect.bind(lzMain);lzMain.rect=function(){const r=r0();if(!piMitad)return r;const w=Math.max(0,Math.min(r.width,piX()-r.left));return {left:r.left,top:r.top,x:r.left,y:r.top,width:w,height:r.height,right:r.left+w,bottom:r.bottom}}}
+/* la vista del post-it se guarda como si fuera pantalla completa, así al salir del mitad y mitad nada queda corrido; la plancha general vuelve sola a como estaba */
+for(const [lz,off] of [[lzHoja,()=>piMitad&&abierto?piX()/2:0]]){
+  lz.guardar=function(){if(!this.clave)return;clearTimeout(this._t);this._t=setTimeout(()=>{try{localStorage.setItem("vista:"+this.clave,JSON.stringify({s:this.s,tx:this.tx+off(),ty:this.ty}))}catch(e){}},300)};
+  const u0=lz.usar.bind(lz);lz.usar=function(c){const ok=u0(c);if(ok&&off()){this.tx-=off();this.apply()}return ok}}
+{const g0=lzMain.guardar.bind(lzMain);lzMain.guardar=function(){if(piMitad)return;return g0()}}
+/* tocás otro post-it en la plancha de la izquierda y se abre del otro lado */
+{const a0=abrir;abrir=function(k,id){if(piMitad&&k==="diario")piSalir();if(piMitad&&abierto&&!(abierto.k===k&&abierto.id===id)){navRef=[];cerrar()}const r=a0.apply(this,arguments);piBoton();$("h-mitad").hidden=k==="diario";return r}}
+{const c0=cerrar;cerrar=function(){const r=c0.apply(this,arguments);if(piMitad)queueMicrotask(()=>{if(!abierto)piSalir()});return r}}
+/* la rayita del medio se arrastra */
+{const corte=el("div","pi-corte");corte.title="Arrastrá para darle más lugar a la plancha o al post-it (doble clic: mitad y mitad)";corte.setAttribute("role","separator");corte.setAttribute("aria-orientation","vertical");document.body.append(corte);
+  const mover=x1=>{const x0=piX();piFr=Math.max(.15,Math.min(.85,x1/innerWidth));const x=piX();piPoner();try{lzHoja.tx-=(x-x0);lzHoja.apply()}catch(_){}};
+  corte.addEventListener("pointerdown",e=>{e.preventDefault();corte.setPointerCapture(e.pointerId);corte.classList.add("on");
+    const mv=ev=>mover(ev.clientX),fin=()=>{corte.classList.remove("on");corte.removeEventListener("pointermove",mv);corte.removeEventListener("pointerup",fin);corte.removeEventListener("pointercancel",fin);try{localStorage.setItem("pi_corte",String(piFr))}catch(_){}try{lzHoja.guardar();lzMain.guardar()}catch(_){}};
+    corte.addEventListener("pointermove",mv);corte.addEventListener("pointerup",fin);corte.addEventListener("pointercancel",fin)});
+  corte.addEventListener("dblclick",()=>{piFr=.5;mover(innerWidth/2);piFr=.5;try{localStorage.setItem("pi_corte",".5")}catch(_){}})}
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape"){
     for(const p of ["panel-diacal","panel-menu","panel-keep","panel-dictar","panel-mas","panel-export","panel-compartir","panel-claude","linkform","panel-mezcla","panel-cats","panel-cal"])if(!$(p).hidden){$(p).hidden=true;return}
-    if(modoHilo){setModoHilo(false);return}{const lzA=abierto?lzHoja:lzMain;if(lzA.modo){lzA.setModo(null);return}}if(abierto&&abierto.k!=="diario"){cerrar();return}if(selDeco||selHilo){selDeco=null;selHilo=null;pintarMain()}}
+    if(modoHilo){setModoHilo(false);return}{const lzA=lzAct();if(lzA.modo){lzA.setModo(null);return}}if(abierto&&abierto.k!=="diario"){cerrar();return}if(selDeco||selHilo){selDeco=null;selHilo=null;pintarMain()}}
   if((e.key==="Delete"||e.key==="Backspace")&&!escribiendo()){
     if(abierto&&selB){const n=[...document.querySelectorAll("#capa-hoja .pieza.sel")][0];n?.querySelector(".herr .peligro")?.click();e.preventDefault()}
     else if(!abierto&&selFlecha&&quitarFlecha){quitarFlecha.click();e.preventDefault()}
@@ -3742,10 +3786,10 @@ function duplicarBloques(ids,dx=40,dy=40){if(!abierto||!ids.length)return;const 
   requestAnimationFrame(()=>{document.querySelectorAll("#capa-hoja textarea").forEach(autosize);pintarHilos();selPoner(lzHoja,nuevos.map(nodoHoja).filter(Boolean),false)})}
 lzMain.onDuplicarSel=(ns,dx,dy)=>duplicarEnPlancha(ns,dx,dy);
 lzHoja.onDuplicarSel=(ns,dx,dy)=>duplicarBloques(ns.map(n=>n.dataset.bid).filter(Boolean),dx,dy);
-function duplicarActual(){const lz=abierto?lzHoja:lzMain,ns=selNodos(lz);
+function duplicarActual(){const lz=lzAct(),ns=selNodos(lz);
   if(ns.length){lz.onDuplicarSel(ns);return}
-  if(abierto&&selB){duplicarBloques([selB]);return}
-  if(!abierto&&selDeco){const n=nodosDeco.get(selDeco);if(n){duplicarEnPlancha([n]);return}}
+  if(enHoja()&&selB){duplicarBloques([selB]);return}
+  if(!enHoja()&&selDeco){const n=nodosDeco.get(selDeco);if(n){duplicarEnPlancha([n]);return}}
   toast("Seleccioná algo para duplicar.")}
 
 /* ---------- Deshacer / rehacer ---------- */
@@ -3757,7 +3801,7 @@ document.addEventListener("keydown",e=>{
   if(!(e.metaKey||e.ctrlKey)||e.altKey)return;const k=(e.key||"").toLowerCase();if(enDiario&&k!=="z"&&k!=="y")return;
   if(k==="z"||k==="y"){if(escribiendo()||!$("tiempo").hidden)return;const c=document.getElementById("conectar");if(c&&!c.hidden)return;e.preventDefault();deshacerUI(k==="y"||e.shiftKey);return}
   if(k==="d"){if(escribiendo()||!$("tiempo").hidden)return;e.preventDefault();duplicarActual();return}
-  if(k==="g"){if(escribiendo()||!$("tiempo").hidden)return;const lz=abierto?lzHoja:lzMain,ns=selNodos(lz);if(!ns.length)return;e.preventDefault();if(e.shiftKey)desagrupar(lz,ns);else agrupar(lz,ns);return}
+  if(k==="g"){if(escribiendo()||!$("tiempo").hidden)return;const lz=lzAct(),ns=selNodos(lz);if(!ns.length)return;e.preventDefault();if(e.shiftKey)desagrupar(lz,ns);else agrupar(lz,ns);return}
   if(k==="c"||k==="x"){if(escribiendo()||!$("tiempo").hidden||String(window.getSelection?getSelection():"").trim())return;
     if(!nodosParaCopiar().length)return;e.preventDefault();if(k==="x")cortarSel();else if(copiarSel())toast("Copiado. Pegalo con Ctrl+V.");return}
   if(k==="v"){if(escribiendo()||!$("tiempo").hidden)return;if(porta){clearTimeout(tPegar);tPegar=setTimeout(()=>{tPegar=null;pegarInterno()},120)}}});
@@ -3765,10 +3809,10 @@ document.addEventListener("keydown",e=>{
 /* ---------- Copiar, cortar y pegar ---------- */
 let porta=null,ultPtr=null,tPegar=null;
 window.addEventListener("pointermove",e=>{ultPtr={x:e.clientX,y:e.clientY}},{passive:true});
-function nodosParaCopiar(){const lz=abierto?lzHoja:lzMain;let ns=selNodos(lz);
-  if(!ns.length){if(abierto&&selB){const n=nodoHoja(selB);if(n)ns=[n]}else if(!abierto&&selDeco){const n=nodosDeco.get(selDeco);if(n)ns=[n]}}return ns}
+function nodosParaCopiar(){const lz=lzAct();let ns=selNodos(lz);
+  if(!ns.length){if(enHoja()&&selB){const n=nodoHoja(selB);if(n)ns=[n]}else if(!enHoja()&&selDeco){const n=nodosDeco.get(selDeco);if(n)ns=[n]}}return ns}
 function copiarSel(){const ns=nodosParaCopiar();if(!ns.length)return null;
-  if(abierto){const ids=new Set(ns.map(n=>n.dataset.bid).filter(Boolean));for(const b of abierto.doc.bloques)if(b.en&&ids.has(b.en))ids.add(b.id);const bl=abierto.doc.bloques.filter(b=>ids.has(b.id));if(!bl.length)return null;
+  if(enHoja()){const ids=new Set(ns.map(n=>n.dataset.bid).filter(Boolean));for(const b of abierto.doc.bloques)if(b.en&&ids.has(b.en))ids.add(b.id);const bl=abierto.doc.bloques.filter(b=>ids.has(b.id));if(!bl.length)return null;
     porta={de:"hoja",bloques:JSON.parse(JSON.stringify(bl)),hilos:JSON.parse(JSON.stringify((abierto.doc.hilos||[]).filter(h=>ids.has(h.a)&&ids.has(h.b))))}}
   else{const ideas=[],ds=[],ids=new Set(),pls=[];
     for(const n of ns){
@@ -3790,7 +3834,7 @@ function ubicar(items,p0){/* centra el grupo en p0; si pegás varias veces en el
   const dx=p0.x-(x0+x1)/2+off,dy=p0.y-(y0+y1)/2+off;for(const o of items){o.x=Math.round((o.x||0)+dx);o.y=Math.round((o.y||0)+dy)}}
 async function pegarInterno(){
   if(!porta)return;
-  if(abierto){const d=abierto.doc,mapa={};let bl;
+  if(enHoja()){const d=abierto.doc,mapa={};let bl;
     if(porta.de==="hoja")bl=porta.bloques.map(b=>JSON.parse(JSON.stringify(b)));
     else{bl=[...porta.ideas.map(x=>({t:"post",v:x.o.texto||"",c:x.k==="ideas"?colorDe("ideas",x.o):PALETA[1],x:x.o.x,y:x.o.y})),...porta.decos.map(o=>o.t==="link"?limpio({t:"link",url:o.url,titulo:o.titulo||"",tt:o.tt,img:o.img,meta:o.meta,x:o.x,y:o.y,w:o.w||260}):o.t==="links"?limpio({t:"links",titulo:o.titulo||"",items:(o.items||[]).map(i=>({...i,id:bid()})),x:o.x,y:o.y,w:o.w||320}):({t:"img",a:o.a,alt:"Imagen",x:o.x,y:o.y,w:o.w||260}))];
       for(const p of porta.pilas||[]){const pid="p"+bid();bl.push({id:pid,t:"pila",titulo:p.o.titulo||"",x:p.o.x,y:p.o.y});for(const m of p.miembros)bl.push({t:"post",v:m.texto||"",c:colorDe("ideas",m),x:p.o.x,y:p.o.y,en:pid})}}
@@ -3824,7 +3868,7 @@ async function pegarInterno(){
   if(porta.de==="main"&&colFlechas)for(const f of porta.flechas)if(mapa[f.a]&&mapa[f.b])colFlechas.add({tablero:k,a:mapa[f.a],b:mapa[f.b],creado:Date.now()}).catch(()=>{});
   const ns=nuevos.map(f=>f()).filter(Boolean);if(ns.length)selPoner(lzMain,ns,false)}
 function pegarTexto(txt){
-  if(abierto){{const sl=selB&&abierto.doc.bloques.find(x=>x.id===selB&&x.t==="links"),us=sl?linksDe(txt):[];if(sl&&us.length){for(const u of us)sl.items.push({id:bid(),url:u});const ln=nodoHoja(sl.id);if(ln)ln.replaceWith(nodoBloque(sl));guardarBloques();pintarHilos();return}}
+  if(enHoja()){{const sl=selB&&abierto.doc.bloques.find(x=>x.id===selB&&x.t==="links"),us=sl?linksDe(txt):[];if(sl&&us.length){for(const u of us)sl.items.push({id:bid(),url:u});const ln=nodoHoja(sl.id);if(ln)ln.replaceWith(nodoBloque(sl));guardarBloques();pintarHilos();return}}
     {const st=selB&&abierto.doc.bloques.find(x=>x.id===selB&&x.t==="tar"),L=st&&listas.find(z=>z.id===st.ref),us=soloLinks(txt);
       if(L&&us){for(const u of us)L.lista.push(itemLink(u));guardarLista(L);pintarTareas();return}
       if(us&&us.length>1&&abierto.k==="ideas"&&colTareas){const dest=abierto.id;puntoNuevo=puntoPegar(lzHoja);nuevaLista({enPlancha:false,lista:us.map(u=>itemLink(u))}).then(id=>{if(id&&abierto&&abierto.id===dest)ponerLista(id)});return}}
@@ -3840,7 +3884,7 @@ function pegarTexto(txt){
   const k=vista,p=puntoPegar(lzMain),numero=data[k].reduce((m,i)=>Math.max(m,i.numero||0),0)+1;
   pegarEn(k,k==="ideas"?{texto:txt,tipo:tipoNueva,creado:Date.now(),numero}:{texto:txt,autor:"",creado:Date.now(),numero},p.x-100,p.y-100)}
 function cortarSel(){const ns=copiarSel();if(!ns){toast("Seleccioná algo para cortar.");return}
-  if(abierto)lzHoja.onBorrarSel(ns);else{selLimpiar(lzMain);selDeco=null;borrarDePlancha(ns)}}
+  if(enHoja())lzHoja.onBorrarSel(ns);else{selLimpiar(lzMain);selDeco=null;borrarDePlancha(ns)}}
 document.addEventListener("paste",e=>{
   const t=tPegar;clearTimeout(tPegar);tPegar=null;if(e.defaultPrevented||enDiario)return;
   if(escribiendo()||!$("tiempo").hidden)return;const c=document.getElementById("conectar");if(c&&!c.hidden)return;
@@ -4158,6 +4202,7 @@ const AYUDA=[
   ["Imágenes","Pegalas con "+CMD+"+V o arrastralas desde la compu. Tocá una y se ve en grande, en pantalla completa; tocá afuera o «Cerrar» para volver."],
   [{chip:"Recortar"},"Con la imagen en grande, tocá «Recortar»: arrastrás los bordes o las esquinas, movés el recuadro y confirmás. Anda en la plancha, adentro de los post-its y en el diario. Un GIF animado queda quieto al recortarlo."],
   [{chip:"•••"},"Las opciones de la idea: categoría, estado (Semilla, En desarrollo, En marcha, Descartada), Exportar, Compartir, la versión texto (la A) y «Cómo se usa?». Para despegar un post-it, hacelo desde la plancha: con la × de su esquina, o elegilo y tocá «Borrar»."],
+  [{chip:"◧"},"Arriba, al lado del •••: pone la plancha general a la izquierda y el post-it a la derecha, mitad y mitad (en la compu). Tocás otro post-it en la plancha y se abre del otro lado. Copiar, pegar y borrar van al lado que tocaste último, así podés pasar cosas de la plancha al post-it. La rayita del medio se arrastra. Tocalo de nuevo para volver a pantalla completa."],
   [{chip:"Exportar"},"Copia el texto o lo descarga como .txt para seguir en Docs o Word."],
   [{chip:"Compartir"},"Te da un link directo a esa nota, que abre solo en tus dispositivos."],
   [{h:'<span class="ay-chip" style="background:#1f9d6b;color:#fff">● Compartir</span>'},"Para trabajar un post-it con otra gente. Mirá la pestaña «Compartir»."],
@@ -4317,6 +4362,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:128,f:"24 de noviembre",it:[
+  ["*Mitad y mitad adentro de los post-its.* Lo mismo que tenemos en el guion: entrás a cualquier post-it y arriba, al lado del •••, tocás *◧*. Te queda la plancha general a la izquierda y el post-it a la derecha. Tocás otro post-it en la plancha y se abre del otro lado, y podés copiar cosas de la plancha y pegarlas adentro. La rayita del medio se arrastra para darle más lugar a uno o al otro. Por ahora es solo en la compu.",null,1]]},
  {n:127,f:"24 de noviembre",it:[
   ["Arreglado: al cambiarle la etiqueta a un renglón, el menú saltaba arriba a la izquierda. Ahora se queda al lado del renglón.",null,3]]},
  {n:126,f:"24 de noviembre",it:[
