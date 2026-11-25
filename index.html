@@ -991,7 +991,10 @@ html.plano .lp-fila:hover .lp-t,html.plano .lp-fila:focus-visible .lp-t{text-dec
 .bref.roto{background:#e9e4da;background-image:none}
 .aparece{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:12px;font:500 10.5px var(--mono);color:var(--soft);text-transform:uppercase;letter-spacing:.05em}
 .aparece button{font:500 13px var(--ui);text-transform:none;letter-spacing:0;border:0;border-radius:999px;padding:4px 10px;background:var(--c);color:var(--ink);cursor:pointer;box-shadow:0 0 0 1px rgba(43,37,32,.3);max-width:230px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#panel-ref .r-lista{display:grid;gap:1px;max-height:min(42vh,340px);overflow:auto}
+#panel-ref .r-lista,#tar-lista{display:grid;gap:1px;max-height:min(42vh,340px);overflow:auto}
+.tar-desp{justify-self:start;border:0;background:none;padding:4px 0;font:600 13px var(--ui);color:var(--soft);cursor:pointer}.tar-desp:hover{color:var(--ink)}
+.tar-desp span{display:inline-block;transition:transform .15s}.tar-desp[aria-expanded="true"] span{transform:rotate(180deg)}
+#tar-hay{display:grid;gap:6px}#tar-cuerpo{display:grid;gap:6px}
 .r-fila{display:grid;grid-template-columns:12px auto minmax(0,1fr) auto;gap:8px;align-items:center;text-align:left;border:0;background:none;padding:7px 6px;border-radius:6px;cursor:pointer;font:500 14px var(--ui);color:var(--ink)}
 .r-fila:hover,.r-fila:focus-visible{background:rgba(43,37,32,.08)}
 .r-fila i{width:12px;height:12px;border-radius:3px;background:var(--c)}
@@ -2268,7 +2271,7 @@ window.claude={use:async n=>{if(INVITADO&&n==="db"){if(!listo)listo=conectar();r
   <div class="panel" id="panel-tar" hidden>
     <div class="meta"><span>Lista</span><button type="button" class="cerrar" id="cerrar-tar" aria-label="Cerrar">×</button></div>
     <button type="button" class="btn oscuro" id="tar-nueva" style="justify-self:start">+ Lista nueva</button>
-    <div id="tar-hay"><span class="nota-panel">O poné una que ya existe. Es la misma lista: lo que tachás o borrás acá, cambia allá también.</span><div class="r-lista" id="tar-lista"></div></div>
+    <div id="tar-hay"><button type="button" class="tar-desp" id="tar-desp" aria-expanded="false" aria-controls="tar-cuerpo">O poné una que ya existe <span aria-hidden="true">▾</span></button><div id="tar-cuerpo" hidden><span class="nota-panel">Es la misma lista: lo que tachás o borrás acá, cambia allá también.</span><div class="r-lista" id="tar-lista"></div></div></div>
   </div>
   <div class="panel" id="panel-ref" hidden>
     <div class="meta"><span id="r-tit">Vínculo a otro post-it</span><button type="button" class="cerrar" id="cerrar-ref" aria-label="Cerrar">×</button></div>
@@ -3987,7 +3990,7 @@ const mayus=t=>t?t.charAt(0).toUpperCase()+t.slice(1):t;
 async function listaPorVoz(d){let L=d.lista?listas.find(l=>l.id===d.lista):null;
   if(!L){const id=await nuevaLista({titulo:d.nombre?mayus(d.nombre):"Lista"});if(!id)return null;await new Promise(r=>setTimeout(r,80));L=listas.find(l=>l.id===id);if(!L)return null}
   if(!Array.isArray(L.lista))L.lista=[];const items=d.texto.split(/\s*(?:,|\by\b(?=[^,]*$)|\n)\s*/).map(x=>x.trim().replace(/[.]+$/,"")).filter(Boolean).map(v=>({id:bid(),v:mayus(v),hecho:null}));
-  if(!items.length)return null;const i=L.lista.findIndex(t=>t.hecho);L.lista.splice(i<0?L.lista.length:i,0,...items);guardarLista(L);pintarTareas();
+  if(!items.length)return null;L.lista.push(...items);guardarLista(L);pintarTareas();
   return (items.length===1?"sumado a ":`${items.length} cosas sumadas a `)+((L.titulo||"").trim()||"la lista")}
 /* lo que dictás con el micrófono de la compu: se lee igual que el atajo («diario…», «frase de…», «idea para un corto…», «lista…», «agregale a la 12…») y se guarda solo */
 async function anotarPorVoz(t){const d=leerDictado(t),id="voz-"+bid()+bid(),creado=Date.now();
@@ -4299,14 +4302,14 @@ const AYUDA=[
  {t:"Listas",it:[
   [{chip:"↔"},"Para ensancharla, arrastrá la manijita del borde derecho (aparece al pasar el mouse o al tocarla)."],
   [{chip:"Doble clic"},"En el fondo de la plancha de ideas → «Lista»: crea una lista nueva ahí. Podés tener todas las que quieras. Le ponés nombre arriba y la movés arrastrándola del título."],
-  [{chip:"☐"},"Cuando hacés una tarea, tocá el cuadradito: se tacha y queda anotada sola en el diario de hoy, con la hora («Terminé: …»). Si la destachás, se borra del diario."],
+  [{chip:"☐"},"Cuando hacés una tarea, tocá el cuadradito: se tacha ahí mismo, sin moverse de lugar, y queda anotada sola en el diario de hoy, con la hora («Terminé: …»). Si la destachás, se borra del diario."],
   [{chip:"⋮⋮"},"Para cambiar el orden, agarrá una tarea de los puntitos de la izquierda y arrastrala adonde quieras. Con el teclado: Alt + ↑ / ↓ mientras escribís en la tarea."],
   [{chip:"×"},"Arriba a la derecha de la lista: la saca de la plancha. Si está adentro de algún post-it, sigue ahí; si no, se borra (te pregunta antes)."],
   [{chip:"🔗"},"Un renglón puede ser un link: pegalo en «+ agregar (o pegá un link)» y aparece con su foto y su título. Si la página no da el título (eBay, por ejemplo), tocá el renglón y ponele un nombre vos. La foto o el dominio lo abren."],
   [{chip:"$"},"Para las listas de compras: tocás el $ al lado del nombre de la lista y cada renglón tiene su precio. Abajo ves el total y cuánto falta comprar (lo tachado ya está comprado). Si un renglón es una opción que no querés sumar, tocá la Σ al lado del precio."],
   [{chip:"Etiquetas"},"Pasá por un renglón y tocá la etiquetita al lado de la ×: Urgente, Importante, Algún día, o creá las tuyas con nombre y color. Las tuyas sirven en todas tus listas."],
   [{chip:"!"},"Al lado del nombre de la lista: la ordena por importancia. Urgente arriba, después Importante, lo que no tiene etiqueta y al final Algún día. Queda prendido y se reacomoda sola cuando cambiás una etiqueta. En el celu, con «! Importancia» arriba de la lista, y tocando el puntito de cada renglón."],
-  [{chip:"Lista"},"Adentro de un post-it, en el «+»: armás una lista nueva ahí o ponés una que ya existe. Es la misma lista en los dos lados: si tachás o borrás algo adentro, cambia afuera también."],
+  [{chip:"Lista"},"Adentro de un post-it, en el «+»: armás una lista nueva ahí o, desde «O poné una que ya existe ▾», elegís una de las que ya tenés. Es la misma lista en los dos lados: si tachás o borrás algo adentro, cambia afuera también."],
   [{chip:"En la plancha"},"Para que una lista de adentro de un post-it se vea en la plancha principal, poné un vínculo a ese post-it en la plancha."]]},
  {t:"Atajos",it:[
   [["Shift","arrastrar"],"Sobre el fondo: dibujás un marco y elegís todo lo que queda adentro."],
@@ -4331,7 +4334,7 @@ const AYUDA=[
   [null,"En el celu la web abre como una app pensada para anotar rápido. La plancha, los hilos y el guion quedan para la compu."],
   [{chip:"Anotar"},"Escribís y elegís a dónde va: Idea (con su categoría y, si querés, una foto), Diario (con la hora), Frase o Lista."],
   [{chip:"Ideas"},"Buscás, filtrás por categoría y abrís cada idea para cambiarle el texto, la categoría o el estado, o sumarle algo adentro."],
-  [{chip:"Listas"},"Agregás renglones, los tachás con el círculo y deslizás a la izquierda para sacarlos. Con «$ Precios» le ponés precio a cada cosa y ves el total."],
+  [{chip:"Listas"},"Agregás renglones, los tachás con el círculo (se quedan en su lugar) y deslizás a la izquierda para sacarlos. Con «$ Precios» le ponés precio a cada cosa y ves el total."],
   [{chip:"🎙"},"Tocás el micrófono, hablás y lo tocás de nuevo: el texto aparece escrito para que lo revises. Anda mejor que el dictado del celu."],
   [null,"Tocando el círculo de arriba a la derecha: Novedades, Ver la web completa y Salir."]]},
  {t:"Contacto",it:[
@@ -4362,6 +4365,9 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:129,f:"25 de noviembre",it:[
+  ["*Lo tachado ya no se va al fondo.* Cuando tachás algo en una lista, se queda donde estaba, tachadito. Lo nuevo que sumás va al final. Vale para la compu y el celu.",null,2],
+  ["Cuando metés una lista adentro de un post-it, las que ya tenés ahora están guardadas en un desplegable («O poné una que ya existe ▾»), así no se arma un choclo cada vez que tenés más listas.",null,2]]},
  {n:128,f:"24 de noviembre",it:[
   ["*Mitad y mitad adentro de los post-its.* Lo mismo que tenemos en el guion: entrás a cualquier post-it y arriba, al lado del •••, tocás *◧*. Te queda la plancha general a la izquierda y el post-it a la derecha. Tocás otro post-it en la plancha y se abre del otro lado, y podés copiar cosas de la plancha y pegarlas adentro. La rayita del medio se arrastra para darle más lugar a uno o al otro. Por ahora es solo en la compu.",null,1]]},
  {n:127,f:"24 de noviembre",it:[
@@ -5234,13 +5240,13 @@ $("h-a-pila").onclick=()=>{if(!abierto||abierto.k!=="ideas")return;abierto.doc.s
 /* ---------- Listas de tareas: cada una vive en «tareas/». Se muestran en la plancha, adentro de post-its, o en los dos lados a la vez (es la misma lista) ---------- */
 let listas=[],colTareas=null,docTareasVieja=null,tareasCargadas=false,migrandoTar=false;const nodosTar=new Map(),listasNuevas=new Set();
 const tecleaEn=c=>{if(c&&c.querySelector&&c.querySelector(".tr-item.tr-arr"))return true;const a=document.activeElement;return !!(c&&a&&c.contains(a)&&(a.tagName==="TEXTAREA"||a.tagName==="INPUT"))};
-/* reordenar tareas: se arrastran de la manijita ⋮⋮ (solo las que faltan hacer; las tachadas quedan abajo) */
+/* reordenar tareas: se arrastran de la manijita ⋮⋮. Las tachadas se quedan en su lugar (no se van al fondo) */
 function ordenarTareas(L,ids){const pend=ids.map(id=>L.lista.find(z=>z.id===id)).filter(Boolean),resto=L.lista.filter(z=>!ids.includes(z.id));L.lista=[...pend,...resto];guardarLista(L);pintarTareas()}
-function moverTareaTecla(L,id,d){const pend=L.lista.filter(t=>!t.hecho).map(t=>t.id),i=pend.indexOf(id),j=i+d;if(i<0||j<0||j>=pend.length)return;[pend[i],pend[j]]=[pend[j],pend[i]];ordenarTareas(L,pend);setTimeout(()=>{const v=[...document.querySelectorAll('[data-lista="'+L.id+'"] .tr-item[data-id="'+id+'"] .tr-v')].find(z=>z.getClientRects().length);v&&v.focus()},30)}
+function moverTareaTecla(L,id,d){const pend=L.lista.map(t=>t.id),i=pend.indexOf(id),j=i+d;if(i<0||j<0||j>=pend.length)return;[pend[i],pend[j]]=[pend[j],pend[i]];ordenarTareas(L,pend);setTimeout(()=>{const v=[...document.querySelectorAll('[data-lista="'+L.id+'"] .tr-item[data-id="'+id+'"] .tr-v')].find(z=>z.getClientRects().length);v&&v.focus()},30)}
 function asaOrden(h,f,L){h.addEventListener("pointerdown",e=>{if(e.button)return;e.preventDefault();e.stopPropagation();const cont=f.parentNode;if(!cont)return;f.classList.add("tr-arr");document.body.classList.add("tr-ordenando");let movio=false;
-  const mv=ev=>{ev.preventDefault();const y=ev.clientY;for(const o of cont.querySelectorAll(":scope>.tr-item:not(.hecha)")){if(o===f)continue;const r=o.getBoundingClientRect();if(y>r.top&&y<r.bottom){const antes=y<r.top+r.height/2;if(antes&&o.previousElementSibling!==f){o.before(f);movio=true}else if(!antes&&o.nextElementSibling!==f){o.after(f);movio=true}break}}};
+  const mv=ev=>{ev.preventDefault();const y=ev.clientY;for(const o of cont.querySelectorAll(":scope>.tr-item")){if(o===f)continue;const r=o.getBoundingClientRect();if(y>r.top&&y<r.bottom){const antes=y<r.top+r.height/2;if(antes&&o.previousElementSibling!==f){o.before(f);movio=true}else if(!antes&&o.nextElementSibling!==f){o.after(f);movio=true}break}}};
   const up=()=>{document.removeEventListener("pointermove",mv,true);document.removeEventListener("pointerup",up,true);document.removeEventListener("pointercancel",up,true);f.classList.remove("tr-arr");document.body.classList.remove("tr-ordenando");
-    if(movio)ordenarTareas(L,[...cont.querySelectorAll(":scope>.tr-item:not(.hecha)")].map(x=>x.dataset.id))};
+    if(movio)ordenarTareas(L,[...cont.querySelectorAll(":scope>.tr-item")].map(x=>x.dataset.id))};
   document.addEventListener("pointermove",mv,true);document.addEventListener("pointerup",up,true);document.addEventListener("pointercancel",up,true)})}
 const limpiarItems=l=>(l||[]).map(t=>{const r={id:t.id,v:t.v||"",hecho:t.hecho||null};if(t.dia)r.dia=t.dia;if(t.url){r.url=t.url;if(t.tt)r.tt=t.tt;if(t.img)r.img=t.img;if(t.meta)r.meta=t.meta}if(Array.isArray(t.tags)&&t.tags.length)r.tags=[...t.tags];if(typeof t.precio==="number"&&isFinite(t.precio))r.precio=t.precio;if(t.noSuma)r.noSuma=true;return r});
 /* precios en las listas de compras: «12.500», «$ 1.200,50», «3500» → número; y al revés, para mostrar */
@@ -5315,7 +5321,7 @@ function armarLista(cont,L,modo){cont.dataset.lista=L.id;cont._f=firmaLista(L,mo
     ib.onclick=e=>{e.stopPropagation();alternarImp(L)};cab.insertBefore(ib,pb)}
   cont.classList.toggle("con-precios",!!L.precios);
   if(modo!=="hoja"){const x=el("button","tr-cerrar","×");x.type="button";x.title="Sacar de la plancha";x.setAttribute("aria-label","Sacar la lista de la plancha");x.onclick=()=>sacarListaDePlancha(L,x);cab.append(x)}
-  const filas=[...pend,...hechas].map(t0=>{const id=t0.id,t=new Proxy({},{get:(_,p)=>(L.lista.find(z=>z.id===id)||t0)[p],set:(_,p,v)=>{(L.lista.find(z=>z.id===id)||t0)[p]=v;return true},deleteProperty:(_,p)=>{delete (L.lista.find(z=>z.id===id)||t0)[p];return true}});const f=el("div","tr-item"+(t.hecho?" hecha":""));f.dataset.id=id;
+  const filas=todas.map(t0=>{const id=t0.id,t=new Proxy({},{get:(_,p)=>(L.lista.find(z=>z.id===id)||t0)[p],set:(_,p,v)=>{(L.lista.find(z=>z.id===id)||t0)[p]=v;return true},deleteProperty:(_,p)=>{delete (L.lista.find(z=>z.id===id)||t0)[p];return true}});const f=el("div","tr-item"+(t.hecho?" hecha":""));f.dataset.id=id;
     const h=el("span","tr-mov",t.hecho?"":"⋮⋮");if(!t.hecho){h.title=L.imp?"Se ordena por importancia: podés moverlo entre los que tienen la misma etiqueta":"Arrastrá para cambiar el orden";h.setAttribute("aria-hidden","true");asaOrden(h,f,L)}
     const ok=el("button","tr-ok",t.hecho?"✓":"");ok.type="button";ok.setAttribute("aria-label",t.hecho?"Destachar":"Tachar");ok.title=t.hecho?"Destachar":"Hecha: se tacha y queda anotada en el diario";ok.onclick=()=>tildarTarea(L,t);
     const v=el("textarea","tr-v");v.rows=1;v.value=t.url?((t.v||"").trim()||t.tt||""):(t.v||"");v.setAttribute("aria-label",t.url?"Título del link":"Renglón");if(t.url)v.placeholder="Ponele un nombre";
@@ -5389,11 +5395,11 @@ function migrarTareasViejas(d){if(migrandoTar||!d||d.migrado||!Array.isArray(d.l
   colTareas.add(o).then(()=>docTareasVieja.set({migrado:true})).catch(()=>{migrandoTar=false})}
 /* «+» adentro de un post-it → Tareas: una lista nueva o una que ya existe */
 function abrirPanelTar(){if(!abierto||abierto.k!=="ideas")return;$("linkform").hidden=true;$("panel-ref").hidden=true;$("panel-tar").hidden=false;const ya=new Set(abierto.doc.bloques.filter(b=>b.t==="tar").map(b=>b.ref)),L=$("tar-lista");L.replaceChildren();
-  const ls=listas.filter(l=>!ya.has(l.id)).sort((a,b)=>(b.creado||0)-(a.creado||0));$("tar-hay").hidden=!ls.length;
+  const ls=listas.filter(l=>!ya.has(l.id)).sort((a,b)=>(b.creado||0)-(a.creado||0));$("tar-hay").hidden=!ls.length;$("tar-cuerpo").hidden=true;$("tar-desp").setAttribute("aria-expanded","false");
   for(const l of ls){const b=el("button","r-fila");b.type="button";const pend=(l.lista||[]).filter(t=>!t.hecho).length,dn=refsLista(l.id).map(i=>"#"+i.numero).concat(l.enPlancha?["plancha"]:[]).join(", ");
     b.append(el("i"),el("span","r-n",String((l.lista||[]).length)),el("span","r-t",nombreLista(l)+((l.lista||[]).length?" — "+(l.lista||[]).slice(0,3).map(txtItem).join(", "):"")),el("span","r-c",dn));b.querySelector("i").style.setProperty("--c","#fffdf6");b.onclick=()=>{ponerLista(l.id);$("panel-tar").hidden=true};L.append(b)}}
 function ponerLista(id){if(!abierto)return;const c=centroNuevo();let x=Math.round(c.x-130),y=Math.round(c.y-90);for(let n=0;n<40&&abierto.doc.bloques.some(b=>Math.abs(b.x-x)<150&&Math.abs(b.y-y)<120);n++){x+=280;if(n%4===3){x-=1120;y+=240}}agregarBloque({id:bid(),t:"tar",ref:id,x,y,w:260})}
-$("add-tar").onclick=abrirPanelTar;$("cerrar-tar").onclick=()=>{$("panel-tar").hidden=true};
+$("add-tar").onclick=abrirPanelTar;$("tar-desp").onclick=()=>{const c=$("tar-cuerpo"),ab=c.hidden;c.hidden=!ab;$("tar-desp").setAttribute("aria-expanded",String(ab))};$("cerrar-tar").onclick=()=>{$("panel-tar").hidden=true};
 $("tar-nueva").onclick=async()=>{if(!abierto)return;const dest=abierto.id,id=await nuevaLista({enPlancha:false});if(!id||!abierto||abierto.id!==dest)return;$("panel-tar").hidden=true;ponerLista(id);setTimeout(()=>enfocarLista(id,".tr-tit"),250)};
 /* si sacás una lista de un post-it y no está en ningún otro lado, se borra */
 function soltarListaDeHoja(lid,hoja){setTimeout(()=>{const L=listas.find(z=>z.id===lid);if(!L||L.enPlancha)return;if(refsLista(lid).some(i=>i.id!==hoja))return;colTareas&&colTareas.doc(lid).delete().catch(()=>{})},1200)}
@@ -7473,6 +7479,6 @@ if(window.__demo){(function(){
   window.buscarActualizacion=revisar})();
 </script>
 <script src="dictado.js?v=1"></script>
-<script src="celu.js?v=14"></script>
+<script src="celu.js?v=15"></script>
 </body>
 </html>

@@ -381,7 +381,7 @@ async function guardarComp(){if(guardando)return;const t=comp.ta.value.trim();if
   }finally{guardando=false}}
 function sumarALista(L,txt,arriba){if(!Array.isArray(L.lista))L.lista=[];const nuevos=[];
   for(const ln of txt.split(/\n+/).map(s=>s.trim()).filter(Boolean)){if(RX_URL.test(ln)){const u=/^www\./i.test(ln)?"https://"+ln:ln;nuevos.push(itemLink(u))}else nuevos.push({id:bid(),v:ln,hecho:null})}
-  if(arriba){const i=L.lista.findIndex(t=>t.hecho);L.lista.splice(i<0?L.lista.length:i,0,...nuevos)}else{const i=L.lista.findIndex(t=>t.hecho);L.lista.splice(i<0?L.lista.length:i,0,...nuevos)}
+  if(arriba)L.lista.unshift(...nuevos);else L.lista.push(...nuevos);
   guardarLista(L);try{pintarTareas()}catch(_){}for(const it of nuevos)if(it.url)try{completarItem(L,it)}catch(_){}return nuevos.length}
 function filaIdea(i,k){const esF=k==="frases";const t=textoIdea(i);
   const meta=h("div",{class:"f-meta"});if(esF){if(i.autor)meta.append(h("span",null,i.autor+" ·"))}else meta.append(h("span",null,"#"+(i.numero||"")+" · "+cat(i.tipo).nombre+" ·"));meta.append(h("span",null,fechaCorta(i.creado||0)));
@@ -524,9 +524,8 @@ function abrirLista(id,volver,nueva){marcarUsoLista(id);abrirCapa(volver||"Lista
     const todas=L.lista||[],pend=todas.filter(t=>!t.hecho),hechas=todas.filter(t=>t.hecho);cnt.textContent=todas.length?"":"Vacía. Escribí abajo del título.";
     pesos.textContent=L.precios?"Sacar precios":(pareceCompras(L)?"$ Sumar precios":"$ Precios");pesos.classList.toggle("on",!!L.precios);pesos.classList.toggle("sug",!L.precios&&pareceCompras(L));impB.classList.toggle("on",!!L.imp);impB.setAttribute("aria-pressed",L.imp?"true":"false");capa._total();
     const firma=JSON.stringify([limpiarItems(todas),verHechas,!!L.precios,!!L.imp,etiquetas().map(e=>e.id+e.color)]);const ed=root.activeElement&&items.contains(root.activeElement);if(!forzarItems&&(items._f===firma||ed))return;items._f=firma;items.replaceChildren();
-    if(pend.length){const g=h("div",{class:"items"});for(const t of pend)g.append(filaItem(L,t,capa));items.append(g)}
-    if(hechas.length){const b=h("button",{type:"button",class:"hechas-btn"+(verHechas?" ab":""),onclick:()=>{verHechas=!verHechas;capa._pintar(true)}},ico(I.chev,16),"Hechas ("+hechas.length+")");items.append(b);
-      if(verHechas){const g=h("div",{class:"items"});for(const t of hechas)g.append(filaItem(L,t,capa));items.append(g)}}
+    /* las tachadas se quedan en su lugar, no se van al fondo */
+    if(todas.length){const g=h("div",{class:"items"});for(const t of todas)g.append(filaItem(L,t,capa));items.append(g)}
     items.append(totBar);
     const refs=refsLista(L.id);
     if(refs.length)items.append(h("div",{class:"nota-ref"},"Esta lista está adentro de "+refs.map(i=>"#"+i.numero).join(", ")+"."));
