@@ -239,6 +239,14 @@ html.plano .ver-pie button{background-color:transparent!important;color:#fff!imp
 .detalle{position:fixed;inset:0;z-index:20}
 .principal{position:absolute;left:0;top:0;width:400px;background:var(--c);padding:30px 26px 22px;display:grid;gap:12px;
   box-shadow:0 2px 2px rgba(0,0,0,.12),0 24px 40px -14px rgba(0,0,0,.55);background-image:linear-gradient(170deg,rgba(255,255,255,.4),transparent 35%);cursor:default}
+.principal .pr-foto{position:relative}.principal .pr-foto:empty{display:none}
+.principal .pr-foto img{display:block;width:100%;max-height:440px;object-fit:cover;border-radius:2px;cursor:zoom-in;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.pr-foto-x{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;font:600 16px/1 var(--ui);cursor:pointer;opacity:0;transition:opacity .15s}
+.principal .pr-foto:hover .pr-foto-x,.pr-foto-x:focus-visible{opacity:1}
+.pr-foto-add{position:absolute;right:10px;top:6px;border:0;background:rgba(0,0,0,.09);color:var(--ink);font:600 11px var(--ui);padding:4px 9px;border-radius:999px;cursor:pointer;opacity:0;transition:opacity .15s}
+.principal:hover .pr-foto-add,.pr-foto-add:focus-visible{opacity:.85}.principal.con-foto .pr-foto-add{display:none}
+@media (hover:none){.pr-foto-add{opacity:.7}.pr-foto-x{opacity:.9}}
+.principal.soltando{outline:3px dashed rgba(0,0,0,.35);outline-offset:4px}
 .principal.frase{background-image:repeating-linear-gradient(transparent 0 31px,rgba(70,120,200,.25) 31px 32px)}
 .principal textarea{width:100%;resize:none;overflow:hidden;border:0;background:transparent;color:var(--ink);font:700 26px/1.25 var(--hand);padding:0}
 .principal textarea:focus,.btxt textarea:focus{outline:none}
@@ -3055,10 +3063,12 @@ async function decoEnPlancha(file,p){
 lzMain.onArchivo=(f,p)=>decoEnPlancha(f,p);
 $("file").onchange=e=>{const f=e.target.files&&e.target.files[0];e.target.value="";if(!f)return;
   if(destinoArchivo==="diario"&&enDiario){imagenEnDia(f,diaDestino);return}
+  if(destinoArchivo==="principal"&&abierto){ponerFotoPrincipal(f);return}
   if(destinoArchivo==="hoja"&&abierto)bloqueImagen(f,centroNuevo());else decoEnPlancha(f,lzMain.centro())};
 document.addEventListener("paste",e=>{if(enDiario){const fi=[...(e.clipboardData?.files||[])].filter(x=>x.type.startsWith("image/"));if(fi.length){e.preventDefault();const p=pagActual();fi.forEach(f=>imagenEnDia(f,p));return}
     const tx=((e.clipboardData&&e.clipboardData.getData("text/plain"))||"").trim();if(!escribiendo()&&/^https?:\/\/\S+$/i.test(tx)){e.preventDefault();linkEnDia(pagActual(),tx)}return}
   if(escribiendo()&&!abierto)return;const fs=[...(e.clipboardData?.files||[])].filter(x=>x.type.startsWith("image/"));if(!fs.length)return;e.preventDefault();
+  if(abierto&&abierto.k==="ideas"&&document.activeElement&&document.activeElement.closest&&document.activeElement.closest("#capa-hoja .principal")){ponerFotoPrincipal(fs[0]);return}
   const p=puntoPegar(lzAct());fs.forEach((f,n)=>{const q={x:p.x+n*30,y:p.y+n*30};if(enHoja())bloqueImagen(f,q);else decoEnPlancha(f,q)})});
 
 /* ---------- Plancha de un post-it ---------- */
@@ -3103,7 +3113,7 @@ function sincronizarAbierto(k){
   if(!abierto||abierto.k!==k)return;const srv=data[k].find(x=>x.id===abierto.id);if(!srv||srv._pend||enVuelo)return;
   if(Object.keys(pend).some(key=>key.startsWith(abierto.id+"|")))return;
   const nuevo=prepararDoc(JSON.parse(JSON.stringify(srv)));
-  const firma=o=>JSON.stringify([o.texto||"",o.autor||"",o.tipo||"",o.estado||null,o.bloques,o.hilos,o.trazos]);
+  const firma=o=>JSON.stringify([o.texto||"",o.autor||"",o.tipo||"",o.estado||null,o.bloques,o.hilos,o.trazos,o.foto||""]);
   if(firma(nuevo)===firma(abierto.doc))return;
   const a=document.activeElement;if(a&&$("detalle").contains(a)&&(a.tagName==="TEXTAREA"||a.tagName==="INPUT")){abierto.remoto=nuevo;return}
   aplicarRemoto(nuevo);
@@ -3124,6 +3134,13 @@ function migrarLinksHoja(){if(!abierto||abierto.k!=="ideas"||!tareasCargadas||!c
   for(const b of abierto.doc.bloques.filter(b=>b.t==="links"&&!migrandoLinks.has(b.id))){migrandoLinks.add(b.id);
     nuevaLista({enPlancha:false,titulo:b.titulo||"",lista:itemsDeLinks(b)}).then(id=>{if(!id||!abierto||abierto.id!==hoja||!abierto.doc.bloques.includes(b))return;
       b.t="tar";b.ref=id;delete b.items;delete b.titulo;guardarBloques();pintarHoja()})}}
+function pintarFotoPrincipal(f,doc){f.replaceChildren();const pr=f.parentElement;if(pr)pr.classList.toggle("con-foto",!!doc.foto);if(!doc.foto)return;
+  const im=el("img");im.alt="";im.draggable=false;im.onerror=()=>im.remove();cargarImg(im,doc.foto);im.title="Ver en grande";im.onclick=e=>{e.stopPropagation();verImagen(doc.foto)};f.append(im);
+  if(!window.__invitado){const x=el("button","pr-foto-x","×");x.type="button";x.title="Sacar la foto";x.setAttribute("aria-label","Sacar la foto");x.onclick=e=>{e.stopPropagation();ponerFotoPrincipal(null)};f.append(x)}}
+async function ponerFotoPrincipal(file){if(!abierto||abierto.k!=="ideas")return;const destino=abierto.id;let ref="";
+  if(file){estado("Subiendo la foto…");const r=await subir(file);if(!r){estado("");return}ref=r.id}
+  if(!abierto||abierto.id!==destino){escribir(cols.ideas,destino,{foto:ref});return}
+  abierto.doc.foto=ref;guardarHoja("foto",ref);const f=document.querySelector("#capa-hoja .principal .pr-foto");if(f)pintarFotoPrincipal(f,abierto.doc);requestAnimationFrame(()=>{pintarHilos();pintarFlechas&&pintarFlechas()})}
 function pintarHoja(){if(lzHoja.sel.size||lzHoja._barra)selLimpiar(lzHoja);setTimeout(migrarLinksHoja,0);
   const {k,doc}=abierto,capa=$("capa-hoja");capa.replaceChildren();
   const esDia=k==="diario";
@@ -3132,6 +3149,9 @@ function pintarHoja(){if(lzHoja.sel.size||lzHoja._barra)selLimpiar(lzHoja);setTi
   else m.append(el("span",null,`${k==="ideas"?"Idea":"Frase"} #${doc.numero||"?"}${k==="ideas"?" · "+label(doc.tipo):""}`),el("span",null,doc.creado?new Date(doc.creado).toLocaleDateString("es-AR"):""));
   const t=el("textarea");t.rows=1;t.value=doc.texto||"";t.placeholder=esDia?"¿Qué pasó hoy? Escribí lo que quieras. Podés pegar fotos, post-its, lo que sea.":k==="ideas"?"La idea":"La frase";t.setAttribute("aria-label","Texto principal");
   t.oninput=()=>{autosize(t);doc.texto=t.value;guardarLuego("texto",()=>abierto.doc.texto);pintarHilos()};p.append(m,t);
+  if(k==="ideas"){const f=el("div","pr-foto");p.append(f);pintarFotoPrincipal(f,doc);if(!window.__invitado){const ad=el("button","pr-foto-add","+ Foto");ad.type="button";ad.title="Ponele una foto a este post-it (también podés arrastrarla o pegarla acá)";ad.onclick=e=>{e.stopPropagation();destinoArchivo="principal";$("file").click()};p.append(ad);
+    p.addEventListener("dragover",e=>{if([...(e.dataTransfer?.types||[])].includes("Files")){e.preventDefault();e.stopPropagation();p.classList.add("soltando")}});p.addEventListener("dragleave",()=>p.classList.remove("soltando"));
+    p.addEventListener("drop",e=>{p.classList.remove("soltando");const fi=[...(e.dataTransfer?.files||[])].find(x=>x.type.startsWith("image/"));if(!fi)return;e.preventDefault();e.stopPropagation();ponerFotoPrincipal(fi)})}}
   if(k==="ideas"&&doc.vivo)setTimeout(()=>enlazarVivo(t,doc),0);
   if(k==="frases"){const a=el("input");a.type="text";a.value=doc.autor||"";a.placeholder="¿quién la dijo?";a.setAttribute("aria-label","Autor");a.oninput=()=>{doc.autor=a.value;guardarLuego("autor",()=>abierto.doc.autor.trim())};p.append(a)}
   p.addEventListener("pointerdown",e=>{if(!e.target.closest("textarea,input"))e.stopPropagation()});
@@ -3275,7 +3295,7 @@ function meterEnListaLinks(lid,b,n){const d=abierto.doc,lb=d.bloques.find(x=>x.i
 let hpPila=null,tHpTit=null;
 const miembrosHP=pid=>abierto?abierto.doc.bloques.filter(b=>b.en===pid):[];
 const NOMBRE_B={post:"Post-it",txt:"Nota",tx:"Texto",img:"Imagen",link:"Link",ref:"Vínculo",tar:"Lista",cal:"Calendario",esc:"Escaleta",pila:"Pila"};
-const fotoDeB=x=>x.t==="img"?x.a:x.t==="ref"&&kDe(x)==="ideas"?(((data.ideas.find(i=>i.id===x.ref)||{}).bloques||[]).find(y=>y.t==="img"&&y.a)||{}).a:null;
+const fotoDeB=x=>x.t==="img"?x.a:x.t==="ref"&&kDe(x)==="ideas"?((data.ideas.find(i=>i.id===x.ref)||{}).foto||(((data.ideas.find(i=>i.id===x.ref)||{}).bloques||[]).find(y=>y.t==="img"&&y.a)||{}).a):null;
 const textoDeB=x=>{if(x.t==="ref"){const i=data[kDe(x)].find(z=>z.id===x.ref);return i?(i.texto||""):""}if(x.t==="link"){let h=x.url;try{h=new URL(x.url).hostname.replace(/^www\./,"")}catch(_){}return x.titulo||h}if(x.t==="tar"){const L=listas.find(z=>z.id===x.ref);return L?((L.titulo||"Lista")+": "+(L.lista||[]).map(txtItem).slice(0,4).join(", ")):""}return x.v||""};
 function editarTituloPilaHoja(n,b){const tt=n.querySelector(".pila-titulo");if(!tt||n._editTit)return;n._editTit=true;const i=el("input","pila-tit-ed");i.type="text";i.value=b.titulo||"";i.placeholder="Pila";i.maxLength=80;i.setAttribute("aria-label","Título de la pila");tt.replaceWith(i);
   let hecho=false;const fin=ok=>{if(hecho)return;hecho=true;n._editTit=false;if(ok){const v=i.value.trim();if(v)b.titulo=v;else delete b.titulo;guardarBloques()}pintarPilaHoja(n,b)};
@@ -4206,6 +4226,7 @@ const AYUDA=[
   [{chip:"Recortar"},"Con la imagen en grande, tocá «Recortar»: arrastrás los bordes o las esquinas, movés el recuadro y confirmás. Anda en la plancha, adentro de los post-its y en el diario. Un GIF animado queda quieto al recortarlo."],
   [{chip:"•••"},"Las opciones de la idea: categoría, estado (Semilla, En desarrollo, En marcha, Descartada), Exportar, Compartir, la versión texto (la A) y «Cómo se usa?». Para despegar un post-it, hacelo desde la plancha: con la × de su esquina, o elegilo y tocá «Borrar»."],
   [{chip:"◧"},"Arriba, al lado del •••: pone la plancha general a la izquierda y el post-it a la derecha, mitad y mitad (en la compu). Tocás otro post-it en la plancha y se abre del otro lado. Copiar, pegar y borrar van al lado que tocaste último, así podés pasar cosas de la plancha al post-it. La rayita del medio se arrastra. Tocalo de nuevo para volver a pantalla completa."],
+  [{chip:"+ Foto"},"Pasá el mouse por el post-it grande de adentro y arriba a la derecha aparece «+ Foto»: le ponés una foto al post-it mismo (también la podés arrastrar encima o pegarla con el cursor en el título). Esa foto es la que se ve cuando lo vinculás en otro lado y en el guion. Con la × la sacás."],
   [{chip:"Exportar"},"Copia el texto o lo descarga como .txt para seguir en Docs o Word."],
   [{chip:"Compartir"},"Te da un link directo a esa nota, que abre solo en tus dispositivos."],
   [{h:'<span class="ay-chip" style="background:#1f9d6b;color:#fff">● Compartir</span>'},"Para trabajar un post-it con otra gente. Mirá la pestaña «Compartir»."],
@@ -4256,7 +4277,7 @@ const AYUDA=[
   [null,"A la izquierda tenés las escenas, los personajes y las locaciones, con buscador. Las locaciones se vuelven post-its adentro de la película solas."],
   [{chip:"Hilos"},"En la lista de escenas, el circulito te deja elegir a qué hilo narrativo pertenece la escena (o crear uno nuevo). Cada hilo tiene su color y la escena se pinta con ese color."],
   [{chip:"La peli"},"Arriba a la derecha. Tiene tres pestañas: Escaleta (se arma sola), Línea de tiempo (con hilos narrativos y personajes) y Desglose. Las ves abajo del guion, al costado o en pantalla completa. Arrastrando escenas reordenás el guion. Con la × al lado de un personaje lo sacás de la línea."],
-  [{chip:"◧ y candado"},"◧ pone la plancha de la película al lado del guion, mitad y mitad. El candadito de al lado une el scroll: guion y plancha suben y bajan juntos, muevas el que muevas (con el candado puesto, la rueda sobre la plancha la mueve en vez de hacer zoom; para el zoom, Ctrl + rueda). Tocalo de nuevo para soltarlo."],
+  [{chip:"◧ y candado"},"◧ pone la plancha de la película al lado del guion, mitad y mitad. El candadito de al lado traba guion y plancha donde estén: suben y bajan juntos, muevas el que muevas, y aunque hagas zoom en la plancha, la parte que va con cada escena se queda a su altura. Cada post-it recuerda dónde y con qué zoom lo trabaste: si entrás a otro post-it o salís del mitad y mitad, al volver queda igual. Con el candado puesto, la rueda sobre la plancha la mueve en vez de hacer zoom (para el zoom, Ctrl + rueda). Para trabarlo en otro lugar, soltalo y volvé a tocarlo."],
   [{chip:"↗ Vincular"},"Marcás un pedazo, tocás Vincular en el cartelito del costado (o Ctrl+K, ⌘+K en Mac) y se crea un post-it con eso adentro de la película; el pedazo queda resaltado en amarillo. Sin marcar nada, lo atás a un post-it que ya existe."],
   [{chip:"🏷 Desglose"},"Marcás una palabra (aunque sea una sola) y la clasificás: utilería, vestuario, extras, vehículos, efectos, etc. En La peli → Desglose ves la escena donde estás o toda la peli, y lo bajás como planilla. El elenco sale solo, y además te sugiere lo que encuentra leyendo cada escena (animales, utilería, vestuario…): lo sumás con ✓ o lo descartás con ×."],
   [{chip:"💬 Comentar"},"Marcás algo y tocás Comentar en el cartelito del costado (o Ctrl+Alt+M): queda un comentario al costado del renglón. Tocalo para editarlo, responderlo o resolverlo: las respuestas quedan abajo, como una charla, sean tuyas o de otro. Cuando marcás texto, Comentar, Vincular y Desglose te aparecen al costado de la hoja."],
@@ -4365,6 +4386,10 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:130,f:"25 de noviembre",it:[
+  ["*Foto en el post-it principal.* Adentro de cualquier post-it, pasá el mouse por el post-it grande y tocá *+ Foto* (o arrastrá una imagen encima, o pegala con el cursor en el título). Queda en el post-it mismo, y es la que se ve cuando lo vinculás en otro lado o en el guion.",null,1],
+  ["*El candado del guion ya no se descalibra.* Ahora traba guion y plancha donde estén: aunque hagas zoom en la plancha o bajes con las flechitas escribiendo, cada escena sigue a la altura de lo suyo en la plancha. Y cada post-it recuerda dónde y con qué zoom lo trabaste: si entrás a otro post-it, salís del mitad y mitad o cerrás el guion, al volver queda como lo dejaste. Para trabarlo en otro lugar, lo soltás y lo volvés a tocar.",null,1],
+  ["Guion: escribís el *personaje*, tocás *Tab* y pasás directo al diálogo (antes te lo convertía en paréntesis). Anda también si lo elegiste de la lista con las flechitas.",null,2]]},
  {n:129,f:"25 de noviembre",it:[
   ["*Lo tachado ya no se va al fondo.* Cuando tachás algo en una lista, se queda donde estaba, tachadito. Lo nuevo que sumás va al final. Vale para la compu y el celu.",null,2],
   ["Cuando metés una lista adentro de un post-it, las que ya tenés ahora están guardadas en un desplegable («O poné una que ya existe ▾»), así no se arma un choclo cada vez que tenés más listas.",null,2]]},
@@ -6233,7 +6258,12 @@ function tecla(e){
     if(k==="Escape"){e.preventDefault();cerrarAC();return}
     if(k==="Tab"&&!e.shiftKey){const pp=actual(),n=acSel>=0?acSel:(pp&&pp.dataset.t==="personaje"?0:-1);if(n>=0){e.preventDefault();aceptarAC(n);return}}
     if(k==="Tab")cerrarAC()}
-  if(k==="Tab"){e.preventDefault();const p=actual();if(!p)return;marcar();ciclar(p,e.shiftKey?-1:1);pintarTipoUI();sugerir();return}
+  if(k==="Tab"){e.preventDefault();const p=actual();if(!p)return;
+    /* personaje ya escrito y el cursor al final: Tab pasa al diálogo (como Enter), no convierte el nombre en paréntesis */
+    if(!e.shiftKey&&p.dataset.t==="personaje"&&p.textContent.trim()&&offCaret(p)>=p.textContent.length){const r=rango();if(r&&r.collapsed){const nx=p.nextElementSibling;
+      if(nx&&nx.dataset.t==="dialogo"){caret(nx,nx.textContent.trim()?"fin":0);pintarTipoUI();sugerir();return}
+      enter(e);pintarTipoUI();sugerir();return}}
+    marcar();ciclar(p,e.shiftKey?-1:1);pintarTipoUI();sugerir();return}
   if(k==="Enter"){enter(e);sugerir();return}
   if(k==="Backspace"&&!c){borrarAtras(e);return}
   if(k==="Delete"&&!c){borrarAdelante(e);return}
@@ -6315,7 +6345,7 @@ function vinculosEscena(p){const out=[],vistos=new Set();
   for(const r of refsDe(p.dataset.id)){if(G&&r.k==="ideas"&&r.id===G.doc.postit)continue;const i=itemDe(r.k,r.id);if(!i)continue;vistos.add(r.k+":"+r.id);out.push({...r,i,auto:false})}
   if(p.dataset.t==="escena"){const pl=postitDeLugar(lugarDe(p.textContent));if(pl&&!vistos.has("ideas:"+pl.id))out.push({k:"ideas",id:pl.id,loc:1,i:pl.i,auto:true})}
   return out}
-function primeraImg(i){return (i.bloques||[]).find(b=>b.t==="img"&&b.a)||null}
+function primeraImg(i){return i.foto?{a:i.foto}:(i.bloques||[]).find(b=>b.t==="img"&&b.a)||null}
 function abrirPop(v,ancla,pid){const i=v.i;pop.replaceChildren();
   const cat=v.k==="frases"?"Frase":v.loc?"Locación":`#${i.numero||"?"} · ${label(i.tipo)}`;pop.append(mk("div","k",cat+(v.auto?" · vinculada sola por el nombre":"")));
   const tx=(i.texto||"").trim();pop.append(mk("h4",null,v.k==="frases"?`“${tx.slice(0,140)}”`:tx.split("\n")[0].slice(0,120)||"(sin texto)"));
@@ -6336,26 +6366,42 @@ function alternarMitad(){if(mitad){salirMitad(true);return}if(!G)return;const pi
 let esperandoMitad=false;
 /* candado: en el mitad y mitad, al scrollear el guion se mueve también la plancha */
 let candado=false;try{candado=localStorage.getItem("gu_candado")==="1"}catch(_){}
-let scrollAntes=0,guToca=false,guToque=0;
 const ICO_CAND=c=>`<svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><path d="${c?"M6.5 9V6.5a3.5 3.5 0 0 1 7 0V9":"M6.5 9V6.5a3.5 3.5 0 0 1 6.8-1.2"}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="4.5" y="9" width="11" height="8" rx="1.6" fill="currentColor"/></svg>`;
 function pintarCandado(){const b=Q("gu-ed").querySelector('[data-a="candado"]');if(!b)return;b.setAttribute("aria-pressed",candado?"true":"false");b.title=candado?"Scroll unido: guion y plancha se mueven juntos (tocá para soltarlo)":"Unir el scroll del guion con la plancha";b.innerHTML=ICO_CAND(candado)}
-function alternarCandado(){candado=!candado;scrollAntes=scroller.scrollTop;try{localStorage.setItem("gu_candado",candado?"1":"0")}catch(_){}pintarCandado();toast(candado?"Scroll unido: guion y plancha suben y bajan juntos.":"Scroll suelto: cada lado se mueve por su cuenta.")}
-/* solo cuando el que scrollea sos vos (rueda, dedo, teclado o la barra), no cuando la web reacomoda el guion */
-const guMarca=()=>{guToque=performance.now()};
-for(const t of ["wheel","touchmove","keydown"])scroller.addEventListener(t,guMarca,{passive:true});
-scroller.addEventListener("pointerdown",()=>{guToca=true},{passive:true});addEventListener("pointerup",()=>{if(guToca){guToca=false;guMarca()}},true);addEventListener("pointercancel",()=>{guToca=false},true);
-scroller.addEventListener("scroll",()=>{const y=scroller.scrollTop,d=y-scrollAntes;scrollAntes=y;if(!candado||!mitad||!abierto||!d)return;if(!guToca&&performance.now()-guToque>700)return;guMarca();lzHoja.ty-=d;desdeGuion=true;try{lzHoja.apply()}finally{desdeGuion=false}},{passive:true});
+/* El candado guarda una «calibración» por post-it: qué parte de la plancha va con qué parte del guion (en unidades del guion y de la plancha, no en píxeles de pantalla).
+   Así el zoom de la plancha, las flechitas del teclado o salir y volver al mitad y mitad no descalibran nada: la plancha siempre se pone donde le toca. */
+let lockC=null,scrollAntes=0,scrollPropio=null;
+const lockClave=()=>G&&abierto?"gu_lock:"+G.id+":"+abierto.id:null;
+const lockRef=()=>lzHoja.rect().height/2;/* la línea de referencia: la mitad de la plancha */
+const lockActivo=()=>!!(candado&&mitad&&abierto&&lockC);
+function lockLeer(){const k=lockClave();if(!k)return null;try{const v=JSON.parse(localStorage.getItem(k)||"null");return v&&isFinite(v.k)&&v.k>0&&isFinite(v.w0)&&isFinite(v.g0)?v:null}catch(_){return null}}
+function lockCalibrar(){const k=lockClave();if(!k||!zoom)return null;const c={g0:scroller.scrollTop/zoom,w0:(lockRef()-lzHoja.ty)/lzHoja.s,k:zoom/lzHoja.s,s:lzHoja.s,tx:lzHoja.tx};try{localStorage.setItem(k,JSON.stringify(c))}catch(_){}return c}
+let desdeGuion=false;
+function lockDesdeGuion(){if(!lockActivo()||!zoom)return;const w=lockC.w0+(scroller.scrollTop/zoom-lockC.g0)*lockC.k,ty=lockRef()-w*lzHoja.s;if(Math.abs(ty-lzHoja.ty)<.5)return;lzHoja.ty=ty;desdeGuion=true;try{lzHoja.apply()}finally{desdeGuion=false}}
+function lockDesdePlancha(){if(!lockActivo()||!zoom)return;const w=(lockRef()-lzHoja.ty)/lzHoja.s,g=lockC.g0+(w-lockC.w0)/lockC.k;scroller.scrollTop=Math.max(0,g*zoom);scrollPropio=scroller.scrollTop;scrollAntes=scrollPropio}
+/* al entrar (o volver) a un post-it con el candado puesto: vuelve al zoom y al lugar donde lo trabaste */
+function lockRestaurar(){if(!candado||!mitad||!abierto){lockC=null;return}const c=lockLeer();if(!c){lockC=lockCalibrar();return}lockC=c;lzHoja.s=c.s;if(isFinite(c.tx))lzHoja.tx=c.tx;desdeGuion=true;try{lzHoja.apply()}finally{desdeGuion=false}lockDesdeGuion()}
+function alternarCandado(){candado=!candado;scrollAntes=scroller.scrollTop;try{localStorage.setItem("gu_candado",candado?"1":"0")}catch(_){}pintarCandado();
+  lockC=candado&&mitad&&abierto?lockCalibrar():null;
+  toast(candado?"Trabado acá: guion y plancha se mueven juntos. Cuando vuelvas, la plancha vuelve a este lugar y a este zoom.":"Scroll suelto: cada lado se mueve por su cuenta.")}
+/* cualquier movimiento del guion (rueda, barra, flechitas, Enter, lo que sea) lleva la plancha a su lugar */
+scroller.addEventListener("scroll",()=>{const y=scroller.scrollTop;scrollAntes=y;if(scrollPropio!=null&&Math.abs(y-scrollPropio)<2){scrollPropio=null;return}scrollPropio=null;lockDesdeGuion()},{passive:true});
 /* y al revés: si movés la plancha para arriba o para abajo, el guion la sigue */
-let desdeGuion=false,plToca=false,plToque=0,tyAntes=lzHoja.ty,sAntes=lzHoja.s;
+let plToca=false,plToque=0,tyAntes=lzHoja.ty,sAntes=lzHoja.s;
 {const vp=lzHoja.vp,marca=()=>{plToque=performance.now()};
   vp.addEventListener("wheel",marca,{passive:true,capture:true});
   /* con el candado puesto, la rueda (o dos dedos en el trackpad) sube y baja la plancha en vez de hacer zoom; Ctrl + rueda o pellizcar sigue siendo zoom */
-  vp.addEventListener("wheel",e=>{if(!candado||!mitad||!abierto||e.ctrlKey||e.metaKey)return;const ta=e.target.closest&&e.target.closest("textarea");if(ta&&ta.scrollHeight>ta.clientHeight)return;
+  vp.addEventListener("wheel",e=>{if(!lockActivo()||e.ctrlKey||e.metaKey)return;const ta=e.target.closest&&e.target.closest("textarea");if(ta&&ta.scrollHeight>ta.clientHeight)return;
     e.preventDefault();e.stopImmediatePropagation();const k=e.deltaMode===1?16:e.deltaMode===2?innerHeight:1;marca();lzHoja.tx-=e.deltaX*k;lzHoja.ty-=e.deltaY*k;lzHoja.apply()},{passive:false,capture:true});vp.addEventListener("pointerdown",()=>{plToca=true},true);
   addEventListener("pointerup",()=>{if(plToca){plToca=false;marca()}},true);addEventListener("pointercancel",()=>{plToca=false},true);
   const ap=lzHoja.apply;lzHoja.apply=function(){const d=this.ty-tyAntes,mismoZoom=this.s===sAntes;tyAntes=this.ty;sAntes=this.s;const r=ap.apply(this,arguments);
-    if(d&&mismoZoom&&!desdeGuion&&candado&&mitad&&abierto&&(plToca||performance.now()-plToque<700)){scroller.scrollTop-=d;scrollAntes=scroller.scrollTop}
+    if(desdeGuion||!lockActivo())return r;
+    /* zoom en la plancha: se acerca o se aleja, pero la parte que va con el guion se queda en la misma altura */
+    if(!mismoZoom){lockDesdeGuion();return r}
+    if(d&&(plToca||performance.now()-plToque<700))lockDesdePlancha();
     return r}}
+/* entrar a otro post-it en el mitad y mitad (o volver al de la peli): cada uno tiene su propia calibración */
+{const a0=abrir;abrir=function(){const r=a0.apply(this,arguments);lockC=null;setTimeout(()=>{if(mitad&&abierto)lockRestaurar()},80);return r}}
 try{pintarCandado()}catch(_){}
 addEventListener("pointerdown",e=>{if(mitad){ladoMitad=e.clientX<corteX()?"guion":"plancha";document.body.classList.toggle("gu-lado-guion",ladoMitad==="guion")}},true);
 /* la división se arrastra: más lugar para el guion o para la plancha */
@@ -6748,7 +6794,7 @@ function opciones(){abrirModal(m=>{m.append(mk("h3",null,"Formato y página"));
   m.append(mk("p","gu-nota","Convocatorias: 2,5 cm arriba, abajo y a los costados; diálogos con 5 cm a cada lado (≈ 40 caracteres); todo a la izquierda; páginas numeradas desde la 1. Industria: 1,5\" a la izquierda, 1\" arriba, abajo y a la derecha; páginas numeradas desde la 2. Siempre Courier 12, interlineado sencillo."));
   const acc=mk("div","acc");acc.append(btn(null,"Cancelar",cerrarModal),btn("si","Listo",()=>{marcar();Object.assign(opc,{formato:fo.value,pagina:pa.value,fuente:fu.value,lineasEscena:+le.value,numEscenas:ne.value,trasDialogo:td.value,negritaEscena:ng.checked,subrayarEscena:sb.checked,numPaginas:np.checked,contd:ct.checked,contdTxt:cx.value.trim()||"(CONT.)"});if(oc.checked!==ORT.on)ortPrender(oc.checked);zoomAuto=true;cerrarModal();cambio()}));m.append(acc)})}
 function atajos(){abrirModal(m=>{m.append(mk("h3",null,"Atajos de teclado"));const t=mk("table","gu-atajos");
-  for(const [a,b] of [["Tab","Cambia el tipo de la línea: Escena → Acción → Personaje → Paréntesis → Diálogo → Transición → Plano → Texto"],["Shift+Tab","Lo mismo, para atrás"],["Enter","Línea nueva del tipo que sigue (Escena→Acción, Personaje→Diálogo, Diálogo→Acción, Transición→Escena)"],["Enter en línea vacía","La vuelve Acción"],["Shift+Enter","Línea nueva del mismo tipo"],[`${CTRL}+Shift+1…8`,"Escena, Acción, Personaje, Paréntesis, Diálogo, Transición, Plano, Texto"],["(","En una línea vacía de diálogo o personaje, empieza un paréntesis"],["↑ ↓ y Enter o Tab","Elegir una sugerencia (lugares, momentos del día, personajes, transiciones)"],["Tab en un personaje","Completa el nombre con la primera sugerencia (o la que elegiste con las flechas)"],[`${CTRL}+B / I / U`,"Negrita, itálica, subrayado"],[`${CTRL}+Z / ${CTRL}+Shift+Z`,"Deshacer / rehacer"],[`${CTRL}+F`,"Buscar y reemplazar"],[`${CTRL}+K`,"Vincular un post-it o frase a la escena"],[`${CTRL}+S`,"Guardar ya (igual se guarda solo)"],[`${CTRL}+P`,"Exportar PDF"],["Esc","Cerrar sugerencias y ventanas"]]){const tr=mk("tr");tr.append(mk("td",null,a),mk("td",null,b));t.append(tr)}
+  for(const [a,b] of [["Tab","Cambia el tipo de la línea: Escena → Acción → Personaje → Paréntesis → Diálogo → Transición → Plano → Texto"],["Tab después de un personaje","Con el nombre ya escrito, pasa al diálogo"],["Shift+Tab","Lo mismo, para atrás"],["Enter","Línea nueva del tipo que sigue (Escena→Acción, Personaje→Diálogo, Diálogo→Acción, Transición→Escena)"],["Enter en línea vacía","La vuelve Acción"],["Shift+Enter","Línea nueva del mismo tipo"],[`${CTRL}+Shift+1…8`,"Escena, Acción, Personaje, Paréntesis, Diálogo, Transición, Plano, Texto"],["(","En una línea vacía de diálogo o personaje, empieza un paréntesis"],["↑ ↓ y Enter o Tab","Elegir una sugerencia (lugares, momentos del día, personajes, transiciones)"],["Tab en un personaje","Completa el nombre con la primera sugerencia (o la que elegiste con las flechas)"],[`${CTRL}+B / I / U`,"Negrita, itálica, subrayado"],[`${CTRL}+Z / ${CTRL}+Shift+Z`,"Deshacer / rehacer"],[`${CTRL}+F`,"Buscar y reemplazar"],[`${CTRL}+K`,"Vincular un post-it o frase a la escena"],[`${CTRL}+S`,"Guardar ya (igual se guarda solo)"],[`${CTRL}+P`,"Exportar PDF"],["Esc","Cerrar sugerencias y ventanas"]]){const tr=mk("tr");tr.append(mk("td",null,a),mk("td",null,b));t.append(tr)}
   m.append(t,mk("p","gu-nota","Escribir «int.» o «ext.» al principio de una acción y apretar Enter la convierte en escena."));const acc=mk("div","acc");acc.append(btn("si","Listo",cerrarModal));m.append(acc)})}
 function elegirItem({titulo,sub,crear,tipos,onElegir,excluir,peliPrimero}){abrirModal(m=>{m.append(mk("h3",null,titulo));if(sub)m.append(mk("p","gu-nota",sub));
     const fil=mk("div","gu-fil");let filtro="todo";const ops=[["todo","Todo"],["ideas","Post-its"],["frases","Frases"],["loc","Locaciones"]].filter(([v])=>!tipos||tipos.includes(v));
