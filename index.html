@@ -841,7 +841,8 @@ body.en-diario .dia-herr{display:flex}
 .pv-nota.con-img .pv-txt{-webkit-line-clamp:2}
 .pv-img{width:100%;height:100%;min-height:200px;object-fit:cover;display:block;background:rgba(43,37,32,.1)}
 .pv-pie{display:flex;align-items:center;justify-content:space-between;gap:6px}
-.pv-link{min-width:0;max-width:62%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:600 11px var(--ui);color:var(--ink);background:rgba(43,37,32,.12);border-radius:999px;padding:3px 9px;text-decoration:none;cursor:pointer}.pv-link:hover{background:var(--ink);color:var(--paper)}
+.pv-nota>*{min-width:0}.pv-pie{position:relative;min-width:0}.pv-pie>.pv-bts{position:absolute;right:0;top:50%;transform:translateY(-50%);background:var(--c);padding-left:6px}
+.pv-link{min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:600 11px var(--ui);color:var(--ink);background:rgba(43,37,32,.12);border-radius:999px;padding:3px 9px;text-decoration:none;cursor:pointer}.pv-link:hover{background:var(--ink);color:var(--paper)}
 .pv-pie span{font:500 9.5px var(--mono);text-transform:uppercase;color:var(--soft)}
 .pv-sacar{border:0;border-radius:999px;background:rgba(43,37,32,.07);color:rgba(43,37,32,.55);font:600 10.5px var(--ui);padding:3px 8px;cursor:pointer;opacity:0;transition:opacity .15s,background .15s}
 .pv-nota:hover .pv-sacar,.pv-sacar:focus-visible{opacity:1}.pv-bts{display:flex;gap:4px}.pv-borrar:hover{background:#c0392b!important;color:#fff!important}.pv-sacar:hover{background:var(--ink);color:var(--paper)}
@@ -3240,12 +3241,16 @@ function hostDe(u){try{return new URL(u).hostname.replace(/^www\./,"")}catch(_){
 function ytIdDe(u){try{const x=new URL(u),h=x.hostname.replace(/^www\.|^m\./,"");if(h==="youtu.be")return x.pathname.slice(1).split("/")[0]||null;
   if(h==="youtube.com"||h==="music.youtube.com"){if(x.searchParams.get("v"))return x.searchParams.get("v");const m=/^\/(shorts|embed|live)\/([\w-]{6,})/.exec(x.pathname);if(m)return m[2]}}catch(_){}return null}
 const linkPropio=u=>/(^|\.)imagenesdeltiempo\.app$/.test(hostDe(u))||/#guion/.test(u||"");
+/* los títulos que trae la vista previa vienen con códigos tipo &#xe9; (é) y a veces cortados a la mitad de uno */
+function limpiarTitulo(t){if(!t||!/&/.test(t))return t||"";const ta=document.createElement("textarea");ta.innerHTML=t;return ta.value.replace(/&#?x?[0-9a-z]*$/i,"").trim()}
+/* para el texto del post-it: «Fulano en Instagram: "receta…"» → «receta…» */
+function textoDeTitulo(t){t=limpiarTitulo(t);const m=/^.{1,90}? (?:en|on) (?:Instagram|TikTok|Facebook|Threads)\s*:\s*["“]?([\s\S]+?)["”]?$/i.exec(t);return (m?m[1]:t).trim()}
 function metaLink(u){if(!metaPend.has(u))metaPend.set(u,fetch(META_URL+encodeURIComponent(u)).then(r=>r.ok?r.json():null).catch(()=>null));return metaPend.get(u)}
 /* le pone al link (suelto o renglón de una lista) su título y su miniatura. Devuelve true si cambió algo */
 async function completarLink(b){if(!b||!b.url||b.meta||linkPropio(b.url))return false;const yt=ytIdDe(b.url),ytImg=yt?"https://i.ytimg.com/vi/"+yt+"/hqdefault.jpg":"";
   const d=await metaLink(b.url);
   if(!d){if(ytImg&&b.img!==ytImg){b.img=ytImg;return true}return false}
-  b.meta=1;if(d.titulo)b.tt=d.titulo;const im=d.imagen||ytImg;if(im)b.img=im;return true}
+  b.meta=1;if(d.titulo)b.tt=limpiarTitulo(d.titulo);const im=d.imagen||ytImg;if(im)b.img=im;return true}
 function pintarMiniLink(n,b){let m=n.querySelector(":scope>.link-mini");if(!b.img){if(m)m.remove();return}
   if(!m){m=el("div","link-mini");const im=el("img");im.alt="";im.referrerPolicy="no-referrer";im.loading="lazy";im.draggable=false;im.onerror=()=>{m.remove();pintarHilos()};im.onload=()=>pintarHilos();m.append(im);n.prepend(m)}
   const im=m.querySelector("img");if(im.getAttribute("src")!==b.img)im.src=b.img}
@@ -4388,6 +4393,8 @@ function pintarAyuda(){const idx=$("ay-idx");idx.replaceChildren();
    Si el cambio solo lo ve Lenny (pruebas), la entrada lleva mio:true y el cartel le sale solo a él.
    Cada ítem: [título, explicación, importancia 1/2/3]. */
 const NOVEDADES=[
+ {n:133,f:"26 de noviembre",it:[
+  ["Los links de Instagram que pegás en una pila ya no salen con códigos raros (tipo «sart&#xe9;n»): se lee bien, y el post-it queda con el texto de la publicación, sin el «Fulano en Instagram:» adelante. Los que ya habías pegado se arreglan solos al abrir la pila.",null,3]]},
  {n:132,f:"26 de noviembre",it:[
   ["Arreglé lo de pegar en las pilas: si copiás un post-it con Ctrl+C y lo pegás adentro de una pila, ahora entra tal cual, con su link y su foto. Y los links ya no se salen del post-it: el link largo no se muestra en el texto, queda solo en el botoncito ↗ de abajo.",null,2]]},
  {n:131,f:"26 de noviembre",it:[
@@ -5171,7 +5178,15 @@ function cerrarPila(){$("pila-vista").hidden=true}
 let imgObsPila=null;
 function obsImgPila(im){if(!("IntersectionObserver" in window)){cargarImg(im,im.dataset.ref);return}
   if(!imgObsPila)imgObsPila=new IntersectionObserver(es=>{for(const en of es)if(en.isIntersecting){imgObsPila.unobserve(en.target);cargarImg(en.target,en.target.dataset.ref)}},{root:$("pv-grilla"),rootMargin:"600px 0px"});imgObsPila.observe(im)}
-function pintarPilaVista(){if($("pv-grilla").querySelector(".pv-inline"))return;const g=$("pv-grilla"),qq=$("pv-buscar").value.trim().toLowerCase(),todas=ordenarPila(pvPila,itemsPilaVer(pvPila));
+/* arregla los post-its que se pegaron antes con el título sin decodificar (una vez por post-it) */
+const yaLimpios=new Set();
+function limpiarTitulosViejos(lista){if(!cols.ideas||window.__invitado)return;const raro=t=>/&#x?[0-9a-f]+;?|&(?:amp|quot|apos|lt|gt);/i.test(t||"");
+  for(const i of lista){if(yaLimpios.has(i.id))continue;yaLimpios.add(i.id);const bl=Array.isArray(i.bloques)?i.bloques:[];if(!bl.some(b=>b.t==="link"&&raro(b.tt))&&!raro(i.texto))continue;
+    const lb=bl.find(b=>b.t==="link"&&b.tt),patch={};
+    if(lb&&raro(i.texto)&&i.texto===lb.tt)patch.texto=textoDeTitulo(i.texto);
+    if(bl.some(b=>b.t==="link"&&raro(b.tt)))patch.bloques=bl.map(b=>b.t==="link"&&raro(b.tt)?{...b,tt:limpiarTitulo(b.tt)}:b);
+    if(Object.keys(patch).length){Object.assign(i,patch);escribir(cols.ideas,i.id,patch,{silencioso:true})}}}
+function pintarPilaVista(){if($("pv-grilla").querySelector(".pv-inline"))return;const g=$("pv-grilla"),qq=$("pv-buscar").value.trim().toLowerCase(),todas=ordenarPila(pvPila,itemsPilaVer(pvPila));limpiarTitulosViejos(todas);
   const lista=qq?todas.filter(i=>[i.texto,textoBloques(i)].join(" ").toLowerCase().includes(qq)):todas;
   $("pv-tit").textContent=todas.length===1?"1 adentro":`${todas.length} adentro`;const st=g.scrollTop;g.replaceChildren();
   if(!lista.length){g.append(el("p","pv-vacio",todas.length?"Nada coincide con esa búsqueda.":(pvPila==="keep"?"La pila quedó vacía.":"Está vacía. Hacé doble clic para anotar algo acá.")));return}
@@ -5184,7 +5199,7 @@ function pintarPilaVista(){if($("pv-grilla").querySelector(".pv-inline"))return;
       m.lastChild.textContent=casa?`↗ de «${pc||"otra pila"}»`:"↗ de la plancha"}const bt=el("span","pv-bts");if(!esRef){const bo=el("button","pv-sacar pv-borrar","Borrar");bo.type="button";bo.title="Borrar este post-it";bo.onclick=e=>{e.stopPropagation();borrarDePilaVista(i.id)};bt.append(bo)}bt.append(sac);const lb=(i.bloques||[]).find(b=>b.t==="link"&&b.url),lu=lb?lb.url:linksDe(i.texto)[0];
     if(lu){const a=el("a","pv-link","↗ "+hostDe(lu));a.href=lu;a.target="_blank";a.rel="noopener";a.title=lu;a.draggable=false;a.addEventListener("pointerdown",e=>e.stopPropagation());a.onclick=e=>e.stopPropagation();pie.append(a,bt)}
     else pie.append(el("span",null,resumenExtra(i).replace(/^\+ /,"")),bt);
-    const ib=(i.bloques||[]).find(b=>b.t==="img"&&b.a);const tx=lu?(i.texto||"").replace(/https?:\/\/[^\s<>"']+|\bwww\.[^\s<>"']+/gi,"").replace(/[ \t]+\n/g,"\n").trim():(i.texto||"");c.append(m,el("div","pv-txt",tx||(lb&&(lb.tt||lb.titulo))||(lu?hostDe(lu):"(sin texto)")));if(ib){c.classList.add("con-img");const im=el("img","pv-img");im.alt="";im.decoding="async";im.draggable=false;im.dataset.ref=ib.a;im.onerror=()=>{im.remove();c.classList.remove("con-img")};obsImgPila(im);c.append(im)}
+    const ib=(i.bloques||[]).find(b=>b.t==="img"&&b.a);const tx=lu?(i.texto||"").replace(/https?:\/\/[^\s<>"']+|\bwww\.[^\s<>"']+/gi,"").replace(/[ \t]+\n/g,"\n").trim():(i.texto||"");c.append(m,el("div","pv-txt",tx||(lb&&(limpiarTitulo(lb.tt)||lb.titulo))||(lu?hostDe(lu):"(sin texto)")));if(ib){c.classList.add("con-img");const im=el("img","pv-img");im.alt="";im.decoding="async";im.draggable=false;im.dataset.ref=ib.a;im.onerror=()=>{im.remove();c.classList.remove("con-img")};obsImgPila(im);c.append(im)}
     else if(lb&&lb.img){c.classList.add("con-img");const im=el("img","pv-img");im.alt="";im.decoding="async";im.draggable=false;im.referrerPolicy="no-referrer";im.loading="lazy";im.onerror=()=>{im.remove();c.classList.remove("con-img")};im.src=lb.img;c.append(im)}c.append(pie);c.onclick=()=>{if(c._sinClick)return;abrir("ideas",i.id)};c.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();abrir("ideas",i.id)}};g.append(c)}
   g.scrollTop=st;pintarBotonTapa()}
 function lugarLibre(id,extra){id=id||"keep";const P=pilaXY(id),ocup=[...posiciones(enPlancha("ideas")).values(),...[...nodosPila.values()].map(n=>({x:parseFloat(n.style.left),y:parseFloat(n.style.top)})),...(extra||[])];
@@ -5222,7 +5237,7 @@ async function pegarEnPila(txt){const pid=pvPila;if(!cols.ideas)return;if(pid===
     const body={texto,tipo,creado:ahora,numero:numero++,pila:pid,pilaT:ahora,x:Math.round(P.x),y:Math.round(P.y)};if(bl.length)body.bloques=bl;
     const r=await cols.ideas.add(body);
     if(bl.length)Promise.all(bl.map(b=>completarLink(b))).then(cs=>{if(!cs.some(Boolean))return;const i=data.ideas.find(x=>x.id===r.id);const nuevo=new Map(bl.map(b=>[b.id,b])),patch={bloques:(i&&Array.isArray(i.bloques)?i.bloques:bl).map(b=>nuevo.get(b.id)||b)};
-      if(!(i?i.texto:texto)&&bl[0].tt)patch.texto=bl[0].tt;escribir(cols.ideas,r.id,patch,{silencioso:true});setTimeout(()=>{if(!$("pila-vista").hidden)pintarPilaVista()},50)})};
+      if(!(i?i.texto:texto)&&bl[0].tt)patch.texto=textoDeTitulo(bl[0].tt);escribir(cols.ideas,r.id,patch,{silencioso:true});setTimeout(()=>{if(!$("pila-vista").hidden)pintarPilaVista()},50)})};
   try{if(soloLinks){for(const u of us)await uno("",[u])}else await uno(soloLinks?"":(us.length?resto:txt),us);
     toast(soloLinks&&us.length>1?`${us.length} links pegados en la pila.`:"Pegado en la pila.")}
   catch(_){toast("No se pudo pegar. Probá de nuevo.")}}
